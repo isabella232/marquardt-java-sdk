@@ -9,6 +9,7 @@
 package org.echocat.marquardt.common;
 
 import com.google.common.primitives.Ints;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.util.InputStreamUtils;
@@ -43,4 +44,12 @@ public class SignablePayload implements Signable {
         out.write(Ints.toByteArray(bytes.length));
         out.write(bytes);
     }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("_someContent", _someContent)
+                .toString();
+    }
+
 }

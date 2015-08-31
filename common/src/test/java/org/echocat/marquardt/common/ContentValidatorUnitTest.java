@@ -20,7 +20,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
-public class ContentValidatorUnitTest extends ContentSignerUnitTest {
+public class ContentValidatorUnitTest extends SigningUnitTest {
 
     private static final String SOME_PAYLOAD = "Some payload";
     private ContentValidator _contentValidator;

@@ -71,32 +71,4 @@ public abstract class BytesWithMechanism<M extends BytesWithMechanism.Mechanism>
         return getMechanism() + ":" + Base64.getEncoder().withoutPadding().encodeToString(getValue());
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        final boolean result;
-        if (this == o) {
-            result = true;
-        } else if (o == null || !(o instanceof BytesWithMechanism)) {
-            result = false;
-        } else {
-            final BytesWithMechanism that = (BytesWithMechanism) o;
-            result = Arrays.equals(getValue(), that.getValue())
-                    && getMechanism() == that.getMechanism();
-        }
-        return result;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Arrays.hashCode(getValue());
-        result = 31 * result + getMechanism().hashCode();
-        return result;
-    }
-
-    public static void write(@Nonnull final BytesWithMechanism<?> what, @Nonnull final OutputStream to) throws IOException {
-        final byte[] content = what.getContent();
-        to.write(Ints.toByteArray(content.length));
-        to.write(content);
-    }
-
 }

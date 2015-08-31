@@ -54,15 +54,6 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
             return result;
         }
 
-        @Nonnull
-        public static Mechanism getMechanism(@Nullable final String name) {
-            final Mechanism result = findMechanism(name);
-            if (result == null) {
-                throw new IllegalArgumentException("Unknown mechanism: " + name);
-            }
-            return result;
-        }
-
         @Nullable
         public static Mechanism findMechanism(final byte code) {
             Mechanism result = null;
@@ -71,15 +62,6 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
                     result = candidate;
                     break;
                 }
-            }
-            return result;
-        }
-
-        @Nonnull
-        public static Mechanism getMechanism(final byte code) {
-            final Mechanism result = findMechanism(code);
-            if (result == null) {
-                throw new IllegalArgumentException("Unknown mechanism: #" + code);
             }
             return result;
         }

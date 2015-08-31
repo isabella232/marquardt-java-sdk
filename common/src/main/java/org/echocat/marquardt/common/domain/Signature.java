@@ -33,29 +33,6 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
         }
 
         @Nullable
-        public static Mechanism findMechanism(@Nullable final String name) {
-            Mechanism result = null;
-            if (name != null) {
-                for (final Mechanism candidate : values()) {
-                    if (name.equals(candidate._name)) {
-                        result = candidate;
-                        break;
-                    }
-                }
-            }
-            return result;
-        }
-
-        @Nonnull
-        public static Mechanism getMechanism(@Nullable final String name) {
-            final Mechanism result = findMechanism(name);
-            if (result == null) {
-                throw new IllegalArgumentException("Unknown mechanism: " + name);
-            }
-            return result;
-        }
-
-        @Nullable
         public static Mechanism findMechanism(final byte code) {
             Mechanism result = null;
             for (final Mechanism candidate : values()) {
