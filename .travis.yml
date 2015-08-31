@@ -7,4 +7,4 @@ jdk:
 script:
   - mvn verify
 after_success:
-  - mvn clean test
+  - mvn clean verify jacoco:report coveralls:report

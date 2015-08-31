@@ -39,6 +39,8 @@
 
     <properties>
         <version.java>1.8</version.java>
+        <jacoco.plugin.version>0.7.5.201505241946</jacoco.plugin.version>
+        <coveralls.plugin.version>4.0.0</coveralls.plugin.version>
     </properties>
 
     <build>
@@ -51,6 +53,24 @@
                     <source>${version.java}</source>
                     <target>${version.java}</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${coveralls.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
