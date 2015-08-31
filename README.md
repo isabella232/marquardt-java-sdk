@@ -5,7 +5,7 @@
 Please activate the provided pre-commit hook to ensure no files without license information are committed. To activate the hook, please run:
 
 ```
-cd git_hooks
+cd .git_hooks
 ./enable_hooks.sh
 ```
 
