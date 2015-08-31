@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ~ **** BEGIN LICENSE BLOCK *****
+  ~
+  ~ Version: MPL 2.0
+  ~
+  ~ echocat Marquardt Java SDK, Copyright (c) 2015 echocat
+  ~
+  ~ This Source Code Form is subject to the terms of the Mozilla Public
+  ~ License, v. 2.0. If a copy of the MPL was not distributed with this
+  ~ file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  ~
+  ~ **** END LICENSE BLOCK *****
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.echocat</groupId>
+    <artifactId>marquardt</artifactId>
+    <name>Marquardt Java SDK</name>
+    <version>0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <description>A library for access control based on signed certificates from a central authority. Certificates can be verified without roundtrips to the authority.</description>
+    <url>https://github.com/echocat/marquardt-java-sdk</url>
+
+    <organization>
+        <name>echocat</name>
+        <url>https://echocat.org/</url>
+    </organization>
+
+    <properties>
+        <version.java>1.8</version.java>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${version.java}</source>
+                    <target>${version.java}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/echocat/marquardt-java-sdk/issues</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:echocat/marquardt-java-sdk.git</connection>
+        <developerConnection>scm:git:git@github.com:echocat/marquardt-java-sdk.git</developerConnection>
+        <url>https://github.com/echocat/marquardt-java-sdk</url>
+        <tag>HEAD</tag>
+    </scm>
+    <licenses>
+        <license>
+            <name>Mozilla Public License, v. 2.0</name>
+            <url>http://mozilla.org/MPL/2.0/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+</project>
