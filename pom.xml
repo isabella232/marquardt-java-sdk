@@ -67,6 +67,11 @@
         <tag>HEAD</tag>
     </scm>
 
+    <ciManagement>
+        <system>travis</system>
+        <url>https://travis-ci.org/echocat/marquardt-java-sdk</url>
+    </ciManagement>
+
     <licenses>
         <license>
             <name>Mozilla Public License, v. 2.0</name>
