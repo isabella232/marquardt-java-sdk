@@ -1,4 +1,5 @@
 # marquardt-java-sdk
+[![Build Status](https://api.travis-ci.org/echocat/marquardt-java-sdk.svg?branch=master)](https://travis-ci.org/echocat/marquardt-java-sdk)
 
 ## Setup project
 
