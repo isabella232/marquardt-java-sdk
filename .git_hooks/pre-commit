@@ -27,12 +27,14 @@ die() {
 }
 
 check_mpl_copyright(){
-  cpr_count=$(grep -c "http://mozilla.org/MPL/2.0/" $1)
-  if (( $cpr_count > 0 )); then
-	return 1;
-  else
-	echo "$1: Missing MPL copyright header."
-	return 0;
+  if [ -f $1 ]; then
+    cpr_count=$(grep -c "http://mozilla.org/MPL/2.0/" $1)
+    if (( $cpr_count > 0 )); then
+      return 1;
+    else
+      echo "$1: Missing MPL copyright header."
+      return 0;
+    fi
   fi
 }
 
