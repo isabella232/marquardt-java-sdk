@@ -22,6 +22,11 @@ public class PublicKeyWithMechanismUnitTest {
         new PublicKeyWithMechanism("UNKNOWN", new byte[0]);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowExceptionWhenCreatedWithEmptyBytes() throws Exception {
+        new PublicKeyWithMechanism(new byte[0]);
+    }
+
     @Test
     public void shouldPrintReadableToString() throws Exception {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(TestKeyPairProvider.create().getPublicKey());
