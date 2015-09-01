@@ -17,6 +17,11 @@ import static org.hamcrest.core.StringContains.containsString;
 
 public class PublicKeyWithMechanismUnitTest {
 
+    @Test
+    public void shouldCreateInstance() throws Exception {
+        new PublicKeyWithMechanism("RSA", new byte[0]);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenCreatedWithUnknownMechanism() throws Exception {
         new PublicKeyWithMechanism("UNKNOWN", new byte[0]);
