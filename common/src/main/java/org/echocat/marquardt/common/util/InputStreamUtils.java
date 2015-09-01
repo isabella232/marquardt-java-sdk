@@ -19,8 +19,31 @@ import java.io.InputStream;
 
 public class InputStreamUtils {
 
+    private static final InputStreamUtils INSTANCE = new InputStreamUtils();
+
+    private InputStreamUtils(){}
+
     @Nonnull
     public static byte[] readBytes(@Nonnull @WillNotClose final InputStream inputStream, final int numberOfBytes) throws IOException {
+       return INSTANCE.internalReadBytes(inputStream, numberOfBytes);
+    }
+
+    @Nonnull
+    public static byte readByte(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
+        return INSTANCE.internalReadByte(inputStream);
+    }
+
+    @Nonnull
+    public static long readLong(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
+        return INSTANCE.internalReadLong(inputStream);
+    }
+
+    @Nonnull
+    public static int readInt(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
+        return INSTANCE.internalReadInt(inputStream);
+    }
+
+    private byte[] internalReadBytes(@Nonnull @WillNotClose final InputStream inputStream, final int numberOfBytes) throws IOException {
         final byte[] bytes = new byte[numberOfBytes];
         final int read = inputStream.read(bytes);
         if (read != numberOfBytes) {
@@ -29,21 +52,20 @@ public class InputStreamUtils {
         return bytes;
     }
 
-    @Nonnull
-    public static byte readByte(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
+    private byte internalReadByte(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
         final byte[] bytes = readBytes(inputStream, 1);
         return bytes[0];
     }
 
-    @Nonnull
-    public static long readLong(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
+    private long internalReadLong(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
         final byte[] bytes = readBytes(inputStream, Longs.BYTES);
         return Longs.fromByteArray(bytes);
     }
 
-    @Nonnull
-    public static int readInt(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
+    public int internalReadInt(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
         final byte[] bytes = readBytes(inputStream, Ints.BYTES);
         return Ints.fromByteArray(bytes);
     }
+
+
 }
