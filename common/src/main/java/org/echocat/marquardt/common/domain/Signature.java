@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.common.domain;
 
-import org.echocat.marquardt.common.exceptions.SigningException;
+import org.echocat.marquardt.common.exceptions.SecurityMechanismException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -97,7 +97,7 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
             algorithm.update(content);
             return algorithm.verify(getValue());
         } catch (final GeneralSecurityException e) {
-            throw new SigningException("Could not check signature for content.", e);
+            throw new SecurityMechanismException("Could not check signature for content.", e);
         }
     }
 
@@ -109,7 +109,7 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
             algorithm.update(content);
             return new Signature(with, algorithm.sign());
         } catch (final GeneralSecurityException e) {
-            throw new SigningException("Could not create signature for content.", e);
+            throw new SecurityMechanismException("Could not create signature for content.", e);
         }
     }
 

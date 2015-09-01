@@ -8,9 +8,9 @@
 
 package org.echocat.marquardt.common.exceptions;
 
-public class SigningException extends RuntimeException {
+public class SecurityMechanismException extends RuntimeException {
 
-    public SigningException(String message, Throwable cause) {
+    public SecurityMechanismException(String message, Throwable cause) {
         super(message, cause);
     }
 }

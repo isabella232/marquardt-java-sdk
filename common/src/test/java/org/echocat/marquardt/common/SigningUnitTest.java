@@ -30,7 +30,7 @@ public abstract class SigningUnitTest {
     protected KeyPairProvider _clientKeys;
     private ContentSigner _contentSigner;
 
-    private Certificate<SignablePayload> _certificate;
+    protected Certificate<SignablePayload> _certificate;
     protected byte[] _signedPayload;
 
     @Before

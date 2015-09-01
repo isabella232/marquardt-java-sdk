@@ -9,6 +9,7 @@
 package org.echocat.marquardt.common.domain;
 
 import com.google.common.primitives.Ints;
+import org.echocat.marquardt.common.exceptions.SecurityMechanismException;
 import org.echocat.marquardt.common.util.InputStreamUtils;
 
 import javax.annotation.Nonnull;
@@ -40,12 +41,21 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
             _javaInternalName = javaInternalName;
         }
 
+        @Nonnull
+        private static Mechanism mechanismWithName(@Nullable final String name) {
+            final Mechanism mechanism = findMechanism(name);
+            if (mechanism == null) {
+                throw new IllegalArgumentException("No mechanism with name " + name + " is supported.");
+            }
+            return mechanism;
+        }
+
         @Nullable
         public static Mechanism findMechanism(@Nullable final String name) {
             Mechanism result = null;
             if (name != null) {
                 for (final Mechanism candidate : values()) {
-                    if (name.equals(candidate._name)) {
+                    if (name.equals(candidate.getName())) {
                         result = candidate;
                         break;
                     }
@@ -58,7 +68,7 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
         public static Mechanism findMechanism(final byte code) {
             Mechanism result = null;
             for (final Mechanism candidate : values()) {
-                if (code == candidate._code) {
+                if (code == candidate.getCode()) {
                     result = candidate;
                     break;
                 }
@@ -89,11 +99,11 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
     }
 
     public PublicKeyWithMechanism(@Nonnull final PublicKey publicKey) {
-        super(Mechanism.findMechanism(publicKey.getAlgorithm()), publicKey.getEncoded());
+        super(Mechanism.mechanismWithName(publicKey.getAlgorithm()), publicKey.getEncoded());
     }
 
     public PublicKeyWithMechanism(@Nonnull final String name, final byte[] value) {
-        super(Mechanism.findMechanism(name), value);
+        super(Mechanism.mechanismWithName(name), value);
     }
 
     public PublicKeyWithMechanism(@Nonnull final byte[] content) {
@@ -113,7 +123,7 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
             factory = KeyFactory.getInstance(getMechanism().getJavaInternalName());
             return factory.generatePublic(spec);
         } catch (final GeneralSecurityException e) {
-            throw new RuntimeException("Could not convert to java key.", e);
+            throw new SecurityMechanismException("Could not convert to java key.", e);
         }
     }
 
@@ -128,4 +138,8 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
         return new PublicKeyWithMechanism(InputStreamUtils.readBytes(in, serializedKeySize));
     }
 
+    @Override
+    public String toString() {
+        return "PublicKeyWithMechanism of " + super.toString();
+    }
 }

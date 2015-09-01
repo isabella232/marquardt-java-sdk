@@ -10,10 +10,13 @@ package org.echocat.marquardt.common;
 
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
+import org.echocat.marquardt.common.exceptions.SecurityMechanismException;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.security.Key;
+import java.security.PublicKey;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -23,6 +26,21 @@ import static org.hamcrest.core.IsNull.nullValue;
 public class ContentValidatorUnitTest extends SigningUnitTest {
 
     private static final String SOME_PAYLOAD = "Some payload";
+    private static final PublicKey INVALID_PUBLIC_KEY = new PublicKey() {
+        @Override
+        public String getAlgorithm() {
+            return "RSA";
+        }
+        @Override
+        public String getFormat() {
+            return "X.509";
+        }
+        @Override
+        public byte[] getEncoded() {
+            return new byte[0];
+        }
+    };
+
     private ContentValidator _contentValidator;
     private Certificate<SignablePayload> _deserializedCertificate;
 
@@ -49,6 +67,22 @@ public class ContentValidatorUnitTest extends SigningUnitTest {
     public void shouldNotValidateCertificateFromUnknownIssuer() throws Exception {
         givenSignedPayloadFromUnknownIssuer();
         whenValidatedPayloadIsDeserialized();
+    }
+
+
+    @Test(expected = SecurityMechanismException.class)
+    public void shouldThrowExceptionWhenCertificateContainsInvalidKey() throws Exception {
+        givenSignedDefectCertificate();
+        whenValidatedPayloadIsDeserialized();
+    }
+
+    private void givenSignedDefectCertificate() throws IOException {
+        givenDefectUserInfoCertificate();
+    }
+
+    private void givenDefectUserInfoCertificate() throws IOException {
+        _certificate = Certificate.create(_issuerKeys.getPublicKey(), INVALID_PUBLIC_KEY, ROLE_CODES, new SignablePayload(SOME_PAYLOAD));
+        whenSigning();
     }
 
     private void givenSignedPayloadFromUnknownIssuer() throws IOException {

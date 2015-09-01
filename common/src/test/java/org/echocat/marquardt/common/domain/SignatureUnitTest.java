@@ -9,7 +9,7 @@
 package org.echocat.marquardt.common.domain;
 
 import org.echocat.marquardt.common.TestKeyPairProvider;
-import org.echocat.marquardt.common.exceptions.SigningException;
+import org.echocat.marquardt.common.exceptions.SecurityMechanismException;
 import org.junit.Test;
 
 import java.security.PrivateKey;
@@ -37,13 +37,13 @@ public class SignatureUnitTest {
         whenUnknownMechanismIsRequested();
     }
 
-    @Test(expected = SigningException.class)
+    @Test(expected = SecurityMechanismException.class)
     public void shouldThrowExceptionWhenCreatingSignatureWithInvalidPrivateKey() throws Exception {
         givenInvalidPrivateKey();
         whenSignatureIsCreated();
     }
 
-    @Test(expected = SigningException.class)
+    @Test(expected = SecurityMechanismException.class)
     public void shouldThrowExceptionWhenValidatingSignaturesWithInvalidPublicKey() throws Exception {
         givenSignature();
         whenCheckingSignature();
