@@ -8,6 +8,8 @@
 
 package org.echocat.marquardt.common.domain;
 
+import org.echocat.marquardt.common.exceptions.SigningException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.GeneralSecurityException;
@@ -65,12 +67,8 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
         }
 
         @Nonnull
-        public java.security.Signature createAlgorithm() {
-            try {
-                return java.security.Signature.getInstance(_javaAlgorithmName);
-            } catch (final NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not load expected algorithm.");
-            }
+        public java.security.Signature createAlgorithm() throws NoSuchAlgorithmException {
+           return java.security.Signature.getInstance(_javaAlgorithmName);
         }
 
         @Override
@@ -99,7 +97,7 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
             algorithm.update(content);
             return algorithm.verify(getValue());
         } catch (final GeneralSecurityException e) {
-            throw new RuntimeException("Could not check signature for content.", e);
+            throw new SigningException("Could not check signature for content.", e);
         }
     }
 
@@ -111,8 +109,13 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
             algorithm.update(content);
             return new Signature(with, algorithm.sign());
         } catch (final GeneralSecurityException e) {
-            throw new RuntimeException("Could not create signature for content.", e);
+            throw new SigningException("Could not create signature for content.", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Signature signed with " + super.toString();
     }
 
 }
