@@ -27,9 +27,7 @@ public enum ResponseStatusTranslation {
     },
     FORBIDDEN(403) {
         @Override
-        public RuntimeException translateToException(String message) {
-            return new IllegalArgumentException(message);
-        }
+        public RuntimeException translateToException(String message) { return new IllegalArgumentException(message); }
     },
     CONFLICT(409) {
         @Override

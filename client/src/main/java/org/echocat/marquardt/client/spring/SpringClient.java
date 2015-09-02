@@ -17,6 +17,7 @@ import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
+import org.echocat.marquardt.common.web.SignatureHeaders;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -46,7 +47,9 @@ public class SpringClient<T extends Signable> implements Client<T> {
     private final PrivateKey _privateKey;
     private byte[] _certificate;
 
-    public SpringClient(final String baseUri, final DeserializingFactory<T> deserializingFactory, final PrivateKey privateKey) {
+    public SpringClient(final String baseUri,
+                        final DeserializingFactory<T> deserializingFactory,
+                        final PrivateKey privateKey) {
         _baseUri = baseUri;
         _deserializingFactory = deserializingFactory;
         _privateKey = privateKey;
@@ -57,8 +60,8 @@ public class SpringClient<T extends Signable> implements Client<T> {
                                                         final byte[] bytes,
                                                         final ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
                         HttpHeaders headers = httpRequest.getHeaders();
-                        headers.add("Content-MD5", Base64.getEncoder().encodeToString(Md5Creator.create(bytes)));
-                        headers.add("X-Certificate", new String(Base64.getEncoder().encode(_certificate)));
+                        headers.add(SignatureHeaders.CONTENT.getHeaderName(), Base64.getEncoder().encodeToString(Md5Creator.create(bytes)));
+                        headers.add(SignatureHeaders.X_CERTIFICATE.getHeaderName(), new String(Base64.getEncoder().encode(_certificate)));
                         headers.add("X-Signature", new String(_requestSigner.getSignature(httpRequest, _privateKey)));
                         return clientHttpRequestExecution.execute(httpRequest, bytes);
                     }
