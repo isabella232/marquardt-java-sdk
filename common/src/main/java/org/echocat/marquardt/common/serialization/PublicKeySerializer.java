@@ -9,18 +9,16 @@
 package org.echocat.marquardt.common.serialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Base64;
 
-public class PublicKeySerializer extends JsonSerializer<PublicKey> {
+public class PublicKeySerializer extends com.fasterxml.jackson.databind.JsonSerializer<PublicKey> {
 
     @Override
-    public void serialize(final PublicKey publicKey, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException {
+    public void serialize(final PublicKey publicKey, final JsonGenerator jsonGenerator, final com.fasterxml.jackson.databind.SerializerProvider serializerProvider) throws IOException {
         // TODO! Please transport like in the certificate.
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
         jsonGenerator.writeStartObject();
