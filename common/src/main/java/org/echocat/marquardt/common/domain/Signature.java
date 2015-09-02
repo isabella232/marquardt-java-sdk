@@ -36,14 +36,12 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
 
         @Nullable
         public static Mechanism findMechanism(final byte code) {
-            Mechanism result = null;
             for (final Mechanism candidate : values()) {
                 if (code == candidate.getCode()) {
-                    result = candidate;
-                    break;
+                    return candidate;
                 }
             }
-            return result;
+            return null;
         }
 
         @Nonnull

@@ -52,28 +52,24 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
 
         @Nullable
         public static Mechanism findMechanism(@Nullable final String name) {
-            Mechanism result = null;
             if (name != null) {
                 for (final Mechanism candidate : values()) {
                     if (name.equals(candidate.getName())) {
-                        result = candidate;
-                        break;
+                        return candidate;
                     }
                 }
             }
-            return result;
+            return null;
         }
 
         @Nullable
         public static Mechanism findMechanism(final byte code) {
-            Mechanism result = null;
             for (final Mechanism candidate : values()) {
                 if (code == candidate.getCode()) {
-                    result = candidate;
-                    break;
+                    return candidate;
                 }
             }
-            return result;
+            return null;
         }
 
         @Nonnull
@@ -119,8 +115,7 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
     public PublicKey toJavaKey() {
         try {
             final X509EncodedKeySpec spec = new X509EncodedKeySpec(getValue());
-            final KeyFactory factory;
-            factory = KeyFactory.getInstance(getMechanism().getJavaInternalName());
+            final KeyFactory factory = KeyFactory.getInstance(getMechanism().getJavaInternalName());
             return factory.generatePublic(spec);
         } catch (final GeneralSecurityException e) {
             throw new SecurityMechanismException("Could not convert to java key.", e);
