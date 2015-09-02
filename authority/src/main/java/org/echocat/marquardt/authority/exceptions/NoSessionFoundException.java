@@ -6,15 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.common.domain;
+package org.echocat.marquardt.authority.exceptions;
 
-import java.security.PublicKey;
+public class NoSessionFoundException extends RuntimeException {
 
-public interface Credentials {
+    public NoSessionFoundException() {
+        super();
+    }
 
-    String getIdentifier();
-
-    String getPassword();
-
-    PublicKey getPublicKey();
+    public NoSessionFoundException(String message) {
+        super(message);
+    }
 }

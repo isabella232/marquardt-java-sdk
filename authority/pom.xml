@@ -27,4 +27,12 @@
     <artifactId>authority</artifactId>
     <name>Marquardt Java SDK - Authority</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.echocat.marquardt</groupId>
+            <artifactId>common</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 </project>

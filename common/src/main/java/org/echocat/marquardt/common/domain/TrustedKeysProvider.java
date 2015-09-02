@@ -9,12 +9,10 @@
 package org.echocat.marquardt.common.domain;
 
 import java.security.PublicKey;
+import java.util.List;
 
-public interface Credentials {
+public interface TrustedKeysProvider {
 
-    String getIdentifier();
+    List<PublicKey> getPublicKeys();
 
-    String getPassword();
-
-    PublicKey getPublicKey();
 }
