@@ -14,6 +14,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.PublicKey;
@@ -31,7 +32,7 @@ public class Certificate<T extends Signable> implements Signable {
     private final T _payload;
 
     public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, long roleCodes, final T payload) {
-        return new Certificate<>(issuerPublicKey, clientPublicKey, roleCodes, payload);
+        return new Certificate<T>(issuerPublicKey, clientPublicKey, roleCodes, payload);
     }
 
     private Certificate(final PublicKey issuerPublicKey, PublicKey clientPublicKey, long roleCodes, final T payload) {
@@ -80,6 +81,16 @@ public class Certificate<T extends Signable> implements Signable {
         _payload.writeTo(out);
     }
 
+    @Override
+    public byte[] getContent() throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            writeTo(out);
+            return out.toByteArray();
+        } finally {
+            out.close();
+        }
+    }
 
     @Override
     public String toString() {

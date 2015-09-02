@@ -16,16 +16,21 @@ import org.echocat.marquardt.common.util.InputStreamUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class SignablePayload implements Signable {
 
-    public static final DeserializingFactory<SignablePayload> FACTORY = (@Nonnull @WillNotClose InputStream in) -> {
-        final int stringSize = InputStreamUtils.readInt(in);
-        final byte[] payloadAsBytes = InputStreamUtils.readBytes(in, stringSize);
-        return new SignablePayload(new String(payloadAsBytes));
+    public static final DeserializingFactory<SignablePayload> FACTORY = new DeserializingFactory<SignablePayload>() {
+        @Nonnull
+        @Override
+        public SignablePayload consume(@Nonnull @WillNotClose InputStream in) throws IOException {
+            final int stringSize = InputStreamUtils.readInt(in);
+            final byte[] payloadAsBytes = InputStreamUtils.readBytes(in, stringSize);
+            return new SignablePayload(new String(payloadAsBytes));
+        }
     };
 
     private final String _someContent;
@@ -50,6 +55,17 @@ public class SignablePayload implements Signable {
         return new ToStringBuilder(this)
                 .append("_someContent", _someContent)
                 .toString();
+    }
+
+    @Override
+    public byte[] getContent() throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            writeTo(out);
+            return out.toByteArray();
+        } finally {
+            out.close();
+        }
     }
 
 }

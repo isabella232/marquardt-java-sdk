@@ -33,7 +33,7 @@ public abstract class CertificateFactory<T extends Signable> implements Deserial
         final Date expiryDate = new Date(readLong(in));
         final long roleCodes = readLong(in);
         final T wrapped = getFactoryOfWrapped().consume(in);
-        return new Certificate<>(publicKeyWithMechanism.toJavaKey(), clientKeyWithMechanism.toJavaKey(), expiryDate, roleCodes, wrapped);
+        return new Certificate<T>(publicKeyWithMechanism.toJavaKey(), clientKeyWithMechanism.toJavaKey(), expiryDate, roleCodes, wrapped);
     }
 
 }

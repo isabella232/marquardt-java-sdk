@@ -19,7 +19,8 @@ import java.security.PublicKey;
 public class ContentValidator {
 
     private <T extends Signable> T validateAndDeserialize(final byte[] content, final DeserializingFactory<T> signableFactory, final PublicKey publicKey) throws IOException {
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content)) {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
+        try {
             final T signable;
             signable = signableFactory.consume(inputStream);
 
@@ -29,6 +30,8 @@ public class ContentValidator {
                 return signable;
             }
             throw new InvalidSignatureException();
+        } finally {
+            inputStream.close();
         }
     }
 

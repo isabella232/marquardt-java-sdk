@@ -22,11 +22,14 @@ import java.security.PrivateKey;
 public class ContentSigner {
 
     public byte[] sign(final Signable signable, final PrivateKey privateKey) throws IOException {
-        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
             final byte[] contentToSign = signable.getContent();
             baos.write(contentToSign);
             writeSignature(baos, contentToSign, privateKey);
             return baos.toByteArray();
+        } finally {
+            baos.close();
         }
     }
 

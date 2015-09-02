@@ -14,15 +14,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-@FunctionalInterface
 public interface Signable {
 
     void writeTo(@Nonnull @WillNotClose OutputStream out) throws IOException;
 
-    default byte[] getContent() throws IOException {
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            writeTo(out);
-            return out.toByteArray();
-        }
-    }
+    byte[] getContent() throws IOException;
+
 }
