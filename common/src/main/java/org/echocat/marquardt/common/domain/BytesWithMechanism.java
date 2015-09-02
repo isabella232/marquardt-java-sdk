@@ -8,12 +8,7 @@
 
 package org.echocat.marquardt.common.domain;
 
-import com.google.common.primitives.Ints;
-
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Base64;
 
 @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")

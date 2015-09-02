@@ -17,7 +17,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class InputStreamUtils {
+public final class InputStreamUtils {
 
     private static final InputStreamUtils INSTANCE = new InputStreamUtils();
 

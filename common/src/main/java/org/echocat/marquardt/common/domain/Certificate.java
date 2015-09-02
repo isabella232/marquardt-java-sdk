@@ -35,7 +35,7 @@ public class Certificate<T extends Signable> implements Signable {
         return new Certificate<T>(issuerPublicKey, clientPublicKey, roleCodes, payload);
     }
 
-    private Certificate(final PublicKey issuerPublicKey, PublicKey clientPublicKey, long roleCodes, final T payload) {
+    private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final long roleCodes, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
         _roleCodes = roleCodes;
@@ -43,7 +43,7 @@ public class Certificate<T extends Signable> implements Signable {
         _payload = payload;
     }
 
-    Certificate(final PublicKey issuerPublicKey, PublicKey clientPublicKey, final Date expiresAt, long roleCodes, final T payload) {
+    Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Date expiresAt, long roleCodes, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
         _expiresAt = expiresAt;
@@ -83,7 +83,7 @@ public class Certificate<T extends Signable> implements Signable {
 
     @Override
     public byte[] getContent() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             writeTo(out);
             return out.toByteArray();

@@ -59,7 +59,7 @@ public class SignablePayload implements Signable {
 
     @Override
     public byte[] getContent() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             writeTo(out);
             return out.toByteArray();

@@ -8,7 +8,11 @@
 
 package org.echocat.marquardt.common;
 
-import org.echocat.marquardt.common.domain.*;
+import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.CertificateFactory;
+import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
 import org.echocat.marquardt.common.util.InputStreamUtils;
 
@@ -19,7 +23,7 @@ import java.security.PublicKey;
 public class ContentValidator {
 
     private <T extends Signable> T validateAndDeserialize(final byte[] content, final DeserializingFactory<T> signableFactory, final PublicKey publicKey) throws IOException {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
+        final ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
         try {
             final T signable;
             signable = signableFactory.consume(inputStream);

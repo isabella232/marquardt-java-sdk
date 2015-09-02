@@ -10,7 +10,7 @@ package org.echocat.marquardt.common.exceptions;
 
 public class SecurityMechanismException extends RuntimeException {
 
-    public SecurityMechanismException(String message, Throwable cause) {
+    public SecurityMechanismException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

@@ -38,7 +38,7 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
         public static Mechanism findMechanism(final byte code) {
             Mechanism result = null;
             for (final Mechanism candidate : values()) {
-                if (code == candidate._code) {
+                if (code == candidate.getCode()) {
                     result = candidate;
                     break;
                 }
