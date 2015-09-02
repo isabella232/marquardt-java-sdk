@@ -25,8 +25,7 @@ public class ContentValidator {
     private <T extends Signable> T validateAndDeserialize(final byte[] content, final DeserializingFactory<T> signableFactory, final PublicKey publicKey) throws IOException {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
         try {
-            final T signable;
-            signable = signableFactory.consume(inputStream);
+            final T signable = signableFactory.consume(inputStream);
 
             final int signatureLength = InputStreamUtils.readInt(inputStream);
             final Signature signature = new Signature(InputStreamUtils.readBytes(inputStream, signatureLength));
@@ -35,7 +34,9 @@ public class ContentValidator {
             }
             throw new InvalidSignatureException();
         } finally {
-            inputStream.close();
+            try {
+                inputStream.close();
+            } catch (final IOException ignored) {}
         }
     }
 

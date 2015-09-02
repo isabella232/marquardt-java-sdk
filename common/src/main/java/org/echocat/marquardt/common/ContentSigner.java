@@ -29,7 +29,9 @@ public class ContentSigner {
             writeSignature(baos, contentToSign, privateKey);
             return baos.toByteArray();
         } finally {
-            baos.close();
+            try {
+                baos.close();
+            } catch (final IOException ignored) {}
         }
     }
 

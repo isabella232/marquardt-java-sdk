@@ -88,7 +88,9 @@ public class Certificate<T extends Signable> implements Signable {
             writeTo(out);
             return out.toByteArray();
         } finally {
-            out.close();
+            try {
+                out.close();
+            } catch (final IOException ignored) {}
         }
     }
 
