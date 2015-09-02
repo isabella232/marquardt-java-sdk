@@ -44,6 +44,19 @@ public class ContentValidator {
         return validateAndDeserialize(content, getCertificateFactory(wrappedSignableFactory), publicKey);
     }
 
+    public <T extends Signable> T deserialize(final byte[] content, final DeserializingFactory<T> signableFactory) throws IOException {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
+        try {
+            return signableFactory.consume(inputStream);
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    public <T extends Signable> Certificate<T> deserializeCertificate(final byte[] content, final DeserializingFactory<T> wrappedSignableFactory) throws IOException {
+        return deserialize(content, getCertificateFactory(wrappedSignableFactory));
+    }
+
     private <T extends Signable> CertificateFactory<T> getCertificateFactory(final DeserializingFactory<T> signableFactory) {
         return new CertificateFactory<T>() {
             @Override
