@@ -52,6 +52,14 @@ public class ResponseStatusTranslationUnitTest {
         givenConflict();
         whenTranslating();
         thenTranslationIs(CONFLICT);
+        thenTranslatedExceptionIs(UserExistsException.class);
+    }
+
+    @Test
+    public void shouldTranslatePreconditionFailed() throws Exception {
+        givenPreconditionFailed();
+        whenTranslating();
+        thenTranslationIs(PRECONDITION_FAILED);
         thenTranslatedExceptionIs(AlreadyLoggedInException.class);
     }
 
@@ -79,6 +87,10 @@ public class ResponseStatusTranslationUnitTest {
 
     private void givenConflict() {
         _statusCode = 409;
+    }
+
+    private void givenPreconditionFailed() {
+        _statusCode = 412;
     }
 
     private void whenTranslating() {
