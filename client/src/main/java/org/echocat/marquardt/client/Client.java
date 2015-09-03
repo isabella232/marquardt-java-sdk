@@ -11,7 +11,6 @@ package org.echocat.marquardt.client;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.Signable;
-import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 

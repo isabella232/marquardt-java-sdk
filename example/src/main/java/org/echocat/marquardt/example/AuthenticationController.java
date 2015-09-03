@@ -91,19 +91,19 @@ public class AuthenticationController {
 
     @ExceptionHandler(LoginFailedException.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Login failed.")
-    public void handleLoginFailedException(final LoginFailedException ex) {
+    public void handleAlreadyLoggedInException(final LoginFailedException ex) {
         // TODO log
     }
 
     @ExceptionHandler(AlreadyLoggedInException.class)
     @ResponseStatus(value = HttpStatus.PRECONDITION_FAILED, reason = "Already logged in.")
-    public void handleLoginFailedException(final AlreadyLoggedInException ex) {
+    public void handleAlreadyLoggedInException(final AlreadyLoggedInException ex) {
         // TODO log
     }
 
     @ExceptionHandler(InvalidCertificateException.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Invalid jsonWrappedCertificate.")
-    public void handleInvalidTokenException(final InvalidCertificateException ex) {
+    public void handleInvalidCertificateException(final InvalidCertificateException ex) {
         // TODO log
     }
 
