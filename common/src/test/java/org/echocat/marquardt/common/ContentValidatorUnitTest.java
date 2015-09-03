@@ -8,20 +8,24 @@
 
 package org.echocat.marquardt.common;
 
+import com.google.common.base.Function;
+import org.apache.commons.lang3.ArrayUtils;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
 import org.echocat.marquardt.common.exceptions.SecurityMechanismException;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
+import java.io.EOFException;
 import java.io.IOException;
-import java.security.Key;
 import java.security.PublicKey;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.fail;
 
 public class ContentValidatorUnitTest extends SigningUnitTest {
 
@@ -76,6 +80,45 @@ public class ContentValidatorUnitTest extends SigningUnitTest {
         whenValidatedPayloadIsDeserialized();
     }
 
+    @Test(expected = InvalidSignatureException.class)
+    public void shouldThrowExceptionWhenPublicKeyIsNull() throws IOException {
+        givenUserInfoCertificate();
+        whenSigning();
+        whenPublicKeyForCertificateReturnsNull();
+    }
+
+    @Test
+    public void shouldCatchIoExceptionAndRethrowAsRuntimeException() throws IOException {
+        givenUserInfoCertificate();
+        whenSigning();
+        whenManipulatingCertificateBytes();
+        thenAnWrappedIoExceptionIsThrown();
+    }
+
+    private void whenPublicKeyForCertificateReturnsNull() {
+        _contentValidator.deserializeCertificateAndValidateSignature(_signedPayload, SignablePayload.FACTORY, new Function<Certificate<SignablePayload>, PublicKey>() {
+            @Nullable
+            @Override
+            public PublicKey apply(final Certificate<SignablePayload> signablePayloadCertificate) {
+                return null;
+            }
+        });
+    }
+
+    private void thenAnWrappedIoExceptionIsThrown() {
+        try {
+            whenValidatedPayloadIsDeserialized();
+            fail(RuntimeException.class + " expected to be thrown!");
+        } catch (final RuntimeException e) {
+            assertThat(e.getCause() instanceof EOFException, is(true));
+        }
+    }
+
+    private void whenManipulatingCertificateBytes() {
+        final int length = _signedPayload.length;
+        _signedPayload = ArrayUtils.subarray(_signedPayload, 0, length - 2);
+    }
+
     private void givenSignedDefectCertificate() throws IOException {
         givenDefectUserInfoCertificate();
     }
@@ -100,8 +143,14 @@ public class ContentValidatorUnitTest extends SigningUnitTest {
         _signedPayload[0] = Byte.MAX_VALUE;
     }
 
-    private void whenValidatedPayloadIsDeserialized() throws IOException {
-        _deserializedCertificate = _contentValidator.validateAndDeserializeCertificate(_signedPayload, SignablePayload.FACTORY, _issuerKeys.getPublicKey());
+    private void whenValidatedPayloadIsDeserialized() {
+        _deserializedCertificate = _contentValidator.deserializeCertificateAndValidateSignature(_signedPayload, SignablePayload.FACTORY, new Function<Certificate<SignablePayload>, PublicKey>() {
+            @Nullable
+            @Override
+            public PublicKey apply(final Certificate<SignablePayload> signablePayloadCertificate) {
+                return _issuerKeys.getPublicKey();
+            }
+        });
     }
 
     private void thenCorrectCertificateIsDeserialized() {
@@ -128,6 +177,4 @@ public class ContentValidatorUnitTest extends SigningUnitTest {
         final SignablePayload wrapped = _deserializedCertificate.getPayload();
         assertThat(wrapped.getSomeContent(), is(SOME_PAYLOAD));
     }
-
-
 }

@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.client.spring;
 
+import com.google.common.base.Function;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
 import org.echocat.marquardt.client.util.ResponseStatusTranslation;
@@ -30,8 +31,10 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Base64;
 
 public class SpringClient<T extends Signable> implements Client<T> {
@@ -138,7 +141,12 @@ public class SpringClient<T extends Signable> implements Client<T> {
 
     private Certificate<T> extractCertificateFrom(ResponseEntity<JsonWrappedCertificate> response) throws IOException {
         _certificate = response.getBody().getCertificate();
-        return _signedContentValidator.deserializeCertificate(_certificate, _deserializingFactory);
+        return _signedContentValidator.deserializeCertificateAndValidateSignature(_certificate, _deserializingFactory, new Function<Certificate<T>, PublicKey>() {
+            @Nullable
+            @Override
+            public PublicKey apply(final Certificate<T> certificate) {
+                return certificate.getIssuerPublicKey();
+            }
+        });
     }
-
 }
