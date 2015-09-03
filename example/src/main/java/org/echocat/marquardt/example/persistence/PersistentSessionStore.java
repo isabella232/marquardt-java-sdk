@@ -20,12 +20,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class ExampleSessionStore implements SessionStore {
+public class PersistentSessionStore implements SessionStore {
 
     private PersistentSessionRepository _sessionRepository;
 
     @Autowired
-    public ExampleSessionStore(PersistentSessionRepository sessionRepository) {
+    public PersistentSessionStore(PersistentSessionRepository sessionRepository) {
         _sessionRepository = sessionRepository;
     }
 

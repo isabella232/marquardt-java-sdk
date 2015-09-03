@@ -17,7 +17,7 @@ import org.echocat.marquardt.common.domain.TrustedKeysProvider;
 import org.echocat.marquardt.example.domain.User;
 import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
-import org.echocat.marquardt.example.persistence.ExampleSessionStore;
+import org.echocat.marquardt.example.persistence.PersistentSessionStore;
 import org.echocat.marquardt.example.persistence.jpa.UserRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -49,7 +49,7 @@ public abstract class AbstractSsoIntegrationTest {
     @Autowired
     private UserRepository _userRepository;
     @Autowired
-    private ExampleSessionStore _sessionStore;
+    private PersistentSessionStore _sessionStore;
 
     @Value("${local.server.port}")
     private String _port;

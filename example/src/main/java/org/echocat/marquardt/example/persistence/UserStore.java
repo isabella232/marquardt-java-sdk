@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.example;
+package org.echocat.marquardt.example.persistence;
 
 import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.common.domain.Credentials;
