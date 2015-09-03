@@ -27,5 +27,26 @@
     <artifactId>service</artifactId>
     <name>Marquardt Java SDK - Service</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.echocat.marquardt</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.echocat.marquardt</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+    </dependencies>
 
 </project>
