@@ -16,7 +16,7 @@ public interface Principal {
 
     String getEncodedPassword();
 
-    abstract boolean passwordMatches(String password);
+    boolean passwordMatches(String password);
 
     long getRoles();
 }

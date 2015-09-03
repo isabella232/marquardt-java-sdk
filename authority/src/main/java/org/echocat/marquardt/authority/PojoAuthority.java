@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.authority;
 
+import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.common.domain.Principal;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -34,21 +35,21 @@ import java.util.concurrent.TimeUnit;
 
 public class PojoAuthority<SIGNABLE extends Signable, PRINCIPAL extends Principal> implements Authority {
 
-    private final SignablePrincipalMapper<SIGNABLE, PRINCIPAL> _signablePrincipalMapper;
+    private final PrincipalStore<SIGNABLE, PRINCIPAL> _principalStore;
     private final SessionStore _sessionStore;
     private final ContentSigner _contentSigner = new ContentSigner();
     private final KeyPairProvider _issuerKeyProvider;
 
-    public PojoAuthority(SignablePrincipalMapper<SIGNABLE, PRINCIPAL> signablePrincipalMapper, SessionStore sessionStore, KeyPairProvider issuerKeyProvider) {
-        _signablePrincipalMapper = signablePrincipalMapper;
+    public PojoAuthority(PrincipalStore<SIGNABLE, PRINCIPAL> principalStore, SessionStore sessionStore, KeyPairProvider issuerKeyProvider) {
+        _principalStore = principalStore;
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
     @Override
     public JsonWrappedCertificate signUp(Credentials credentials) {
-        if (_signablePrincipalMapper.getPrincipalFromCredentials(credentials).isPresent()) {
-            PRINCIPAL principal = _signablePrincipalMapper.createPrincipalFromCredentials(credentials);
+        if (!_principalStore.getPrincipalFromCredentials(credentials).isPresent()) {
+            PRINCIPAL principal = _principalStore.createPrincipalFromCredentials(credentials);
             return createCertificateAndSession(credentials, principal);
         } else {
             throw new UserExistsException();
@@ -57,11 +58,11 @@ public class PojoAuthority<SIGNABLE extends Signable, PRINCIPAL extends Principa
 
     @Override
     public JsonWrappedCertificate signIn(Credentials credentials) {
-        final PRINCIPAL principal = _signablePrincipalMapper.getPrincipalFromCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
+        final PRINCIPAL principal = _principalStore.getPrincipalFromCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (principal.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.activeAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), new Date(), true)) {
+            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), new Date(), true)) {
                 throw new AlreadyLoggedInException();
             } else {
                 return createCertificateAndSession(credentials, principal);
@@ -73,7 +74,7 @@ public class PojoAuthority<SIGNABLE extends Signable, PRINCIPAL extends Principa
     @Override
     public JsonWrappedCertificate refresh(byte[] certificate) {
         final Session session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
-        final PRINCIPAL principal = _signablePrincipalMapper.getPrincipalByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find principal with userId " + session.getUserId()));
+        final PRINCIPAL principal = _principalStore.getPrincipalByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find principal with userId " + session.getUserId()));
         try {
             final byte[] newCertificate = createCertificate(principal, clientPublicKeyFrom(session));
             session.setCertificate(newCertificate);
@@ -109,7 +110,7 @@ public class PojoAuthority<SIGNABLE extends Signable, PRINCIPAL extends Principa
     }
 
     private byte[] createCertificate(final PRINCIPAL principal, final PublicKey clientPublicKey) throws IOException {
-        SIGNABLE signable = _signablePrincipalMapper.createSignableFromPrincipal(principal);
+        SIGNABLE signable = _principalStore.createSignableFromPrincipal(principal);
         final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, principal.getRoles(), signable);
         return _contentSigner.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }
@@ -120,7 +121,7 @@ public class PojoAuthority<SIGNABLE extends Signable, PRINCIPAL extends Principa
 
     private Session getSessionBasedOnValidCertificate(final byte[] certificateBytes) {
         final Session session = _sessionStore.findByCertificate(certificateBytes).orElseThrow(NoSessionFoundException::new);
-        if (!session.isValid() || session.getExpiresAt().before(new Date())) {
+        if (!session.getValid() || session.getExpiresAt().before(new Date())) {
             throw new InvalidSessionException();
         }
         return session;
@@ -128,7 +129,7 @@ public class PojoAuthority<SIGNABLE extends Signable, PRINCIPAL extends Principa
 
     private void createSession(final PublicKey publicKey, final UUID userId, final byte[] certificate) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
-        final Session session = new Session();
+        final Session session = _sessionStore.create();
         session.setUserId(userId);
         session.setExpiresAt(nowPlus60Days());
         session.setPublicKey(publicKeyWithMechanism.getValue());

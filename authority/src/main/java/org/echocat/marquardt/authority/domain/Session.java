@@ -8,84 +8,32 @@
 
 package org.echocat.marquardt.authority.domain;
 
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
 
-public class Session {
+public interface Session {
 
-    private String id;
+    UUID getUserId();
 
-    @NotNull
-    private UUID userId;
+    void setUserId(final UUID userId);
 
-    @NotNull
-    private byte[] certificate;
+    byte[] getCertificate();
 
-    @NotNull
-    private Date expiresAt;
+    void setCertificate(final byte[] certificate);
 
-    @NotNull
-    private byte[] publicKey;
+    Date getExpiresAt();
 
-    @NotNull
-    private String mechanism;
+    void setExpiresAt(final Date expiresAt);
 
-    private Boolean valid;
+    byte[] getPublicKey();
 
-    public String getId() {
-        return id;
-    }
+    void setPublicKey(final byte[] publicKey);
 
-    public void setId(final String id) {
-        this.id = id;
-    }
+    String getMechanism();
 
-    public UUID getUserId() {
-        return userId;
-    }
+    void setMechanism(final String mechanism);
 
-    public void setUserId(final UUID userId) {
-        this.userId = userId;
-    }
+    boolean getValid();
 
-    public byte[] getCertificate() {
-        return certificate;
-    }
-
-    public void setCertificate(final byte[] certificate) {
-        this.certificate = certificate;
-    }
-
-    public Date getExpiresAt() {
-        return expiresAt;
-    }
-
-    public void setExpiresAt(final Date expiresAt) {
-        this.expiresAt = expiresAt;
-    }
-
-    public byte[] getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(final byte[] publicKey) {
-        this.publicKey = publicKey;
-    }
-
-    public String getMechanism() {
-        return mechanism;
-    }
-
-    public void setMechanism(final String mechanism) {
-        this.mechanism = mechanism;
-    }
-
-    public boolean isValid() {
-        return valid;
-    }
-
-    public void setValid(final boolean valid) {
-        this.valid = valid;
-    }
+    void setValid(final boolean valid);
 }

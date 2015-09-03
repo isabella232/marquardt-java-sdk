@@ -6,21 +6,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.authority;
+package org.echocat.marquardt.authority.persistence;
 
+import org.echocat.marquardt.authority.domain.PrincipalToSignableMapper;
 import org.echocat.marquardt.common.domain.Credentials;
+import org.echocat.marquardt.common.domain.Principal;
 import org.echocat.marquardt.common.domain.Signable;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface SignablePrincipalMapper<SIGNABLE extends Signable, PRINCIPAL> {
+public interface PrincipalStore<SIGNABLE extends Signable, PRINCIPAL extends Principal> extends PrincipalToSignableMapper<SIGNABLE, PRINCIPAL>{
 
     Optional<PRINCIPAL> getPrincipalFromCredentials(Credentials credentials);
 
     Optional<PRINCIPAL> getPrincipalByUuid(UUID userId);
 
     PRINCIPAL createPrincipalFromCredentials(Credentials credentials);
-
-    SIGNABLE createSignableFromPrincipal(PRINCIPAL principal);
 }
