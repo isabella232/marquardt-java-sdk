@@ -6,23 +6,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.authority.persistence;
+package org.echocat.marquardt.example.persistence.jpa;
 
 import org.echocat.marquardt.authority.domain.Session;
+import org.echocat.marquardt.example.domain.PersistentSession;
+import org.springframework.data.repository.CrudRepository;
 
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-
-public interface SessionStore {
+public interface PersistentSessionRepository extends CrudRepository<PersistentSession, Long> {
 
     Optional<Session> findByCertificate(byte[] certificate);
 
-    boolean isActiveAndValidSessionExists(UUID userId, byte[] publicKey, Date expiresAt, boolean valid);
-
-    Session save(Session session);
-
-    Session create();
-
+    Long countByUserIdAndPublicKeyAndExpiresAtGreaterThanAndValid(UUID userId, byte[] publicKey, Date expiresAt, boolean valid);
 }

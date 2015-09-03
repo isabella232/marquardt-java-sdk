@@ -10,6 +10,7 @@ package org.echocat.marquardt.client.util;
 
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.UserExistsException;
 
 public enum ResponseStatusTranslation {
 
@@ -30,6 +31,12 @@ public enum ResponseStatusTranslation {
         public RuntimeException translateToException(String message) { return new IllegalArgumentException(message); }
     },
     CONFLICT(409) {
+        @Override
+        public RuntimeException translateToException(String message) {
+            return new UserExistsException(message);
+        }
+    },
+    PRECONDITION_FAILED(412) {
         @Override
         public RuntimeException translateToException(String message) {
             return new AlreadyLoggedInException(message);

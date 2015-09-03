@@ -30,6 +30,7 @@
         <module>client</module>
         <module>service</module>
         <module>authority</module>
+        <module>example</module>
     </modules>
 
     <organization>
