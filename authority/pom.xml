@@ -26,12 +26,20 @@
 
     <artifactId>authority</artifactId>
     <name>Marquardt Java SDK - Authority</name>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.echocat.marquardt</groupId>
             <artifactId>common</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.echocat.marquardt</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
