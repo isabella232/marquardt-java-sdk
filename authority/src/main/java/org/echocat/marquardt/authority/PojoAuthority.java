@@ -13,7 +13,7 @@ import org.echocat.marquardt.common.domain.Principal;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
-import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
+import org.echocat.marquardt.common.exceptions.InvalidSessionException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.authority.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
