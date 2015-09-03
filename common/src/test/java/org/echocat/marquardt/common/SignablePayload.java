@@ -9,6 +9,7 @@
 package org.echocat.marquardt.common;
 
 import com.google.common.primitives.Ints;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
@@ -64,8 +65,7 @@ public class SignablePayload implements Signable {
             writeTo(out);
             return out.toByteArray();
         } finally {
-            out.close();
+            IOUtils.closeQuietly(out);
         }
     }
-
 }

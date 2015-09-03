@@ -9,6 +9,7 @@
 package org.echocat.marquardt.client.spring;
 
 import com.google.common.primitives.Ints;
+import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.ContentSigner;
 import org.echocat.marquardt.common.web.SignatureHeaders;
 import org.springframework.http.HttpRequest;
@@ -29,22 +30,21 @@ public class RequestSigner {
             writeRequestTo(request, bytesToSign);
             return Base64.getEncoder().encode(_contentSigner.signatureOf(bytesToSign.toByteArray(), keyToSignWith));
         } finally {
-            bytesToSign.close();
+            IOUtils.closeQuietly(bytesToSign);
         }
     }
 
     private void writeRequestTo(HttpRequest request, ByteArrayOutputStream bytesToSign) throws IOException {
-        final byte[] requestBytes = new String(request.getMethod().name() + " " + request.getURI().getPath()).getBytes();
+        final byte[] requestBytes = (request.getMethod().name() + " " + request.getURI().getPath()).getBytes();
         bytesToSign.write(Ints.toByteArray(requestBytes.length));
         bytesToSign.write(requestBytes);
         for(SignatureHeaders headerToInclude: SignatureHeaders.values()) {
             final List<String> headerValues = request.getHeaders().get(headerToInclude.getHeaderName());
             if(headerValues != null) {
-                final byte[] headerBytes = new String(headerToInclude.getHeaderName() + ":" + headerValues.stream().findFirst().get()).getBytes();
+                final byte[] headerBytes = (headerToInclude.getHeaderName() + ":" + headerValues.stream().findFirst().get()).getBytes();
                 bytesToSign.write(Ints.toByteArray(headerBytes.length));
                 bytesToSign.write(headerBytes);
             }
         }
     }
-
 }

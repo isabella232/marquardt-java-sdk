@@ -10,6 +10,7 @@
 package org.echocat.marquardt.common.domain;
 
 import com.google.common.primitives.Longs;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nonnull;
@@ -88,9 +89,7 @@ public class Certificate<T extends Signable> implements Signable {
             writeTo(out);
             return out.toByteArray();
         } finally {
-            try {
-                out.close();
-            } catch (final IOException ignored) {}
+            IOUtils.closeQuietly(out);
         }
     }
 
