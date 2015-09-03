@@ -28,19 +28,19 @@
     <name>Marquardt Java SDK - Example</name>
 
     <properties>
-        <spring.boot.version>1.2.3.RELEASE</spring.boot.version>
+        <spring.boot.version>1.2.5.RELEASE</spring.boot.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.echocat.marquardt</groupId>
             <artifactId>authority</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.echocat.marquardt</groupId>
             <artifactId>client</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
