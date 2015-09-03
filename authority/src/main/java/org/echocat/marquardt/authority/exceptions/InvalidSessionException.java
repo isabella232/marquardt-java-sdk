@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.common.exceptions;
+package org.echocat.marquardt.authority.exceptions;
 
 public class InvalidSessionException extends RuntimeException {
 

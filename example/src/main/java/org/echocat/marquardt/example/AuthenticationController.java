@@ -10,8 +10,8 @@ package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.authority.PojoAuthority;
 import org.echocat.marquardt.authority.persistence.PrincipalStore;
-import org.echocat.marquardt.authority.exceptions.InvalidCertificateException;
-import org.echocat.marquardt.common.exceptions.InvalidSessionException;
+import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
+import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.common.ContentSigner;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
