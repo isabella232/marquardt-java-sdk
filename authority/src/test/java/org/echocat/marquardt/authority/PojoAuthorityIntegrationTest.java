@@ -8,10 +8,8 @@
 
 package org.echocat.marquardt.authority;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
-import com.sun.deploy.security.SessionCertStore;
 import org.apache.commons.io.Charsets;
 import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
@@ -41,7 +39,6 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
