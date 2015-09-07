@@ -54,29 +54,22 @@ public class PojoAuthorityIntegrationTest {
 
     private static final TestSession VALID_SESSION = createTestSession();
     private static final long SIXTY_DAYS = 1000 * 60 * 60 * 24 * 60;
-
-    private static TestSession createTestSession() {
-        final TestSession testSession = new TestSession();
-        testSession.setValid(true);
-        testSession.setExpiresAt(new Date(new Date().getTime() + SIXTY_DAYS));
-        return testSession;
-    }
-
     private SimpleHttpAuthorityServer _simpleHttpAuthorityServer;
-    private HttpURLConnection _connection;
-    private ObjectMapper _objectMapper;
 
+    private final ObjectMapper _objectMapper = new ObjectMapper();
     @Mock
     PrincipalStore<TestUserInfo, TestUser> _principalStore;
     @Mock
     SessionStore _sessionStore;
+
+    private HttpURLConnection _connection;
     private String _response;
+    private int _status;
 
     @Before
     public void setup() throws IOException {
         _simpleHttpAuthorityServer = new SimpleHttpAuthorityServer(_principalStore, _sessionStore);
         _simpleHttpAuthorityServer.start();
-        _objectMapper = new ObjectMapper();
     }
 
     @Test
@@ -92,20 +85,15 @@ public class PojoAuthorityIntegrationTest {
         givenExistingSession();
         givenSignoutCall();
         whenCallingAuthority();
+        thenSignoutIsPerformed();
     }
 
-    private void thenSignedCertificateIsProduced() throws IOException {
-        final JsonWrappedCertificate jsonWrappedCertificate = _objectMapper.readValue(_response, JsonWrappedCertificate.class);
-        assertThat(jsonWrappedCertificate.getCertificate(), is(not(nullValue())));
-    }
-
-    private void whenCallingAuthority() throws IOException {
-        final InputStream inputStream = _connection.getInputStream();
-        try {
-            _response = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
-        } finally {
-            inputStream.close();
-        }
+    @Test
+    public void shouldRefreshCertificateWithActiveSessionAndValidCertificate() throws Exception {
+        givenExistingSession();
+        givenRefreshCall();
+        whenCallingAuthority();
+        thenSignedCertificateIsProduced();
     }
 
     private void givenExistingSession() {
@@ -127,6 +115,29 @@ public class PojoAuthorityIntegrationTest {
         doPost("http://localhost:8000/signout", new JsonWrappedCertificate(CERTIFICATE));
     }
 
+    private void givenRefreshCall() throws Exception{
+        doPost("http://localhost:8000/refresh", new JsonWrappedCertificate(CERTIFICATE));
+    }
+
+    private void whenCallingAuthority() throws IOException {
+        final InputStream inputStream = _connection.getInputStream();
+        try {
+            _status = _connection.getResponseCode();
+            _response = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    private void thenSignedCertificateIsProduced() throws IOException {
+        final JsonWrappedCertificate jsonWrappedCertificate = _objectMapper.readValue(_response, JsonWrappedCertificate.class);
+        assertThat(jsonWrappedCertificate.getCertificate(), is(not(nullValue())));
+    }
+
+    private void thenSignoutIsPerformed() {
+        assertThat(_status, is(204));
+    }
+
     private void doPost(String url, Object content) throws Exception{
         final URL urlToPost = new URL(url);
         _connection = (HttpURLConnection) urlToPost.openConnection();
@@ -139,6 +150,13 @@ public class PojoAuthorityIntegrationTest {
     @After
     public void teardown() throws InterruptedException {
         _simpleHttpAuthorityServer.stop();
+    }
+
+    private static TestSession createTestSession() {
+        final TestSession testSession = new TestSession();
+        testSession.setValid(true);
+        testSession.setExpiresAt(new Date(new Date().getTime() + SIXTY_DAYS));
+        return testSession;
     }
 
 

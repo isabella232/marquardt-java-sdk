@@ -40,6 +40,7 @@ public class SimpleHttpAuthorityServer {
     public void start() throws IOException {
         _server.createContext("/signup", new SignupHandler(200));
         _server.createContext("/signout", new SignoutHandler(204));
+        _server.createContext("/refresh", new SignoutHandler(200));
         _server.setExecutor(null);
         _server.start();
     }
@@ -73,6 +74,20 @@ public class SimpleHttpAuthorityServer {
             final JsonWrappedCertificate certificate = _objectMapper.readValue(requestBody, JsonWrappedCertificate.class);
             _authority.signOut(certificate.getCertificate());
             return null;
+        }
+    }
+
+    class RefreshHandler extends Handler {
+
+        public RefreshHandler(Integer successResponseCode) {
+            super(successResponseCode);
+        }
+
+        @Override
+        String getResponse(InputStream requestBody) throws IOException {
+            final JsonWrappedCertificate certificate = _objectMapper.readValue(requestBody, JsonWrappedCertificate.class);
+            final JsonWrappedCertificate refresh = _authority.refresh(certificate.getCertificate());
+            return _objectMapper.writeValueAsString(refresh);
         }
     }
 
