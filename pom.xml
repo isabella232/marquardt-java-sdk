@@ -118,6 +118,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <destFile>${session.executionRootDirectory}/target/jacoco.exec</destFile>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
