@@ -33,7 +33,7 @@ public interface Session {
 
     void setMechanism(final String mechanism);
 
-    boolean getValid();
+    boolean isValid();
 
     void setValid(final boolean valid);
 }

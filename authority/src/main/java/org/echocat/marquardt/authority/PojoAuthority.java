@@ -121,7 +121,7 @@ public class PojoAuthority<SIGNABLE extends Signable, PRINCIPAL extends Principa
 
     private Session getSessionBasedOnValidCertificate(final byte[] certificateBytes) {
         final Session session = _sessionStore.findByCertificate(certificateBytes).orElseThrow(NoSessionFoundException::new);
-        if (!session.getValid() || session.getExpiresAt().before(new Date())) {
+        if (!session.isValid() || session.getExpiresAt().before(new Date())) {
             throw new InvalidSessionException();
         }
         return session;

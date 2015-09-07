@@ -65,7 +65,7 @@ public class TestSession implements Session {
     }
 
     @Override
-    public boolean getValid() {
+    public boolean isValid() {
         return false;
     }
 

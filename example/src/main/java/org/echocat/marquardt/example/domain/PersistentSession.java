@@ -103,7 +103,7 @@ public class PersistentSession implements Session {
     }
 
     @Override
-    public boolean getValid() {
+    public boolean isValid() {
         return valid;
     }
 
