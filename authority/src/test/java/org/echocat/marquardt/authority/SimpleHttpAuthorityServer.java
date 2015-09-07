@@ -40,7 +40,7 @@ public class SimpleHttpAuthorityServer {
     public void start() throws IOException {
         _server.createContext("/signup", new SignupHandler(200));
         _server.createContext("/signout", new SignoutHandler(204));
-        _server.createContext("/refresh", new SignoutHandler(200));
+        _server.createContext("/refresh", new RefreshHandler(200));
         _server.setExecutor(null);
         _server.start();
     }

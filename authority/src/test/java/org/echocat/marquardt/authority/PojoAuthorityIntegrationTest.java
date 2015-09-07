@@ -36,6 +36,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -52,17 +53,19 @@ public class PojoAuthorityIntegrationTest {
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
     private static final byte[] CERTIFICATE = new byte[0];
 
-    private static final TestSession VALID_SESSION = createTestSession();
+    private static final UUID USER_ID = UUID.randomUUID();
     private static final long SIXTY_DAYS = 1000 * 60 * 60 * 24 * 60;
     private SimpleHttpAuthorityServer _simpleHttpAuthorityServer;
 
     private final ObjectMapper _objectMapper = new ObjectMapper();
+
     @Mock
     PrincipalStore<TestUserInfo, TestUser> _principalStore;
     @Mock
     SessionStore _sessionStore;
 
     private HttpURLConnection _connection;
+    private TestSession _validSession;
     private String _response;
     private int _status;
 
@@ -70,6 +73,7 @@ public class PojoAuthorityIntegrationTest {
     public void setup() throws IOException {
         _simpleHttpAuthorityServer = new SimpleHttpAuthorityServer(_principalStore, _sessionStore);
         _simpleHttpAuthorityServer.start();
+        _validSession = createTestSession();
     }
 
     @Test
@@ -91,13 +95,19 @@ public class PojoAuthorityIntegrationTest {
     @Test
     public void shouldRefreshCertificateWithActiveSessionAndValidCertificate() throws Exception {
         givenExistingSession();
+        givenUserExists();
         givenRefreshCall();
         whenCallingAuthority();
         thenSignedCertificateIsProduced();
     }
 
+    private void givenUserExists() {
+        when(_principalStore.getPrincipalByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
+        when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+    }
+
     private void givenExistingSession() {
-        when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.of(VALID_SESSION));
+        when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.of(_validSession));
     }
 
     private void givenUserDoesNotExist() {
@@ -156,6 +166,8 @@ public class PojoAuthorityIntegrationTest {
         final TestSession testSession = new TestSession();
         testSession.setValid(true);
         testSession.setExpiresAt(new Date(new Date().getTime() + SIXTY_DAYS));
+        testSession.setUserId(USER_ID);
+        testSession.setPublicKey(TestKeyPairProvider.create().getPublicKey().getEncoded());
         return testSession;
     }
 

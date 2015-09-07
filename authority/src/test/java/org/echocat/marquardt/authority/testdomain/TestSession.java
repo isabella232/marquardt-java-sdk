@@ -15,17 +15,19 @@ import java.util.UUID;
 
 public class TestSession implements Session {
 
+    private UUID _userId;
     private boolean _valid;
     private Date _expiredAt;
+    private byte[] _publicKey;
 
     @Override
     public UUID getUserId() {
-        return null;
+        return _userId;
     }
 
     @Override
     public void setUserId(UUID userId) {
-
+        _userId = userId;
     }
 
     @Override
@@ -50,17 +52,17 @@ public class TestSession implements Session {
 
     @Override
     public byte[] getPublicKey() {
-        return new byte[0];
+        return _publicKey;
     }
 
     @Override
     public void setPublicKey(byte[] publicKey) {
-
+        _publicKey = publicKey;
     }
 
     @Override
     public String getMechanism() {
-        return null;
+        return "RSA";
     }
 
     @Override
