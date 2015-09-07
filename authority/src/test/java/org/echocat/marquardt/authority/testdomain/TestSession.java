@@ -14,6 +14,10 @@ import java.util.Date;
 import java.util.UUID;
 
 public class TestSession implements Session {
+
+    private boolean _valid;
+    private Date _expiredAt;
+
     @Override
     public UUID getUserId() {
         return null;
@@ -36,12 +40,12 @@ public class TestSession implements Session {
 
     @Override
     public Date getExpiresAt() {
-        return null;
+        return _expiredAt;
     }
 
     @Override
     public void setExpiresAt(Date expiresAt) {
-
+        _expiredAt = expiresAt;
     }
 
     @Override
@@ -66,11 +70,11 @@ public class TestSession implements Session {
 
     @Override
     public boolean isValid() {
-        return false;
+        return _valid;
     }
 
     @Override
     public void setValid(boolean valid) {
-
+        _valid = valid;
     }
 }

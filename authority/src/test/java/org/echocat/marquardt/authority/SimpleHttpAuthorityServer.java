@@ -31,46 +31,75 @@ public class SimpleHttpAuthorityServer {
     private final ObjectMapper _objectMapper;
     private final Authority _authority;
 
-    public SimpleHttpAuthorityServer(PrincipalStore<TestUserInfo, TestUser> principalStore, SessionStore sessionStore) throws IOException {
+    public SimpleHttpAuthorityServer(final PrincipalStore<TestUserInfo, TestUser> principalStore, final SessionStore sessionStore) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
         _authority = new PojoAuthority<>(principalStore, sessionStore, TestKeyPairProvider.create());
     }
 
     public void start() throws IOException {
-        _server.createContext("/signup", new SignupHandler());
+        _server.createContext("/signup", new SignupHandler(200));
+        _server.createContext("/signout", new SignoutHandler(204));
         _server.setExecutor(null);
         _server.start();
     }
 
-    public void stop() {
+    public void stop() throws InterruptedException {
         _server.stop(0);
+        Thread.sleep(100L);
     }
 
     class SignupHandler extends Handler {
 
+        public SignupHandler(Integer successResponseCode) {
+            super(successResponseCode);
+        }
+
         @Override
-        String getResponse(InputStream requestBody) throws IOException {
+        String getResponse(final InputStream requestBody) throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
             final JsonWrappedCertificate jsonWrappedCertificate = _authority.signUp(testUserCredentials);
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
         }
     }
 
-    abstract class Handler implements HttpHandler {
+    class SignoutHandler extends Handler {
+        public SignoutHandler(Integer successResponseCode) {
+            super(successResponseCode);
+        }
 
         @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
+        String getResponse(final InputStream requestBody) throws IOException {
+            final JsonWrappedCertificate certificate = _objectMapper.readValue(requestBody, JsonWrappedCertificate.class);
+            _authority.signOut(certificate.getCertificate());
+            return null;
+        }
+    }
+
+    abstract class Handler implements HttpHandler {
+
+        private final Integer _successResponseCode;
+
+        public Handler(Integer successResponseCode) {
+            _successResponseCode = successResponseCode;
+        }
+
+        @Override
+        public void handle(final HttpExchange httpExchange) throws IOException {
             if (!httpExchange.getRequestMethod().equals("POST")) {
                 httpExchange.sendResponseHeaders(405, 0);
             } else if (!"application/json".equals(httpExchange.getRequestHeaders().get("Content-Type").get(0))) {
                 httpExchange.sendResponseHeaders(415, 0);
             }
             String response = getResponse(httpExchange.getRequestBody());
-            httpExchange.sendResponseHeaders(200, response.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            if (response != null) {
+                httpExchange.sendResponseHeaders(_successResponseCode, response.length());
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+            } else {
+                httpExchange.sendResponseHeaders(_successResponseCode, -1);
+            }
         }
 
 
