@@ -9,6 +9,7 @@
 package org.echocat.marquardt.authority;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -24,17 +25,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.Base64;
 
-public class SimpleHttpAuthorityServer {
+public class TestHttpAuthorityServer {
 
     private final HttpServer _server;
     private final ObjectMapper _objectMapper;
     private final Authority _authority;
 
-    public SimpleHttpAuthorityServer(final PrincipalStore<TestUserInfo, TestUser> principalStore, final SessionStore sessionStore) throws IOException {
+    public TestHttpAuthorityServer(final PrincipalStore<TestUserInfo, TestUser> principalStore, final SessionStore sessionStore) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
-        _authority = new PojoAuthority<>(principalStore, sessionStore, TestKeyPairProvider.create());
+        _authority = new Authority<>(principalStore, sessionStore, TestKeyPairProvider.create());
     }
 
     public void start() throws IOException {
@@ -57,7 +59,7 @@ public class SimpleHttpAuthorityServer {
         }
 
         @Override
-        String getResponse(final InputStream requestBody) throws IOException {
+        String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
             final JsonWrappedCertificate jsonWrappedCertificate = _authority.signUp(testUserCredentials);
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
@@ -70,9 +72,9 @@ public class SimpleHttpAuthorityServer {
         }
 
         @Override
-        String getResponse(final InputStream requestBody) throws IOException {
-            final JsonWrappedCertificate certificate = _objectMapper.readValue(requestBody, JsonWrappedCertificate.class);
-            _authority.signOut(certificate.getCertificate());
+        String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
+            final byte[] certificate = Base64.getDecoder().decode(headers.get("X-Certificate").get(0));
+            _authority.signOut(certificate);
             return null;
         }
     }
@@ -82,11 +84,10 @@ public class SimpleHttpAuthorityServer {
         public RefreshHandler(Integer successResponseCode) {
             super(successResponseCode);
         }
-
         @Override
-        String getResponse(InputStream requestBody) throws IOException {
-            final JsonWrappedCertificate certificate = _objectMapper.readValue(requestBody, JsonWrappedCertificate.class);
-            final JsonWrappedCertificate refresh = _authority.refresh(certificate.getCertificate());
+        String getResponse(InputStream requestBody, Headers headers) throws IOException {
+            final byte[] certificate = Base64.getDecoder().decode(headers.get("X-Certificate").get(0));
+            final JsonWrappedCertificate refresh = _authority.refresh(certificate);
             return _objectMapper.writeValueAsString(refresh);
         }
     }
@@ -101,12 +102,12 @@ public class SimpleHttpAuthorityServer {
 
         @Override
         public void handle(final HttpExchange httpExchange) throws IOException {
-            if (!httpExchange.getRequestMethod().equals("POST")) {
+            if (!"POST".equals(httpExchange.getRequestMethod())) {
                 httpExchange.sendResponseHeaders(405, 0);
             } else if (!"application/json".equals(httpExchange.getRequestHeaders().get("Content-Type").get(0))) {
                 httpExchange.sendResponseHeaders(415, 0);
             }
-            String response = getResponse(httpExchange.getRequestBody());
+            String response = getResponse(httpExchange.getRequestBody(), httpExchange.getRequestHeaders());
             if (response != null) {
                 httpExchange.sendResponseHeaders(_successResponseCode, response.length());
                 OutputStream os = httpExchange.getResponseBody();
@@ -118,7 +119,7 @@ public class SimpleHttpAuthorityServer {
         }
 
 
-        abstract String getResponse(InputStream requestBody) throws IOException;
+        abstract String getResponse(InputStream requestBody, Headers headers) throws IOException;
 
     }
 

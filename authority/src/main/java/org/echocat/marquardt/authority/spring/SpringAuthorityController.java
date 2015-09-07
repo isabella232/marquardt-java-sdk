@@ -6,26 +6,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.example;
+package org.echocat.marquardt.authority.spring;
 
-import org.echocat.marquardt.authority.PojoAuthority;
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
-import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
+import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
+import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.common.ContentSigner;
+import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.domain.Principal;
+import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
-import org.echocat.marquardt.example.domain.User;
-import org.echocat.marquardt.example.domain.UserCredentials;
-import org.echocat.marquardt.example.domain.UserInfo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -36,39 +34,36 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-@Controller
-@RequestMapping("/auth")
-public class AuthenticationController {
+public abstract class SpringAuthorityController<SIGNABLE extends Signable, PRINCIPAL extends Principal, CREDENTIALS extends Credentials> {
 
     private final SessionStore _sessionStore;
     private final ContentSigner _contentSigner;
     private final PasswordEncoder _passwordEncoder;
     private final KeyPairProvider _issuerKeyProvider;
 
-    private PrincipalStore<UserInfo, User> _principalStore;
-    private PojoAuthority<UserInfo, User> _authority;
+    private PrincipalStore<SIGNABLE, PRINCIPAL> _principalStore;
+    private Authority<SIGNABLE, PRINCIPAL> _authority;
 
-    @Autowired
-    public AuthenticationController(final SessionStore sessionStore, final ContentSigner contentSigner, final PasswordEncoder passwordEncoder, final KeyPairProvider issuerKeyProvider, PrincipalStore<UserInfo, User> principalStore) {
+    public SpringAuthorityController(final SessionStore sessionStore, final ContentSigner contentSigner, final PasswordEncoder passwordEncoder, final KeyPairProvider issuerKeyProvider, PrincipalStore<SIGNABLE, PRINCIPAL> principalStore) {
         _sessionStore = sessionStore;
         _contentSigner = contentSigner;
         _passwordEncoder = passwordEncoder;
         _issuerKeyProvider = issuerKeyProvider;
         _principalStore = principalStore;
-        _authority = new PojoAuthority<>(_principalStore, _sessionStore, _issuerKeyProvider);
+        _authority = new Authority<>(_principalStore, _sessionStore, _issuerKeyProvider);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.CREATED)
     @ResponseBody
-    public JsonWrappedCertificate signUp(@RequestBody final UserCredentials userCredentials) {
-        return _authority.signUp(userCredentials);
+    public JsonWrappedCertificate signUp(@RequestBody final CREDENTIALS credentials) {
+        return _authority.signUp(credentials);
     }
 
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
     @ResponseBody
-    public JsonWrappedCertificate signIn(@RequestBody final UserCredentials userCredentials) {
-        return _authority.signIn(userCredentials);
+    public JsonWrappedCertificate signIn(@RequestBody final CREDENTIALS credentials) {
+        return _authority.signIn(credentials);
     }
 
     @RequestMapping(value = "/refresh", method = RequestMethod.POST)

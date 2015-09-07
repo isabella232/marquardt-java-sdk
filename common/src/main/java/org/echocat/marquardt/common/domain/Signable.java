@@ -10,7 +10,6 @@ package org.echocat.marquardt.common.domain;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 

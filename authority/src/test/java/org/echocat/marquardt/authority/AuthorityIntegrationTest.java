@@ -21,9 +21,7 @@ import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,7 +45,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PojoAuthorityIntegrationTest {
+public class AuthorityIntegrationTest {
 
     private static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "fgfdg", TestKeyPairProvider.create().getPublicKey());
     private static final TestUser TEST_USER = new TestUser();
@@ -55,7 +54,7 @@ public class PojoAuthorityIntegrationTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final long SIXTY_DAYS = 1000 * 60 * 60 * 24 * 60;
-    private SimpleHttpAuthorityServer _simpleHttpAuthorityServer;
+    private TestHttpAuthorityServer _testHttpAuthorityServer;
 
     private final ObjectMapper _objectMapper = new ObjectMapper();
 
@@ -71,8 +70,8 @@ public class PojoAuthorityIntegrationTest {
 
     @Before
     public void setup() throws IOException {
-        _simpleHttpAuthorityServer = new SimpleHttpAuthorityServer(_principalStore, _sessionStore);
-        _simpleHttpAuthorityServer.start();
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(_principalStore, _sessionStore);
+        _testHttpAuthorityServer.start();
         _validSession = createTestSession();
     }
 
@@ -122,11 +121,11 @@ public class PojoAuthorityIntegrationTest {
     }
 
     private void givenSignoutCall() throws Exception {
-        doPost("http://localhost:8000/signout", new JsonWrappedCertificate(CERTIFICATE));
+        doPost("http://localhost:8000/signout", null);
     }
 
-    private void givenRefreshCall() throws Exception{
-        doPost("http://localhost:8000/refresh", new JsonWrappedCertificate(CERTIFICATE));
+    private void givenRefreshCall() throws Exception {
+        doPost("http://localhost:8000/refresh", null);
     }
 
     private void whenCallingAuthority() throws IOException {
@@ -148,18 +147,19 @@ public class PojoAuthorityIntegrationTest {
         assertThat(_status, is(204));
     }
 
-    private void doPost(String url, Object content) throws Exception{
+    private void doPost(String url, Object content) throws Exception {
         final URL urlToPost = new URL(url);
         _connection = (HttpURLConnection) urlToPost.openConnection();
         _connection.setRequestMethod("POST");
         _connection.setRequestProperty("Content-Type", "application/json");
+        _connection.setRequestProperty("X-Certificate", Base64.getEncoder().encodeToString(CERTIFICATE));
         _connection.setDoOutput(true);
         _objectMapper.writeValue(_connection.getOutputStream(), content);
     }
 
     @After
     public void teardown() throws InterruptedException {
-        _simpleHttpAuthorityServer.stop();
+        _testHttpAuthorityServer.stop();
     }
 
     private static TestSession createTestSession() {
