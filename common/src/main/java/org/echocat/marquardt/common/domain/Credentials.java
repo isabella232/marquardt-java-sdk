@@ -13,7 +13,7 @@ import java.security.PublicKey;
 /**
  * Used to transport credentials for SignIn and SignUp from Client to Authority.
  *
- * Please make sure passwords are crypted or use secure transport channels. *
+ * Please make sure passwords are crypted or use secure transport channels.
  */
 public interface Credentials {
 

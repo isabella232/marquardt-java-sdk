@@ -84,7 +84,7 @@ public abstract class AbstractSsoIntegrationTest {
 
     @Before
     public void setup() {
-        _client = new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _clientKeyProvider.getPrivateKey(), _trustedKeysProvider.getPublicKeys());
+        _client = new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _clientKeyProvider, _trustedKeysProvider.getPublicKeys());
     }
 
     @After

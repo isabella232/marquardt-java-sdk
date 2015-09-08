@@ -15,7 +15,9 @@ import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.SignatureHeaders;
@@ -32,7 +34,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
 import java.util.List;
@@ -48,17 +49,17 @@ public class SpringClient<T extends Signable> implements Client<T> {
 
     private final RequestSigner _requestSigner = new RequestSigner();
 
-    private final PrivateKey _privateKey;
+    private final KeyPairProvider _clientKeyProvider;
     private DateProvider _dateProvider = new DateProvider();
     private byte[] _certificate;
 
     public SpringClient(final String baseUri,
                         final DeserializingFactory<T> deserializingFactory,
-                        final PrivateKey privateKey,
+                        final KeyPairProvider clientKeyProvider,
                         final List<PublicKey> trustedKeys) {
         _baseUri = baseUri;
         _deserializingFactory = deserializingFactory;
-        _privateKey = privateKey;
+        _clientKeyProvider = clientKeyProvider;
         _authorizedRestTemplate.getInterceptors().add(
                 new ClientHttpRequestInterceptor() {
                     @Override
@@ -68,7 +69,7 @@ public class SpringClient<T extends Signable> implements Client<T> {
                         HttpHeaders headers = httpRequest.getHeaders();
                         headers.add(SignatureHeaders.CONTENT.getHeaderName(), Base64.getEncoder().encodeToString(Md5Creator.create(bytes)));
                         headers.add(SignatureHeaders.X_CERTIFICATE.getHeaderName(), new String(Base64.getEncoder().encode(_certificate)));
-                        headers.add("X-Signature", new String(_requestSigner.getSignature(httpRequest, _privateKey)));
+                        headers.add("X-Signature", new String(_requestSigner.getSignature(httpRequest, _clientKeyProvider.getPrivateKey())));
                         return clientHttpRequestExecution.execute(httpRequest, bytes);
                     }
                 });
@@ -101,6 +102,9 @@ public class SpringClient<T extends Signable> implements Client<T> {
 
     private Certificate<T> extractCertificateFrom(ResponseEntity<JsonWrappedCertificate> response) {
         Certificate<T> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(response.getBody().getCertificate());
+        if (!deserializedCertificate.getClientPublicKey().equals(_clientKeyProvider.getPublicKey())) {
+            throw new InvalidCertificateException("certificate key does not match my public key");
+        }
         _certificate = response.getBody().getCertificate();
         return deserializedCertificate;
     }

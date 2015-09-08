@@ -17,12 +17,13 @@ import java.util.Base64;
 
 public class PublicKeySerializer extends com.fasterxml.jackson.databind.JsonSerializer<PublicKey> {
 
+    public static final String KEY = "key";
+
     @Override
     public void serialize(final PublicKey publicKey, final JsonGenerator jsonGenerator, final com.fasterxml.jackson.databind.SerializerProvider serializerProvider) throws IOException {
-        // TODO! Please transport like in the certificate.
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
         jsonGenerator.writeStartObject();
-        jsonGenerator.writeBinaryField("key", Base64.getEncoder().encode(publicKeyWithMechanism.getContent()));
+        jsonGenerator.writeBinaryField(KEY, Base64.getEncoder().encode(publicKeyWithMechanism.getContent()));
         jsonGenerator.writeEndObject();
     }
 }
