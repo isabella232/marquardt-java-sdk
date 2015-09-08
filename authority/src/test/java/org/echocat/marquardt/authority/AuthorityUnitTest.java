@@ -12,13 +12,13 @@ import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
 import org.echocat.marquardt.authority.exceptions.NoSessionFoundException;
+import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
-import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.junit.Before;
@@ -48,6 +48,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     private JsonWrappedCertificate _certificate;
 
     @Before
+    @Override
     public void setup() throws Exception {
         final KeyPairProvider keyPairProvider = TestKeyPairProvider.create();
         when(_issuerKeyProvider.getPrivateKey()).thenReturn(keyPairProvider.getPrivateKey());
@@ -56,11 +57,18 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     @Test
-    public void shouldSignUpUserWhenUserNotExistsInStore() throws Exception {
+    public void shouldSignUpUser() throws Exception {
         givenUserDoesNotExist();
         whenSigningUp();
         thenUserIsStored();
         thenCertificateIsMade();
+    }
+
+    @Test(expected = CertificateCreationException.class)
+    public void shouldThrowCertificateCreationExceptionWhenSignupAndSignableSerializationFails() throws Exception {
+        givenUserDoesNotExist();
+        givenSignableThrowingException();
+        whenSigningUp();
     }
 
     @Test(expected = UserExistsException.class)
@@ -70,12 +78,20 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     @Test
-    public void shouldSigninUserWhenCredentialsAreCorrectAndUserExistsIsStore() throws Exception {
+    public void shouldSigninUser() throws Exception {
         givenUserExists();
         givenNoExistingSession();
         whenSigningIn();
         thenSessionIsCreated();
         thenCertificateIsMade();
+    }
+
+    @Test(expected = CertificateCreationException.class)
+    public void shouldThrowCerificateCreationFailedExceptionWhenSigningInButPayloadCannotBeSigned() throws Exception {
+        givenUserExists();
+        givenNoExistingSession();
+        givenSignableThrowingException();
+        whenSigningIn();
     }
 
     @Test(expected = LoginFailedException.class)
@@ -105,6 +121,14 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenRefreshingCertificate();
         thenSessionIsUpdated();
         thenCertificateIsMade();
+    }
+
+    @Test(expected = CertificateCreationException.class)
+    public void shouldThrowCertificateCreationFailedExceptionWhenRefreshingInButPayloadCannotBeSigned() throws Exception {
+        givenUserExists();
+        givenExistingSession();
+        givenSignableThrowingException();
+        whenRefreshingCertificate();
     }
 
     @Test(expected = NoSessionFoundException.class)
@@ -149,6 +173,10 @@ public class AuthorityUnitTest extends AuthorityTest {
         givenUserExists();
         givenNoExistingSession();
         whenSigningOut();
+    }
+
+    private void givenSignableThrowingException() {
+        when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
     }
 
     private void whenSigningInWithWrongPassword() {
