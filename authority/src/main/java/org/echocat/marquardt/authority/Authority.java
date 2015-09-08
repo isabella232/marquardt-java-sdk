@@ -8,9 +8,8 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.persistence.PrincipalStore;
-import org.echocat.marquardt.common.domain.Principal;
+import org.echocat.marquardt.authority.domain.Principal;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;

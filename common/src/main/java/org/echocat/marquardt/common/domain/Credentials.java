@@ -10,11 +10,32 @@ package org.echocat.marquardt.common.domain;
 
 import java.security.PublicKey;
 
+/**
+ * Used to transport credentials for SignIn and SignUp from Client to Authority.
+ *
+ * Please make sure passwords are crypted or use secure transport channels. *
+ */
 public interface Credentials {
 
+    /**
+     * Unique identifier of the Principal / User.
+     *
+     * @return unique identifier
+     */
     String getIdentifier();
 
+    /**
+     * Password of Principal / User. Make sure this is crypted or sent via a secure channel.
+     *
+     * @return password of principal
+     */
     String getPassword();
 
+    /**
+     * Public key of the client which sent the credentials.
+     *
+     * @see KeyPairProvider
+     * @return public key of the client used to signup / signin.
+     */
     PublicKey getPublicKey();
 }

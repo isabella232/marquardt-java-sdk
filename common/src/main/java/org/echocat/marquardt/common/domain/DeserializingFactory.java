@@ -13,9 +13,21 @@ import javax.annotation.WillNotClose;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Factory capable of deserializing a specific Signable.
+ *
+ * @param <T> Signable this factory can deserialize.
+ */
 @FunctionalInterface
 public interface DeserializingFactory<T extends Signable> {
 
+    /**
+     * Deserializes Signable from bytes of an input stream.
+     *
+     * @param in Input stream to read.
+     * @return A deserialized Signable.
+     * @throws IOException That happens while reading input stream.
+     */
     @Nonnull
     T consume(@Nonnull @WillNotClose InputStream in) throws IOException;
 

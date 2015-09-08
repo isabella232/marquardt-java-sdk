@@ -17,8 +17,22 @@ import java.util.Date;
 import static org.echocat.marquardt.common.util.InputStreamUtils.readByte;
 import static org.echocat.marquardt.common.util.InputStreamUtils.readLong;
 
+/**
+ * Extend this to enable deserialization of your wrapped Signable.
+ *
+ * Used to deserialize Certificates from Bytes.
+ *
+ * @param <T> Class of wrapped payload, for example additional user information to use on clents and services.
+ */
 public abstract class CertificateFactory<T extends Signable> implements DeserializingFactory<Certificate<T>> {
 
+    /**
+     * Provides the factory to deserialize the wrapped content.
+     *
+     * @return Factory capable of deserializing wrapped content.
+     *
+     * @see DeserializingFactory
+     */
     protected abstract DeserializingFactory<T> getFactoryOfWrapped();
 
     @Nonnull
