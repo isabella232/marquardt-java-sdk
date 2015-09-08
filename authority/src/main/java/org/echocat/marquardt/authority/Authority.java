@@ -8,24 +8,24 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.Authority;
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
-import org.echocat.marquardt.common.domain.Principal;
 import org.echocat.marquardt.authority.domain.Session;
-import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
-import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.authority.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.common.ContentSigner;
+import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.domain.Principal;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.util.DateProvider;
 
 import java.io.IOException;
 import java.security.PublicKey;
@@ -38,8 +38,11 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
 
     private final PrincipalStore<SIGNABLE, PRINCIPAL> _principalStore;
     private final SessionStore _sessionStore;
-    private final ContentSigner _contentSigner = new ContentSigner();
+    private final Signer _signer = new Signer();
     private final KeyPairProvider _issuerKeyProvider;
+
+
+    private DateProvider _dateProvider = new DateProvider();
 
     public Authority(PrincipalStore<SIGNABLE, PRINCIPAL> principalStore, SessionStore sessionStore, KeyPairProvider issuerKeyProvider) {
         _principalStore = principalStore;
@@ -61,7 +64,7 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
         if (principal.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), new Date(), true)) {
+            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now(), true)) {
                 throw new AlreadyLoggedInException();
             } else {
                 return createCertificateAndSession(credentials, principal);
@@ -91,6 +94,10 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
 
     }
 
+    public void setDateProvider(DateProvider dateProvider) {
+        _dateProvider = dateProvider;
+    }
+
     private JsonWrappedCertificate createCertificateAndSession(final Credentials credentials, final PRINCIPAL principal) {
         final byte[] certificate;
         try {
@@ -109,7 +116,7 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
     private byte[] createCertificate(final PRINCIPAL principal, final PublicKey clientPublicKey) throws IOException {
         SIGNABLE signable = _principalStore.createSignableFromPrincipal(principal);
         final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, principal.getRoles(), signable);
-        return _contentSigner.sign(certificate, _issuerKeyProvider.getPrivateKey());
+        return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }
 
     private PublicKey clientPublicKeyFrom(final Session session) {
@@ -118,7 +125,7 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
 
     private Session getSessionBasedOnValidCertificate(final byte[] certificateBytes) {
         final Session session = _sessionStore.findByCertificate(certificateBytes).orElseThrow(NoSessionFoundException::new);
-        if (!session.isValid() || session.getExpiresAt().before(new Date())) {
+        if (!session.isValid() || session.getExpiresAt().before(_dateProvider.now())) {
             throw new InvalidSessionException();
         }
         return session;
@@ -137,6 +144,6 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
     }
 
     private Date nowPlus60Days() {
-        return new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(60));
+        return new Date(_dateProvider.now().getTime() + TimeUnit.DAYS.toMillis(60));
     }
 }

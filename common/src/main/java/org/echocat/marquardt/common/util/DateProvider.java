@@ -6,11 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.service.api;
+package org.echocat.marquardt.common.util;
 
 import java.util.Date;
 
-public interface DateProvider {
+public class DateProvider {
 
-    public Date now();
+    public Date now() {
+        return new Date();
+    }
 }

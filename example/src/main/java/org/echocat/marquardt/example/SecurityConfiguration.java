@@ -8,33 +8,41 @@
 
 package org.echocat.marquardt.example;
 
+import org.echocat.marquardt.common.CertificateValidator;
+import org.echocat.marquardt.example.domain.UserInfo;
+import org.echocat.marquardt.service.security.CertificateAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-//    @Autowired
-//    private ClientSignedContentValidator<UserInfo> _clientSignedContentValidator;
+    @Autowired
+    private CertificateValidator<UserInfo> _certificateValidator;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
-//                .antMatchers("/fakeservice/someProtectedResource**").authenticated()
-                .antMatchers("/**").permitAll();
+                .antMatchers("/exampleservice/someProtectedResource**").authenticated()
+                .antMatchers("/**").permitAll()
+                .and()
+                .addFilterBefore(certificateAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
-//    private CertificateAuthenticationFilter certificateAuthenticationFilter() {
-//        return new CertificateAuthenticationFilter<UserInfo>(_clientSignedContentValidator) {
-//            @Override
-//            protected String getUserName(UserInfo userInfo) {
-//                return userInfo.getUserId().toString();
-//            }
-//        };
-//    }
+    @Autowired
+    private CertificateAuthenticationFilter<UserInfo> certificateAuthenticationFilter() {
+        return new CertificateAuthenticationFilter<UserInfo>(_certificateValidator) {
+            @Override
+            protected String getUserName(UserInfo userInfo) {
+                return userInfo.getUserId().toString();
+            }
+        };
+    }
 
 }

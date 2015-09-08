@@ -10,7 +10,7 @@ package org.echocat.marquardt.client.spring;
 
 import com.google.common.primitives.Ints;
 import org.apache.commons.io.IOUtils;
-import org.echocat.marquardt.common.ContentSigner;
+import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.web.SignatureHeaders;
 import org.springframework.http.HttpRequest;
 
@@ -22,13 +22,13 @@ import java.util.List;
 
 public class RequestSigner {
 
-    public final ContentSigner _contentSigner = new ContentSigner();
+    public final Signer _signer = new Signer();
 
     public byte[] getSignature(HttpRequest request, PrivateKey keyToSignWith) throws IOException {
         ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream();
         try {
             writeRequestTo(request, bytesToSign);
-            return Base64.getEncoder().encode(_contentSigner.signatureOf(bytesToSign.toByteArray(), keyToSignWith));
+            return Base64.getEncoder().encode(_signer.signatureOf(bytesToSign.toByteArray(), keyToSignWith));
         } finally {
             IOUtils.closeQuietly(bytesToSign);
         }

@@ -52,6 +52,11 @@
             <artifactId>client</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.echocat.marquardt</groupId>
+            <artifactId>service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

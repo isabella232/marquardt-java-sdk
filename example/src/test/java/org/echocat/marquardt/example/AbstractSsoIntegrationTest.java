@@ -10,7 +10,7 @@ package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.spring.SpringClient;
-import org.echocat.marquardt.common.ContentSigner;
+import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
@@ -45,7 +45,7 @@ public abstract class AbstractSsoIntegrationTest {
     @Autowired
     private TrustedKeysProvider _trustedKeysProvider;
 
-    ContentSigner _clientContentSigner = new ContentSigner();
+    Signer _clientSigner = new Signer();
     @Autowired
     private UserRepository _userRepository;
     @Autowired
@@ -84,7 +84,7 @@ public abstract class AbstractSsoIntegrationTest {
 
     @Before
     public void setup() {
-        _client = new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _clientKeyProvider.getPrivateKey());
+        _client = new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _clientKeyProvider.getPrivateKey(), _trustedKeysProvider.getPublicKeys());
     }
 
     @After

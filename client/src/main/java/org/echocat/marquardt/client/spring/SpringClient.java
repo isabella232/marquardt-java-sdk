@@ -8,15 +8,15 @@
 
 package org.echocat.marquardt.client.spring;
 
-import com.google.common.base.Function;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
 import org.echocat.marquardt.client.util.ResponseStatusTranslation;
-import org.echocat.marquardt.common.ContentValidator;
+import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.util.DateProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.SignatureHeaders;
 import org.springframework.http.HttpEntity;
@@ -31,11 +31,11 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
+import java.util.List;
 
 public class SpringClient<T extends Signable> implements Client<T> {
 
@@ -44,15 +44,18 @@ public class SpringClient<T extends Signable> implements Client<T> {
     private final String _baseUri;
     private final DeserializingFactory<T> _deserializingFactory;
 
-    private final ContentValidator _signedContentValidator = new ContentValidator();
+    private final CertificateValidator<T> _certificateValidator;
+
     private final RequestSigner _requestSigner = new RequestSigner();
 
     private final PrivateKey _privateKey;
+    private DateProvider _dateProvider = new DateProvider();
     private byte[] _certificate;
 
     public SpringClient(final String baseUri,
                         final DeserializingFactory<T> deserializingFactory,
-                        final PrivateKey privateKey) {
+                        final PrivateKey privateKey,
+                        final List<PublicKey> trustedKeys) {
         _baseUri = baseUri;
         _deserializingFactory = deserializingFactory;
         _privateKey = privateKey;
@@ -69,6 +72,16 @@ public class SpringClient<T extends Signable> implements Client<T> {
                         return clientHttpRequestExecution.execute(httpRequest, bytes);
                     }
                 });
+        _certificateValidator = new CertificateValidator<T>(_dateProvider, trustedKeys) {
+            @Override
+            protected DeserializingFactory<T> getDeserializingFactory() {
+                return _deserializingFactory;
+            }
+        };
+    }
+
+    public void setDateProvider(DateProvider dateProvider) {
+        _dateProvider = dateProvider;
     }
 
     @Override
@@ -84,6 +97,12 @@ public class SpringClient<T extends Signable> implements Client<T> {
         } else {
             return null;
         }
+    }
+
+    private Certificate<T> extractCertificateFrom(ResponseEntity<JsonWrappedCertificate> response) {
+        Certificate<T> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(response.getBody().getCertificate());
+        _certificate = response.getBody().getCertificate();
+        return deserializedCertificate;
     }
 
     @Override
@@ -126,9 +145,9 @@ public class SpringClient<T extends Signable> implements Client<T> {
 
     @Override
     public <REQUEST, RESPONSE> RESPONSE sendSignedPayloadTo(final String url,
-                                                                            final String httpMethod,
-                                                                            final REQUEST payload,
-                                                                            final Class<RESPONSE> responseType) {
+                                                            final String httpMethod,
+                                                            final REQUEST payload,
+                                                            final Class<RESPONSE> responseType) {
         try {
             final ResponseEntity<RESPONSE> exchange =
                     _authorizedRestTemplate.exchange(
@@ -139,14 +158,4 @@ public class SpringClient<T extends Signable> implements Client<T> {
         }
     }
 
-    private Certificate<T> extractCertificateFrom(ResponseEntity<JsonWrappedCertificate> response) throws IOException {
-        _certificate = response.getBody().getCertificate();
-        return _signedContentValidator.deserializeCertificateAndValidateSignature(_certificate, _deserializingFactory, new Function<Certificate<T>, PublicKey>() {
-            @Nullable
-            @Override
-            public PublicKey apply(final Certificate<T> certificate) {
-                return certificate.getIssuerPublicKey();
-            }
-        });
-    }
 }

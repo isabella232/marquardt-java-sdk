@@ -12,7 +12,7 @@ import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
 import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.common.ContentSigner;
+import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
@@ -37,16 +37,16 @@ import java.io.IOException;
 public abstract class SpringAuthorityController<SIGNABLE extends Signable, PRINCIPAL extends Principal, CREDENTIALS extends Credentials> {
 
     private final SessionStore _sessionStore;
-    private final ContentSigner _contentSigner;
+    private final Signer _signer;
     private final PasswordEncoder _passwordEncoder;
     private final KeyPairProvider _issuerKeyProvider;
 
     private PrincipalStore<SIGNABLE, PRINCIPAL> _principalStore;
     private Authority<SIGNABLE, PRINCIPAL> _authority;
 
-    public SpringAuthorityController(final SessionStore sessionStore, final ContentSigner contentSigner, final PasswordEncoder passwordEncoder, final KeyPairProvider issuerKeyProvider, PrincipalStore<SIGNABLE, PRINCIPAL> principalStore) {
+    public SpringAuthorityController(final SessionStore sessionStore, final Signer signer, final PasswordEncoder passwordEncoder, final KeyPairProvider issuerKeyProvider, PrincipalStore<SIGNABLE, PRINCIPAL> principalStore) {
         _sessionStore = sessionStore;
-        _contentSigner = contentSigner;
+        _signer = signer;
         _passwordEncoder = passwordEncoder;
         _issuerKeyProvider = issuerKeyProvider;
         _principalStore = principalStore;

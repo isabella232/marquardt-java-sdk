@@ -11,7 +11,7 @@ package org.echocat.marquardt.example;
 import org.echocat.marquardt.authority.spring.SpringAuthorityController;
 import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.common.ContentSigner;
+import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.example.domain.User;
 import org.echocat.marquardt.example.domain.UserCredentials;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ExampleAuthorityController extends SpringAuthorityController<UserInfo, User, UserCredentials> {
 
     @Autowired
-    public ExampleAuthorityController(SessionStore sessionStore, ContentSigner contentSigner, PasswordEncoder passwordEncoder, KeyPairProvider issuerKeyProvider, PrincipalStore<UserInfo, User> principalStore) {
-        super(sessionStore, contentSigner, passwordEncoder, issuerKeyProvider, principalStore);
+    public ExampleAuthorityController(SessionStore sessionStore, Signer signer, PasswordEncoder passwordEncoder, KeyPairProvider issuerKeyProvider, PrincipalStore<UserInfo, User> principalStore) {
+        super(sessionStore, signer, passwordEncoder, issuerKeyProvider, principalStore);
     }
 }

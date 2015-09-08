@@ -8,7 +8,13 @@
 
 package org.echocat.marquardt.example;
 
-import org.echocat.marquardt.common.ContentSigner;
+import org.echocat.marquardt.common.CertificateValidator;
+import org.echocat.marquardt.common.Signer;
+import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.domain.TrustedKeysProvider;
+import org.echocat.marquardt.common.util.DateProvider;
+import org.echocat.marquardt.example.domain.UserInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -25,13 +31,24 @@ public class ExampleApplication {
     }
 
     @Bean
-    public ContentSigner contentSigner() {
-        return new ContentSigner();
+    public Signer contentSigner() {
+        return new Signer();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Autowired
+    public CertificateValidator<UserInfo> clientSignedContentValidator(TrustedKeysProvider keysProvider) {
+        return new CertificateValidator<UserInfo>(new DateProvider(), keysProvider.getPublicKeys()) {
+            @Override
+            protected DeserializingFactory<UserInfo> getDeserializingFactory() {
+                return UserInfo.FACTORY;
+            }
+        };
     }
 
 }

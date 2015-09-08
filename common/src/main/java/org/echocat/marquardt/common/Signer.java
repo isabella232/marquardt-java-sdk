@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.PrivateKey;
 
-public class ContentSigner {
+public class Signer {
 
     public byte[] sign(final Signable signable, final PrivateKey privateKey) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
