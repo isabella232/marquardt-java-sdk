@@ -61,7 +61,7 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
         if (principal.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), new Date(), true)) {
+            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), new Date())) {
                 throw new AlreadyLoggedInException();
             } else {
                 return createCertificateAndSession(credentials, principal);

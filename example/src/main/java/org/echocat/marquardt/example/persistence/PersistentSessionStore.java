@@ -35,8 +35,8 @@ public class PersistentSessionStore implements SessionStore {
     }
 
     @Override
-    public boolean isActiveAndValidSessionExists(UUID userId, byte[] publicKey, Date expiresAt, boolean valid) {
-        return _sessionRepository.countByUserIdAndPublicKeyAndExpiresAtGreaterThanAndValid(userId, publicKey, expiresAt, valid) > 0;
+    public boolean isActiveAndValidSessionExists(UUID userId, byte[] publicKey, Date expiresAt) {
+        return _sessionRepository.countByUserIdAndPublicKeyAndExpiresAtGreaterThanAndValid(userId, publicKey, expiresAt, true) > 0;
     }
 
     @Override

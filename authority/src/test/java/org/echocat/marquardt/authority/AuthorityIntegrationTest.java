@@ -11,20 +11,12 @@ package org.echocat.marquardt.authority;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
 import org.apache.commons.io.Charsets;
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
-import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.testdomain.TestSession;
-import org.echocat.marquardt.authority.testdomain.TestUser;
-import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
-import org.echocat.marquardt.authority.testdomain.TestUserInfo;
-import org.echocat.marquardt.common.TestKeyPairProvider;
-import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -33,10 +25,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Base64;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -46,34 +34,21 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AuthorityIntegrationTest {
+public class AuthorityIntegrationTest extends AuthorityTest {
 
-    private static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "fgfdg", TestKeyPairProvider.create().getPublicKey());
-    private static final TestUser TEST_USER = new TestUser();
-    private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
-    private static final byte[] CERTIFICATE = new byte[0];
-
-    private static final UUID USER_ID = UUID.randomUUID();
     private TestHttpAuthorityServer _testHttpAuthorityServer;
 
     private final ObjectMapper _objectMapper = new ObjectMapper();
 
-    @Mock
-    PrincipalStore<TestUserInfo, TestUser> _principalStore;
-    @Mock
-    SessionStore _sessionStore;
-
     private HttpURLConnection _connection;
-    private TestSession _validSession;
     private String _response;
     private int _status;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws Exception{
         _testHttpAuthorityServer = new TestHttpAuthorityServer(_principalStore, _sessionStore);
         _testHttpAuthorityServer.start();
-        _validSession = createTestSession();
-        when(_sessionStore.create()).thenReturn(createTestSession());
+        super.setup();
     }
 
     @Test
@@ -107,22 +82,6 @@ public class AuthorityIntegrationTest {
         givenRefreshCall();
         whenCallingAuthority();
         thenSignedCertificateIsProduced();
-    }
-
-    private void givenUserExists() {
-        when(_principalStore.getPrincipalByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
-        when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(TEST_USER_INFO);
-        when(_principalStore.getPrincipalFromCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
-    }
-
-    private void givenExistingSession() {
-        when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.of(_validSession));
-    }
-
-    private void givenUserDoesNotExist() {
-        when(_principalStore.getPrincipalFromCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
-        when(_principalStore.createPrincipalFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
-        when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 
     private void givenSignupCall() throws Exception {
@@ -173,15 +132,6 @@ public class AuthorityIntegrationTest {
     @After
     public void teardown() throws InterruptedException {
         _testHttpAuthorityServer.stop();
-    }
-
-    private static TestSession createTestSession() {
-        final TestSession testSession = new TestSession();
-        testSession.setValid(true);
-        testSession.setExpiresAt(new Date(new Date().getTime() + TimeUnit.DAYS.toMillis(60)));
-        testSession.setUserId(USER_ID);
-        testSession.setPublicKey(TestKeyPairProvider.create().getPublicKey().getEncoded());
-        return testSession;
     }
 
 

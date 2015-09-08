@@ -19,7 +19,7 @@ public interface SessionStore {
 
     Optional<Session> findByCertificate(byte[] certificate);
 
-    boolean isActiveAndValidSessionExists(UUID userId, byte[] publicKey, Date expiresAt, boolean valid);
+    boolean isActiveAndValidSessionExists(UUID userId, byte[] publicKey, Date expiresAt);
 
     Session save(Session session);
 

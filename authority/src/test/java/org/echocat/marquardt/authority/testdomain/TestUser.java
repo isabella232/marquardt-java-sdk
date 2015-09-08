@@ -25,7 +25,7 @@ public class TestUser implements Principal{
 
     @Override
     public boolean passwordMatches(String password) {
-        return true;
+        return "right".equals(password);
     }
 
     @Override
