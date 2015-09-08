@@ -14,7 +14,4 @@ public class NoSessionFoundException extends RuntimeException {
         super();
     }
 
-    public NoSessionFoundException(String message) {
-        super(message);
-    }
 }

@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.authority;
 
+import org.echocat.marquardt.authority.domain.Principal;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
@@ -19,7 +20,6 @@ import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
-import org.echocat.marquardt.common.domain.Principal;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -64,7 +64,7 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
         if (principal.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now(), true)) {
+            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
                 throw new AlreadyLoggedInException();
             } else {
                 return createCertificateAndSession(credentials, principal);

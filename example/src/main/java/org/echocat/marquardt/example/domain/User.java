@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.example.domain;
 
-import org.echocat.marquardt.common.domain.Principal;
+import org.echocat.marquardt.authority.domain.Principal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

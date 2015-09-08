@@ -11,8 +11,18 @@ package org.echocat.marquardt.common.domain;
 import java.security.PublicKey;
 import java.util.List;
 
+/**
+ * Clients and services must trust the key(s) used by the authority. This enables services to trust a certificate
+ * without asking the authority on each received certificate.
+ *
+ * @see KeyPairProvider
+ */
 public interface TrustedKeysProvider {
 
+    /**
+     *
+     * @return A list of all keys a client or service trusts. Must contain the current authority's public key.
+     */
     List<PublicKey> getPublicKeys();
 
 }

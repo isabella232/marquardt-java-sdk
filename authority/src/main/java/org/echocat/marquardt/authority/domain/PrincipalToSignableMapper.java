@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.authority.domain;
 
-import org.echocat.marquardt.common.domain.Principal;
 import org.echocat.marquardt.common.domain.Signable;
 
 public interface PrincipalToSignableMapper<SIGNABLE extends Signable, PRINCIPAL extends Principal> {

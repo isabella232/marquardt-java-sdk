@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.authority.testdomain;
 
-import org.echocat.marquardt.common.domain.Principal;
+import org.echocat.marquardt.authority.domain.Principal;
 
 import java.util.UUID;
 
@@ -25,7 +25,7 @@ public class TestUser implements Principal{
 
     @Override
     public boolean passwordMatches(String password) {
-        return true;
+        return "right".equals(password);
     }
 
     @Override
