@@ -36,6 +36,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -53,7 +54,6 @@ public class AuthorityIntegrationTest {
     private static final byte[] CERTIFICATE = new byte[0];
 
     private static final UUID USER_ID = UUID.randomUUID();
-    private static final long SIXTY_DAYS = 1000 * 60 * 60 * 24 * 60;
     private TestHttpAuthorityServer _testHttpAuthorityServer;
 
     private final ObjectMapper _objectMapper = new ObjectMapper();
@@ -73,12 +73,21 @@ public class AuthorityIntegrationTest {
         _testHttpAuthorityServer = new TestHttpAuthorityServer(_principalStore, _sessionStore);
         _testHttpAuthorityServer.start();
         _validSession = createTestSession();
+        when(_sessionStore.create()).thenReturn(createTestSession());
+    }
+
+    @Test
+    public void shouldSignupUserWithCorrectCredentials() throws Exception {
+        givenSignupCall();
+        givenUserDoesNotExist();
+        whenCallingAuthority();
+        thenSignedCertificateIsProduced();
     }
 
     @Test
     public void shouldSigninUserWithCorrectCredentials() throws Exception {
-        givenSignupCall();
-        givenUserDoesNotExist();
+        givenUserExists();
+        givenSigninCall();
         whenCallingAuthority();
         thenSignedCertificateIsProduced();
     }
@@ -103,6 +112,7 @@ public class AuthorityIntegrationTest {
     private void givenUserExists() {
         when(_principalStore.getPrincipalByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
         when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(_principalStore.getPrincipalFromCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
     }
 
     private void givenExistingSession() {
@@ -113,7 +123,6 @@ public class AuthorityIntegrationTest {
         when(_principalStore.getPrincipalFromCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
         when(_principalStore.createPrincipalFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
         when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(TEST_USER_INFO);
-        when(_sessionStore.create()).thenReturn(createTestSession());
     }
 
     private void givenSignupCall() throws Exception {
@@ -122,6 +131,10 @@ public class AuthorityIntegrationTest {
 
     private void givenSignoutCall() throws Exception {
         doPost("http://localhost:8000/signout", null);
+    }
+
+    private void givenSigninCall() throws Exception {
+        doPost("http://localhost:8000/signin", TEST_USER_CREDENTIALS);
     }
 
     private void givenRefreshCall() throws Exception {
@@ -165,7 +178,7 @@ public class AuthorityIntegrationTest {
     private static TestSession createTestSession() {
         final TestSession testSession = new TestSession();
         testSession.setValid(true);
-        testSession.setExpiresAt(new Date(new Date().getTime() + SIXTY_DAYS));
+        testSession.setExpiresAt(new Date(new Date().getTime() + TimeUnit.DAYS.toMillis(60)));
         testSession.setUserId(USER_ID);
         testSession.setPublicKey(TestKeyPairProvider.create().getPublicKey().getEncoded());
         return testSession;

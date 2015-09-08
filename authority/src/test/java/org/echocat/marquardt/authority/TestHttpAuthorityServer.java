@@ -40,7 +40,8 @@ public class TestHttpAuthorityServer {
     }
 
     public void start() throws IOException {
-        _server.createContext("/signup", new SignupHandler(200));
+        _server.createContext("/signup", new SignupHandler(201));
+        _server.createContext("/signin", new SigninHandler(200));
         _server.createContext("/signout", new SignoutHandler(204));
         _server.createContext("/refresh", new RefreshHandler(200));
         _server.setExecutor(null);
@@ -62,6 +63,20 @@ public class TestHttpAuthorityServer {
         String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
             final JsonWrappedCertificate jsonWrappedCertificate = _authority.signUp(testUserCredentials);
+            return _objectMapper.writeValueAsString(jsonWrappedCertificate);
+        }
+    }
+
+    class SigninHandler extends Handler {
+
+        public SigninHandler(Integer successResponseCode) {
+            super(successResponseCode);
+        }
+
+        @Override
+        String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
+            final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
+            final JsonWrappedCertificate jsonWrappedCertificate = _authority.signIn(testUserCredentials);
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
         }
     }
