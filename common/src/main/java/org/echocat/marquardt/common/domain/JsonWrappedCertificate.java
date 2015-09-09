@@ -11,6 +11,9 @@ package org.echocat.marquardt.common.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Used to transport certificates via JSON.
+ */
 @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
 public class JsonWrappedCertificate {
 

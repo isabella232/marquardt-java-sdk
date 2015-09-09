@@ -17,6 +17,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+/**
+ * Represents the signature with it's mechanism / algorithm. Capable of producing a signature based on a byte[].
+ * Capable of serializing the signature and it's mechanism / algorithm into byte[] and writing it into an
+ * OutputStream.
+ *
+ * Can also validate content if the signature is valid for a PublicKey.
+ */
 public class Signature extends BytesWithMechanism<Signature.Mechanism> {
 
     public enum Mechanism implements BytesWithMechanism.Mechanism {
@@ -88,6 +95,15 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
         return Mechanism.getMechanism(code);
     }
 
+    /**
+     * Validates if content is valid for this signature with a given PublicKey.
+     *
+     * @param content Content to validate
+     * @param publicKey PublicKey used to validate signature.
+     * @return true if the signature is valid, false if not.
+     * @throws SecurityMechanismException When there are problems to set up
+     * the validation with the given PublicKey or the this Signature.
+     */
     public boolean isValidFor(@Nonnull final byte[] content, @Nonnull final PublicKey publicKey) {
         try {
             final java.security.Signature algorithm = getMechanism().createAlgorithm();
@@ -99,6 +115,16 @@ public class Signature extends BytesWithMechanism<Signature.Mechanism> {
         }
     }
 
+
+    /**
+     * Factory method that creates a Signature.
+     *
+     * @param content Content to produce Signature for.
+     * @param privateKey PrivateKey to sign with.
+     * @param with Mechanism to use for signing.
+     * @return Signature that may be sent to clients and services to check if the content is from a trusted sender.
+     * @throws SecurityMechanismException When there are problems setting up the signing with the given PrivateKey.
+     */
     @Nonnull
     public static Signature createFor(@Nonnull final byte[] content, @Nonnull final PrivateKey privateKey, @Nonnull final Mechanism with) {
         try {

@@ -8,6 +8,10 @@
 
 package org.echocat.marquardt.common.exceptions;
 
+/**
+ * Exception intended to be thrown when a user tries to sign up with an user identifier that is already known to the
+ * authority.
+ */
 public class UserExistsException extends RuntimeException {
 
     public UserExistsException() {

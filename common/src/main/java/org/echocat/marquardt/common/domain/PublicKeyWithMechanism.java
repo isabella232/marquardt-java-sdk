@@ -23,6 +23,10 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 
+/**
+ * Used to serialize / deserialize public keys. Capable of writing a public key and the type / algorithm
+ * of this key into a byte array.
+ */
 public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMechanism.Mechanism> {
 
     public enum Mechanism implements BytesWithMechanism.Mechanism {
@@ -111,6 +115,10 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
         return Mechanism.findMechanism(code);
     }
 
+    /**
+     *
+     * @return java.security.PublicKey.
+     */
     @Nonnull
     public PublicKey toJavaKey() {
         try {
@@ -122,13 +130,26 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
         }
     }
 
+    /**
+     * Writes this key into an output stream.
+     *
+     * @param out OutputStream to write to.
+     * @throws IOException That happened while writing to the stream.
+     */
     public void writeTo(@Nonnull @WillNotClose final OutputStream out) throws IOException {
         final byte[] content = this.getContent();
         out.write(Ints.toByteArray(content.length));
         out.write(content);
     }
 
-    public static PublicKeyWithMechanism readFrom(final InputStream in) throws IOException {
+    /**
+     * Reads this key from an input stream.
+     *
+     * @param in
+     * @return PublicKeyWithMechanism
+     * @throws IOException That happened while reading from the stream.
+     */
+    public static PublicKeyWithMechanism readFrom(@Nonnull @WillNotClose final InputStream in) throws IOException {
         final int serializedKeySize = InputStreamUtils.readInt(in);
         return new PublicKeyWithMechanism(InputStreamUtils.readBytes(in, serializedKeySize));
     }

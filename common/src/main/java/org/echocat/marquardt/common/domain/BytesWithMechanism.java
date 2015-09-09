@@ -11,6 +11,12 @@ package org.echocat.marquardt.common.domain;
 import javax.annotation.Nonnull;
 import java.util.Base64;
 
+/**
+ * Intended for internal use only.
+ *
+ * @see PublicKeyWithMechanism
+ * @see Signature
+ */
 @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
 public abstract class BytesWithMechanism<M extends BytesWithMechanism.Mechanism> {
 
