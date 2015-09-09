@@ -17,28 +17,61 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Utils class for InputStream reading. You may want to use this when you implement your own Signable's
+ * DeserializationFactory.
+ *
+ * @see org.echocat.marquardt.common.domain.DeserializingFactory
+ * @see org.echocat.marquardt.common.domain.CertificateFactory
+ * @see org.echocat.marquardt.common.domain.PublicKeyWithMechanism
+ *
+ */
 public final class InputStreamUtils {
 
     private static final InputStreamUtils INSTANCE = new InputStreamUtils();
 
     private InputStreamUtils(){}
 
+    /**
+     * Reads a fixed number of bytes from an input stream.
+     *
+     * @param inputStream The stream to read from.
+     * @param numberOfBytes The number of bytes to read.
+     * @return byte[] with numberOfBytes length and the content from the stream.
+     * @throws IOException When a problem occurs while reading the stream, ie. the stream contains less bytes than given
+     * numberOfBytes.
+     */
     @Nonnull
     public static byte[] readBytes(@Nonnull @WillNotClose final InputStream inputStream, final int numberOfBytes) throws IOException {
        return INSTANCE.internalReadBytes(inputStream, numberOfBytes);
     }
 
-    @Nonnull
+    /**
+     * Reads the next byte from the input stream.
+     * @param inputStream The stream to read from.
+     * @return The next byte from the input stream.
+     * @throws IOException When the stream contains no more byte or is already closed.
+     */
     public static byte readByte(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
         return INSTANCE.internalReadByte(inputStream);
     }
 
-    @Nonnull
+    /**
+     * Reads a long value from the input stream.
+     * @param inputStream The stream to read from.
+     * @return Deserialized long value.
+     * @throws IOException When the stream contains no long value at cursor position or is already closed.
+     */
     public static long readLong(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
         return INSTANCE.internalReadLong(inputStream);
     }
 
-    @Nonnull
+    /**
+     * Reads an int value from the input stream.
+     * @param inputStream The stream to read from.
+     * @return Deserialized int value.
+     * @throws IOException When the stream contains no int value at cursor position or is already closed.
+     */
     public static int readInt(@Nonnull @WillNotClose final InputStream inputStream) throws IOException {
         return INSTANCE.internalReadInt(inputStream);
     }

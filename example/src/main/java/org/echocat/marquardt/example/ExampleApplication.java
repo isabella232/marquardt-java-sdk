@@ -43,7 +43,7 @@ public class ExampleApplication {
     @Bean
     @Autowired
     public CertificateValidator<UserInfo> clientSignedContentValidator(TrustedKeysProvider keysProvider) {
-        return new CertificateValidator<UserInfo>(new DateProvider(), keysProvider.getPublicKeys()) {
+        return new CertificateValidator<UserInfo>(keysProvider.getPublicKeys()) {
             @Override
             protected DeserializingFactory<UserInfo> getDeserializingFactory() {
                 return UserInfo.FACTORY;

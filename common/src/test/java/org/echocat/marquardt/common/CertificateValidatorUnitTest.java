@@ -154,7 +154,8 @@ public class CertificateValidatorUnitTest {
     private static class TestCertificateValidator extends CertificateValidator<SignablePayload> {
 
         public TestCertificateValidator(final DateProvider dateProvider, final List<PublicKey> trustedPublicKeys) {
-            super(dateProvider, trustedPublicKeys);
+            super(trustedPublicKeys);
+            this.setDateProvider(dateProvider);
         }
 
         @Override

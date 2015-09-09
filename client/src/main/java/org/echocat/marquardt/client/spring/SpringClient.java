@@ -73,16 +73,18 @@ public class SpringClient<T extends Signable> implements Client<T> {
                         return clientHttpRequestExecution.execute(httpRequest, bytes);
                     }
                 });
-        _certificateValidator = new CertificateValidator<T>(_dateProvider, trustedKeys) {
+        _certificateValidator = new CertificateValidator<T>(trustedKeys) {
             @Override
             protected DeserializingFactory<T> getDeserializingFactory() {
                 return _deserializingFactory;
             }
         };
+        _certificateValidator.setDateProvider(_dateProvider);
     }
 
     public void setDateProvider(DateProvider dateProvider) {
         _dateProvider = dateProvider;
+        _certificateValidator.setDateProvider(_dateProvider);
     }
 
     @Override

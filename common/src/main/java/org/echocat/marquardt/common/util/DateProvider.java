@@ -10,6 +10,9 @@ package org.echocat.marquardt.common.util;
 
 import java.util.Date;
 
+/**
+ * For internal (testing) purposes.
+ */
 public class DateProvider {
 
     public Date now() {

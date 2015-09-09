@@ -20,10 +20,27 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Base64;
 
+/**
+ * Client signed header validator. Clients must sign their requests (including their certificate) with a
+ * signature to ensure the origin of the request. This enables checking that the (authority signed) certificate
+ * is only used by the client that requested the certificate. This is ensured due to the fact that the PublicKey
+ * contained in the certificate can validate the signature. Since the client should use it's own PrivateKey/PublicKey
+ * pair he is the only one capable of producing this signature.
+ *
+ * Simple: No man-in-the-middle attack is possible since the sender must be the same as the one that
+ * obtained the certificate.
+ */
 public class RequestValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestValidator.class);
 
+    /**
+     * Validate a request header that contains a Signature with this.
+     *
+     * @param request The request to validate.
+     * @param keyToValidateWith Client's PublicKey. Should be taken from the X-Certificate header.
+     * @return True if the signature is valid. False if not.
+     */
     public boolean isValid(HttpServletRequest request, PublicKey keyToValidateWith) {
         final ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream();
         try {
