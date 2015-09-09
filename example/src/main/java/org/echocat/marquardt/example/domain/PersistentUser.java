@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-public class PersistedUser implements User {
+public class PersistentUser implements User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
