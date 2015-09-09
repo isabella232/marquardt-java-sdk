@@ -8,6 +8,10 @@
 
 package org.echocat.marquardt.common.exceptions;
 
+/**
+ * Exception intended to be thrown when a technical problem happens when applying security mechanisms, for example
+ * validating and signing signatures or deserializing PublicKeys from bytes.
+ */
 public class SecurityMechanismException extends RuntimeException {
 
     public SecurityMechanismException(final String message, final Throwable cause) {

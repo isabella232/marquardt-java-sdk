@@ -8,11 +8,11 @@
 
 package org.echocat.marquardt.common.exceptions;
 
+/**
+ * Exception intended to be thrown when a sign in fails. This may be due to an unknown user or wrong
+ * user identifier / password combination
+ */
 public class LoginFailedException extends RuntimeException {
-
-    public LoginFailedException() {
-        super();
-    }
 
     public LoginFailedException(String message) {
         super(message);
