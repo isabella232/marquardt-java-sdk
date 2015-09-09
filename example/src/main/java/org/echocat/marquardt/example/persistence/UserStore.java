@@ -8,9 +8,8 @@
 
 package org.echocat.marquardt.example.persistence;
 
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.example.domain.User;
+import org.echocat.marquardt.example.domain.PersistedUser;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.echocat.marquardt.example.persistence.jpa.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class UserStore implements PrincipalStore<UserInfo, User> {
+public class UserStore implements org.echocat.marquardt.authority.persistence.UserStore<UserInfo, PersistedUser> {
 
     private UserRepository _userRepository;
     private PasswordEncoder _passwordEncoder;
@@ -33,27 +32,27 @@ public class UserStore implements PrincipalStore<UserInfo, User> {
     }
 
     @Override
-    public Optional<User> getPrincipalFromCredentials(Credentials credentials) {
+    public Optional<PersistedUser> findUserByCredentials(Credentials credentials) {
         return _userRepository.findByEmailIgnoreCase(credentials.getIdentifier());
     }
 
     @Override
-    public Optional<User> getPrincipalByUuid(UUID userId) {
+    public Optional<PersistedUser> findUserByUuid(UUID userId) {
         return _userRepository.findByUserId(userId);
     }
 
     @Override
-    public User createPrincipalFromCredentials(Credentials credentials) {
-        final User userToCreate = new User();
-        userToCreate.setEmail(credentials.getIdentifier());
-        userToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
-        userToCreate.setUserId(UUID.randomUUID()); // TODO! What is the stored format?
-        userToCreate.setRoles(0L);
-        return _userRepository.save(userToCreate);
+    public PersistedUser createUserFromCredentials(Credentials credentials) {
+        final PersistedUser persistedUserToCreate = new PersistedUser();
+        persistedUserToCreate.setEmail(credentials.getIdentifier());
+        persistedUserToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
+        persistedUserToCreate.setUserId(UUID.randomUUID()); // TODO! What is the stored format?
+        persistedUserToCreate.setRoles(0L);
+        return _userRepository.save(persistedUserToCreate);
     }
 
     @Override
-    public UserInfo createSignableFromPrincipal(User user) {
-        return new UserInfo(user.getUserId());
+    public UserInfo createSignableFromUser(PersistedUser persistedUser) {
+        return new UserInfo(persistedUser.getUserId());
     }
 }

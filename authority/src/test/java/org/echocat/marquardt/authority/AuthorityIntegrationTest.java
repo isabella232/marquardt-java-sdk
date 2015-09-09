@@ -11,7 +11,6 @@ package org.echocat.marquardt.authority;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
 import org.apache.commons.io.Charsets;
-import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.junit.After;
 import org.junit.Before;
@@ -31,7 +30,6 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthorityIntegrationTest extends AuthorityTest {
@@ -46,7 +44,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
 
     @Before
     public void setup() throws Exception{
-        _testHttpAuthorityServer = new TestHttpAuthorityServer(_principalStore, _sessionStore);
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(_userStore, _sessionStore);
         _testHttpAuthorityServer.start();
         super.setup();
     }

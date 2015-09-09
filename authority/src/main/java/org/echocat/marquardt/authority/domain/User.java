@@ -10,7 +10,7 @@ package org.echocat.marquardt.authority.domain;
 
 import java.util.UUID;
 
-public interface Principal {
+public interface User {
 
     UUID getUserId();
 

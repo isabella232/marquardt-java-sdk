@@ -10,7 +10,7 @@ package org.echocat.marquardt.authority.domain;
 
 import org.echocat.marquardt.common.domain.Signable;
 
-public interface PrincipalToSignableMapper<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
+public interface UserToSignableMapper<SIGNABLE extends Signable, USER extends User> {
 
-    SIGNABLE createSignableFromPrincipal(PRINCIPAL principal);
+    SIGNABLE createSignableFromUser(USER USER);
 }

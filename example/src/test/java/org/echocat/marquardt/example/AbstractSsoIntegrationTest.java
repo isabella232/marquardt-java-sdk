@@ -14,7 +14,7 @@ import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
-import org.echocat.marquardt.example.domain.User;
+import org.echocat.marquardt.example.domain.PersistedUser;
 import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.echocat.marquardt.example.persistence.PersistentSessionStore;
@@ -94,11 +94,11 @@ public abstract class AbstractSsoIntegrationTest {
     }
 
     void givenExistingUser() {
-        final User user = new User();
-        user.setUserId(UUID.randomUUID());
-        user.setEmail("testuser@example.com");
-        user.setEncodedPassword("$2a$10$NPdMDuROCDzrzourXzI1eONBa21Xglg9IzuLc1kecWeG3w/DnQjT.");
-        user.setRoles(123);
-        _userRepository.save(user);
+        final PersistedUser persistedUser = new PersistedUser();
+        persistedUser.setUserId(UUID.randomUUID());
+        persistedUser.setEmail("testuser@example.com");
+        persistedUser.setEncodedPassword("$2a$10$NPdMDuROCDzrzourXzI1eONBa21Xglg9IzuLc1kecWeG3w/DnQjT.");
+        persistedUser.setRoles(123);
+        _userRepository.save(persistedUser);
     }
 }

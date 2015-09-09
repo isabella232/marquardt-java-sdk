@@ -18,16 +18,16 @@ import java.security.PublicKey;
 public interface Credentials {
 
     /**
-     * Unique identifier of the Principal / User.
+     * Unique identifier of the User.
      *
      * @return unique identifier
      */
     String getIdentifier();
 
     /**
-     * Password of Principal / User. Make sure this is crypted or sent via a secure channel.
+     * Password of User. Make sure this is crypted or sent via a secure channel.
      *
-     * @return password of principal
+     * @return password of user
      */
     String getPassword();
 

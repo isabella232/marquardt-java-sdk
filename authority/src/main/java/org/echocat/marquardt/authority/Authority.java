@@ -8,12 +8,12 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.domain.Principal;
+import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
 import org.echocat.marquardt.authority.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Certificate;
@@ -34,9 +34,9 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
+public class Authority<SIGNABLE extends Signable, USER extends User> {
 
-    private final PrincipalStore<SIGNABLE, PRINCIPAL> _principalStore;
+    private final UserStore<SIGNABLE, USER> _userStore;
     private final SessionStore _sessionStore;
     private final Signer _signer = new Signer();
     private final KeyPairProvider _issuerKeyProvider;
@@ -44,30 +44,30 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
 
     private DateProvider _dateProvider = new DateProvider();
 
-    public Authority(PrincipalStore<SIGNABLE, PRINCIPAL> principalStore, SessionStore sessionStore, KeyPairProvider issuerKeyProvider) {
-        _principalStore = principalStore;
+    public Authority(UserStore<SIGNABLE, USER> userStore, SessionStore sessionStore, KeyPairProvider issuerKeyProvider) {
+        _userStore = userStore;
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
     public JsonWrappedCertificate signUp(Credentials credentials) {
-        if (!_principalStore.getPrincipalFromCredentials(credentials).isPresent()) {
-            PRINCIPAL principal = _principalStore.createPrincipalFromCredentials(credentials);
-            return createCertificateAndSession(credentials, principal);
+        if (!_userStore.findUserByCredentials(credentials).isPresent()) {
+            USER user = _userStore.createUserFromCredentials(credentials);
+            return createCertificateAndSession(credentials, user);
         } else {
             throw new UserExistsException();
         }
     }
 
     public JsonWrappedCertificate signIn(Credentials credentials) {
-        final PRINCIPAL principal = _principalStore.getPrincipalFromCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
-        if (principal.passwordMatches(credentials.getPassword())) {
+        final USER user = _userStore.findUserByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
+        if (user.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.isActiveAndValidSessionExists(principal.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
+            if (_sessionStore.isActiveAndValidSessionExists(user.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
                 throw new AlreadyLoggedInException();
             } else {
-                return createCertificateAndSession(credentials, principal);
+                return createCertificateAndSession(credentials, user);
             }
         }
         throw new LoginFailedException("Login failed");
@@ -75,15 +75,15 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
 
     public JsonWrappedCertificate refresh(byte[] certificate) {
         final Session session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
-        final PRINCIPAL principal = _principalStore.getPrincipalByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find principal with userId " + session.getUserId()));
+        final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
-            final byte[] newCertificate = createCertificate(principal, clientPublicKeyFrom(session));
+            final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
             session.setCertificate(newCertificate);
             session.setExpiresAt(nowPlus60Days());
             _sessionStore.save(session);
             return createCertificateResponse(newCertificate);
         } catch (IOException e) {
-            throw new CertificateCreationException("failed to refresh certificate for certificate " + principal.getUserId(), e);
+            throw new CertificateCreationException("failed to refresh certificate for certificate " + user.getUserId(), e);
         }
     }
 
@@ -98,14 +98,14 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
         _dateProvider = dateProvider;
     }
 
-    private JsonWrappedCertificate createCertificateAndSession(final Credentials credentials, final PRINCIPAL principal) {
+    private JsonWrappedCertificate createCertificateAndSession(final Credentials credentials, final USER user) {
         final byte[] certificate;
         try {
-            certificate = createCertificate(principal, credentials.getPublicKey());
-            createSession(credentials.getPublicKey(), principal.getUserId(), certificate);
+            certificate = createCertificate(user, credentials.getPublicKey());
+            createSession(credentials.getPublicKey(), user.getUserId(), certificate);
             return createCertificateResponse(certificate);
         } catch (IOException e) {
-            throw new CertificateCreationException("failed to create certificate for principal with id " + principal.getUserId(), e);
+            throw new CertificateCreationException("failed to create certificate for user with id " + user.getUserId(), e);
         }
     }
 
@@ -113,9 +113,9 @@ public class Authority<SIGNABLE extends Signable, PRINCIPAL extends Principal> {
         return new JsonWrappedCertificate(certificate);
     }
 
-    private byte[] createCertificate(final PRINCIPAL principal, final PublicKey clientPublicKey) throws IOException {
-        SIGNABLE signable = _principalStore.createSignableFromPrincipal(principal);
-        final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, principal.getRoles(), signable);
+    private byte[] createCertificate(final USER user, final PublicKey clientPublicKey) throws IOException {
+        SIGNABLE signable = _userStore.createSignableFromUser(user);
+        final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, user.getRoles(), signable);
         return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }
 

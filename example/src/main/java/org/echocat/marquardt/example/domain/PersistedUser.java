@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.example.domain;
 
-import org.echocat.marquardt.authority.domain.Principal;
+import org.echocat.marquardt.authority.domain.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-public class User implements Principal {
+public class PersistedUser implements User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

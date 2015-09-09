@@ -176,7 +176,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void givenSignableThrowingException() {
-        when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
+        when(_userStore.createSignableFromUser(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
     }
 
     private void whenSigningInWithWrongPassword() {
@@ -200,7 +200,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void thenUserIsStored() {
-        verify(_principalStore).createPrincipalFromCredentials(TEST_USER_CREDENTIALS);
+        verify(_userStore).createUserFromCredentials(TEST_USER_CREDENTIALS);
     }
 
     private void thenSessionIsCreated() {

@@ -10,20 +10,18 @@ package org.echocat.marquardt.authority.spring;
 
 import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
-import org.echocat.marquardt.authority.domain.Principal;
+import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -34,23 +32,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-public abstract class SpringAuthorityController<SIGNABLE extends Signable, PRINCIPAL extends Principal, CREDENTIALS extends Credentials> {
+public abstract class SpringAuthorityController<SIGNABLE extends Signable, USER extends User, CREDENTIALS extends Credentials> {
 
     private final SessionStore _sessionStore;
-    private final Signer _signer;
-    private final PasswordEncoder _passwordEncoder;
     private final KeyPairProvider _issuerKeyProvider;
+    private UserStore<SIGNABLE, USER> _userStore;
+    private Authority<SIGNABLE, USER> _authority;
 
-    private PrincipalStore<SIGNABLE, PRINCIPAL> _principalStore;
-    private Authority<SIGNABLE, PRINCIPAL> _authority;
-
-    public SpringAuthorityController(final SessionStore sessionStore, final Signer signer, final PasswordEncoder passwordEncoder, final KeyPairProvider issuerKeyProvider, PrincipalStore<SIGNABLE, PRINCIPAL> principalStore) {
+    public SpringAuthorityController(final SessionStore sessionStore, final KeyPairProvider issuerKeyProvider, UserStore<SIGNABLE, USER> userStore) {
         _sessionStore = sessionStore;
-        _signer = signer;
-        _passwordEncoder = passwordEncoder;
         _issuerKeyProvider = issuerKeyProvider;
-        _principalStore = principalStore;
-        _authority = new Authority<>(_principalStore, _sessionStore, _issuerKeyProvider);
+        _userStore = userStore;
+        _authority = new Authority<>(_userStore, _sessionStore, _issuerKeyProvider);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)

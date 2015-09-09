@@ -13,7 +13,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
@@ -33,10 +33,10 @@ public class TestHttpAuthorityServer {
     private final ObjectMapper _objectMapper;
     private final Authority _authority;
 
-    public TestHttpAuthorityServer(final PrincipalStore<TestUserInfo, TestUser> principalStore, final SessionStore sessionStore) throws IOException {
+    public TestHttpAuthorityServer(final UserStore<TestUserInfo, TestUser> userStore, final SessionStore sessionStore) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
-        _authority = new Authority<>(principalStore, sessionStore, TestKeyPairProvider.create());
+        _authority = new Authority<>(userStore, sessionStore, TestKeyPairProvider.create());
     }
 
     public void start() throws IOException {

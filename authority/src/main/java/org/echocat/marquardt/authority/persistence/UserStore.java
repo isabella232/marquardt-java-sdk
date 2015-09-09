@@ -8,19 +8,19 @@
 
 package org.echocat.marquardt.authority.persistence;
 
-import org.echocat.marquardt.authority.domain.PrincipalToSignableMapper;
+import org.echocat.marquardt.authority.domain.UserToSignableMapper;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.authority.domain.Principal;
+import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.common.domain.Signable;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PrincipalStore<SIGNABLE extends Signable, PRINCIPAL extends Principal> extends PrincipalToSignableMapper<SIGNABLE, PRINCIPAL>{
+public interface UserStore<SIGNABLE extends Signable, USER extends User> extends UserToSignableMapper<SIGNABLE, USER> {
 
-    Optional<PRINCIPAL> getPrincipalFromCredentials(Credentials credentials);
+    Optional<USER> findUserByCredentials(Credentials credentials);
 
-    Optional<PRINCIPAL> getPrincipalByUuid(UUID userId);
+    Optional<USER> findUserByUuid(UUID userId);
 
-    PRINCIPAL createPrincipalFromCredentials(Credentials credentials);
+    USER createUserFromCredentials(Credentials credentials);
 }

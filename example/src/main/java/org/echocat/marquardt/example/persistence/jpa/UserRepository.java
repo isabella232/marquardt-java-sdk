@@ -8,14 +8,14 @@
 
 package org.echocat.marquardt.example.persistence.jpa;
 
-import org.echocat.marquardt.example.domain.User;
+import org.echocat.marquardt.example.domain.PersistedUser;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends CrudRepository<User, Long> {
-    Optional<User> findByEmailIgnoreCase(String email);
+public interface UserRepository extends CrudRepository<PersistedUser, Long> {
+    Optional<PersistedUser> findByEmailIgnoreCase(String email);
 
-    Optional<User> findByUserId(UUID userId);
+    Optional<PersistedUser> findByUserId(UUID userId);
 }

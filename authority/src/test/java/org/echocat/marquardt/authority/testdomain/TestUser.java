@@ -8,11 +8,11 @@
 
 package org.echocat.marquardt.authority.testdomain;
 
-import org.echocat.marquardt.authority.domain.Principal;
+import org.echocat.marquardt.authority.domain.User;
 
 import java.util.UUID;
 
-public class TestUser implements Principal{
+public class TestUser implements User {
     @Override
     public UUID getUserId() {
         return null;

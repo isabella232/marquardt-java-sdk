@@ -9,7 +9,7 @@
 package org.echocat.marquardt.authority;
 
 import org.echocat.marquardt.authority.domain.Session;
-import org.echocat.marquardt.authority.persistence.PrincipalStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
@@ -40,7 +40,7 @@ public abstract class AuthorityTest {
     protected TestSession _validSession;
 
     @Mock
-    PrincipalStore<TestUserInfo, TestUser> _principalStore;
+    UserStore<TestUserInfo, TestUser> _userStore;
     @Mock
     SessionStore _sessionStore;
 
@@ -62,9 +62,9 @@ public abstract class AuthorityTest {
     }
 
     protected void givenUserExists() {
-        when(_principalStore.getPrincipalByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
-        when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(TEST_USER_INFO);
-        when(_principalStore.getPrincipalFromCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
+        when(_userStore.findUserByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
+        when(_userStore.createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(_userStore.findUserByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
     }
 
     protected void givenExistingSession() {
@@ -83,9 +83,9 @@ public abstract class AuthorityTest {
     }
 
     protected void givenUserDoesNotExist() {
-        when(_principalStore.getPrincipalFromCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
-        when(_principalStore.getPrincipalByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
-        when(_principalStore.createPrincipalFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
-        when(_principalStore.createSignableFromPrincipal(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(_userStore.findUserByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
+        when(_userStore.findUserByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
+        when(_userStore.createUserFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
+        when(_userStore.createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 }
