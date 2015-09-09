@@ -20,8 +20,25 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.PrivateKey;
 
+/**
+ * Creates signed bytes from a Signable using a PrivateKey.
+ *
+ * Authority uses this to create Certificates.
+ * Clients use this to sign their requests to identify as the sender.
+ *
+ * @see Signable
+ * @see Signature
+ */
 public class Signer {
 
+    /**
+     * Signs a Signable using a PrivateKey. Produces byte[] containing the serialized Signable and the Signature.
+     *
+     * @param signable Signable to sign
+     * @param privateKey Key to create the Signature with
+     * @return Signed bytes.
+     * @throws IOException When problems occur while serializing the Signable or while writing the Signature.
+     */
     public byte[] sign(final Signable signable, final PrivateKey privateKey) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
