@@ -76,11 +76,6 @@ public class PersistentUser implements User {
     }
 
     @Override
-    public String getEncodedPassword() {
-        return encodedPassword;
-    }
-
-    @Override
     public boolean passwordMatches(String password) {
         return _passwordEncoder.matches(password, getEncodedPassword());
     }
@@ -92,5 +87,9 @@ public class PersistentUser implements User {
     @Override
     public long getRoles() {
         return roles;
+    }
+
+    public String getEncodedPassword() {
+        return encodedPassword;
     }
 }

@@ -10,7 +10,7 @@ package org.echocat.marquardt.authority.spring;
 
 import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
-import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
+import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
@@ -103,9 +103,9 @@ public abstract class SpringAuthorityController<SIGNABLE extends Signable, USER 
         // TODO log
     }
 
-    @ExceptionHandler(InvalidSessionException.class)
-    @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "PersistentSession invalid.")
-    public void handleInvalidSessionException(final InvalidSessionException ex) {
+    @ExceptionHandler(ExpiredSessionException.class)
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Session is expired.")
+    public void handleInvalidSessionException(final ExpiredSessionException ex) {
         // TODO log
     }
 

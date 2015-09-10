@@ -8,6 +8,11 @@
 
 package org.echocat.marquardt.authority.exceptions;
 
+/**
+ * Exception thrown when creating a certificate fails.
+ *
+ * This may be caused by corrupt data or IO problems of the authority.
+ */
 public class CertificateCreationException extends RuntimeException {
     public CertificateCreationException(String message, Throwable cause) {
         super(message, cause);

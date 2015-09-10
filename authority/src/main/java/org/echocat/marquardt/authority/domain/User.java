@@ -10,13 +10,32 @@ package org.echocat.marquardt.authority.domain;
 
 import java.util.UUID;
 
+/**
+ * Represents a known user to the authority. Is created at sign up.
+ *
+ * Implement this in your Authority implementation with a domain object that can be stored into a database.
+ */
 public interface User {
 
+    /**
+     * Unique user id of the user.
+     *
+     * @return Unique user id of the user.
+     */
     UUID getUserId();
 
-    String getEncodedPassword();
-
+    /**
+     * Implement this to check if the credentials given on sign in match the password of the user that registers.
+     *
+     * @param password Password to check. Please do not log or persist this password.
+     * @return True if the password matches, false otherwise.
+     */
     boolean passwordMatches(String password);
 
+    /**
+     * Roles of the user masked with bitmask.
+     *
+     * @return Roles of the user to read with the bitmask.
+     */
     long getRoles();
 }

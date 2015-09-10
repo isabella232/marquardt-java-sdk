@@ -11,7 +11,7 @@ package org.echocat.marquardt.authority;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
-import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
+import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
@@ -125,7 +125,7 @@ public class Authority<SIGNABLE extends Signable, USER extends User, SESSION ext
     private SESSION getSessionBasedOnValidCertificate(final byte[] certificateBytes) {
         final SESSION session = _sessionStore.findByCertificate(certificateBytes).orElseThrow(() -> new NoSessionFoundException("No session found."));
         if (session.getExpiresAt().before(_dateProvider.now())) {
-            throw new InvalidSessionException();
+            throw new ExpiredSessionException();
         }
         return session;
     }

@@ -8,6 +8,9 @@
 
 package org.echocat.marquardt.authority.exceptions;
 
-public class InvalidSessionException extends RuntimeException {
+/**
+ * Thrown when a refresh is performed with a certificate that belongs to an expired session.
+ */
+public class ExpiredSessionException extends RuntimeException {
 
 }

@@ -19,11 +19,6 @@ public class TestUser implements User {
     }
 
     @Override
-    public String getEncodedPassword() {
-        return null;
-    }
-
-    @Override
     public boolean passwordMatches(String password) {
         return "right".equals(password);
     }

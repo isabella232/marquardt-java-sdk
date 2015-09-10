@@ -8,9 +8,24 @@
 
 package org.echocat.marquardt.authority.domain;
 
+import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Signable;
 
+/**
+ * Interface for transformation of a (persisted) user to a signable user information of choice to
+ * put into the certificate.
+ *
+ * @see Certificate
+ * @see Signable
+ * @see User
+ */
+@FunctionalInterface
 public interface UserToSignableMapper<SIGNABLE extends Signable, USER extends User> {
 
+    /**
+     * Creates a custom signable from a (persisted) user in the authority.
+     * @param USER User to create signable from.
+     * @return Signable (for example to put into Certificate)
+     */
     SIGNABLE createSignableFromUser(USER USER);
 }
