@@ -26,6 +26,8 @@ import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.echocat.marquardt.common.util.DateProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PublicKey;
@@ -34,22 +36,51 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Authority implementation. Wrap this with your favorite server implementation.
+ *
+ * @param <USER> Your authority's user implementation.
+ * @param <SESSION> Your authority's session implementation.
+ * @param <SIGNABLE> Your user information object to wrap into Certificate.
+ *
+ * @see User
+ * @see Session
+ * @see Signable
+ * @see Certificate
+ * @see org.echocat.marquardt.authority.spring.SpringAuthorityController
+ */
 public class Authority<USER extends User, SESSION extends Session, SIGNABLE extends Signable> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
     private final UserStore<USER, SIGNABLE> _userStore;
     private final SessionStore<SESSION> _sessionStore;
     private final Signer _signer = new Signer();
     private final KeyPairProvider _issuerKeyProvider;
 
-
     private DateProvider _dateProvider = new DateProvider();
 
+    /**
+     * Sets up a new Authority singleton.
+     *
+     * @param userStore Your user store.
+     * @param sessionStore Your session store.
+     * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
+     */
     public Authority(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
+    /**
+     * Implements signup. Creates a new User and a new Session.
+     *
+     * @param credentials Credentials of the user that should be signed up.
+     * @return Ready-to-send JSON wrapped certificate for the client.
+     * @throws UserExistsException If a user with the same identifier already exists.
+     * @throws CertificateCreationException If there were problems creating the certificate.
+     */
     public JsonWrappedCertificate signUp(final Credentials credentials) {
         if (!_userStore.findUserByCredentials(credentials).isPresent()) {
             final USER user = _userStore.createUserFromCredentials(credentials);
@@ -59,6 +90,14 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
         }
     }
 
+    /**
+     * Implements signin. Creates a new Session for a known user.
+     * @param credentials Credentials of the user with the client's public key.
+     * @return Ready-to-send JSON wrapped certificate for the client.
+     * @throws LoginFailedException If user does not exist or password does not match.
+     * @throws AlreadyLoggedInException If the user already has an active session for this client's public key.
+     * @throws CertificateCreationException If there were problems creating the certificate.
+     */
     public JsonWrappedCertificate signIn(final Credentials credentials) {
         final USER user = _userStore.findUserByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (user.passwordMatches(credentials.getPassword())) {
@@ -73,8 +112,17 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
         throw new LoginFailedException("Login failed");
     }
 
+    /**
+     * Implements refresh. Updates the Session of the User with a fresh certificate.
+     * @param certificate Certificate to replace (may be an expired one - but must be the last one created for this session).
+     * @return Ready-to-send JSON wrapped certificate for the client.
+     * @throws NoSessionFoundException If no session exists for this certificate. You must sign in again to handle this.
+     * @throws ExpiredSessionException When the session is already expired. You must sign in again to handle this.
+     * @throws IllegalStateException When the user id of the session is not found. Caused by a data inconsistency or a wrong UserStore implementation.
+     * @throws CertificateCreationException If there were problems creating the certificate.
+     */
     public JsonWrappedCertificate refresh(final byte[] certificate) {
-        final SESSION session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
+        final SESSION session = getValidSessionBasedOnCertificate(Base64.getDecoder().decode(certificate));
         final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
@@ -87,10 +135,18 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
         }
     }
 
+    /**
+     *
+     * @param certificate Certificate to sign out with (may be an expired one - but must be the last one created for this session).
+     */
     public void signOut(final byte[] certificate) {
-        final SESSION session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
-        _sessionStore.delete(session);
-
+        final SESSION session;
+        try {
+            session = getSessionBasedOnCertificate(Base64.getDecoder().decode(certificate));
+            _sessionStore.delete(session);
+        } catch (final NoSessionFoundException ignored) {
+            LOGGER.info("Received sign out, but session was not found for provided certificate.");
+        }
     }
 
     public void setDateProvider(final DateProvider dateProvider) {
@@ -122,12 +178,16 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
         return new PublicKeyWithMechanism(session.getMechanism(), session.getPublicKey()).toJavaKey();
     }
 
-    private SESSION getSessionBasedOnValidCertificate(final byte[] certificateBytes) {
-        final SESSION session = _sessionStore.findByCertificate(certificateBytes).orElseThrow(() -> new NoSessionFoundException("No session found."));
+    private SESSION getValidSessionBasedOnCertificate(final byte[] certificateBytes) {
+        final SESSION session = getSessionBasedOnCertificate(certificateBytes);
         if (session.getExpiresAt().before(_dateProvider.now())) {
             throw new ExpiredSessionException();
         }
         return session;
+    }
+
+    private SESSION getSessionBasedOnCertificate(final byte[] certificateBytes) {
+        return _sessionStore.findByCertificate(certificateBytes).orElseThrow(() -> new NoSessionFoundException("No session found."));
     }
 
     private void createSession(final PublicKey publicKey, final UUID userId, final byte[] certificate) {
