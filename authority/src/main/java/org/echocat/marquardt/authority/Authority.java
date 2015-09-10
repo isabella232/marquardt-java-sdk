@@ -44,22 +44,22 @@ public class Authority<SIGNABLE extends Signable, USER extends User, SESSION ext
 
     private DateProvider _dateProvider = new DateProvider();
 
-    public Authority(UserStore<SIGNABLE, USER> userStore, SessionStore sessionStore, KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<SIGNABLE, USER> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
-    public JsonWrappedCertificate signUp(Credentials credentials) {
+    public JsonWrappedCertificate signUp(final Credentials credentials) {
         if (!_userStore.findUserByCredentials(credentials).isPresent()) {
-            USER user = _userStore.createUserFromCredentials(credentials);
+            final USER user = _userStore.createUserFromCredentials(credentials);
             return createCertificateAndSession(credentials, user);
         } else {
             throw new UserExistsException();
         }
     }
 
-    public JsonWrappedCertificate signIn(Credentials credentials) {
+    public JsonWrappedCertificate signIn(final Credentials credentials) {
         final USER user = _userStore.findUserByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (user.passwordMatches(credentials.getPassword())) {
             // create new session
@@ -73,7 +73,7 @@ public class Authority<SIGNABLE extends Signable, USER extends User, SESSION ext
         throw new LoginFailedException("Login failed");
     }
 
-    public JsonWrappedCertificate refresh(byte[] certificate) {
+    public JsonWrappedCertificate refresh(final byte[] certificate) {
         final SESSION session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
         final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
@@ -82,18 +82,18 @@ public class Authority<SIGNABLE extends Signable, USER extends User, SESSION ext
             session.setExpiresAt(nowPlus60Days());
             _sessionStore.save(session);
             return createCertificateResponse(newCertificate);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new CertificateCreationException("failed to refresh certificate for certificate " + user.getUserId(), e);
         }
     }
 
-    public void signOut(byte[] certificate) {
+    public void signOut(final byte[] certificate) {
         final SESSION session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
         _sessionStore.delete(session);
 
     }
 
-    public void setDateProvider(DateProvider dateProvider) {
+    public void setDateProvider(final DateProvider dateProvider) {
         _dateProvider = dateProvider;
     }
 
@@ -103,7 +103,7 @@ public class Authority<SIGNABLE extends Signable, USER extends User, SESSION ext
             certificate = createCertificate(user, credentials.getPublicKey());
             createSession(credentials.getPublicKey(), user.getUserId(), certificate);
             return createCertificateResponse(certificate);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new CertificateCreationException("failed to create certificate for user with id " + user.getUserId(), e);
         }
     }
@@ -113,7 +113,7 @@ public class Authority<SIGNABLE extends Signable, USER extends User, SESSION ext
     }
 
     private byte[] createCertificate(final USER user, final PublicKey clientPublicKey) throws IOException {
-        SIGNABLE signable = _userStore.createSignableFromUser(user);
+        final SIGNABLE signable = _userStore.createSignableFromUser(user);
         final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, user.getRoles(), signable);
         return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }
