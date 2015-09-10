@@ -22,7 +22,7 @@ import static org.echocat.marquardt.common.util.InputStreamUtils.readLong;
  *
  * Used to deserialize Certificates from Bytes.
  *
- * @param <T> Class of wrapped payload, for example additional user information to use on clents and services.
+ * @param <T> Class of wrapped payload, for example additional user information to use on clients and services.
  */
 public abstract class CertificateFactory<T extends Signable> implements DeserializingFactory<Certificate<T>> {
 

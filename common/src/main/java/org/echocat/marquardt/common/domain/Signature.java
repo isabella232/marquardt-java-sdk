@@ -18,8 +18,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /**
- * Represents the signature with it's mechanism / algorithm. Capable of producing a signature based on a byte[].
- * Capable of serializing the signature and it's mechanism / algorithm into byte[] and writing it into an
+ * Represents the signature with its mechanism / algorithm. Capable of producing a signature based on a byte[].
+ * Capable of serializing the signature and its mechanism / algorithm into byte[] and writing it into an
  * OutputStream.
  *
  * Can also validate content if the signature is valid for a PublicKey.
