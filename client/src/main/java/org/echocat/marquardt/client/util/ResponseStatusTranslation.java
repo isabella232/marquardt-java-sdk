@@ -13,6 +13,11 @@ import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 
+/**
+ * Provides a mapping from HTTP status codes to Java Exceptions to be use in implementations of
+ * {@link org.echocat.marquardt.client.Client} to translate http status codes to exceptions.
+ *
+ */
 public enum ResponseStatusTranslation {
 
     BAD_REQUEST(400) {
@@ -54,10 +59,21 @@ public enum ResponseStatusTranslation {
         _statusCode = statusCode;
     }
 
+    /**
+     * Returns the HTTP status code.
+     *
+     * @return the status code.
+     */
     public Integer getStatusCode() {
         return _statusCode;
     }
 
+    /**
+     * Returns the response status translation for a given status code.
+     *
+     * @param statusCode
+     * @return
+     */
     public static ResponseStatusTranslation from(Integer statusCode) {
         for(ResponseStatusTranslation statusToExceptionMapper: values()) {
             if (statusToExceptionMapper.getStatusCode().equals(statusCode)) {
@@ -67,5 +83,12 @@ public enum ResponseStatusTranslation {
         throw new IllegalArgumentException("unexpected response status received: " + statusCode);
     }
 
+    /**
+     * Implementations of this method should return the corresponding RuntimeException for the status code and
+     * reuse the provided message for the exception.
+     *
+     * @param message
+     * @return
+     */
     public abstract RuntimeException translateToException(String message);
 }

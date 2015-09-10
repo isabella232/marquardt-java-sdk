@@ -38,6 +38,11 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.List;
 
+/**
+ * Spring implementation of the client.
+ *
+ * @param <T> type of the payload contained in the certificate.
+ */
 public class SpringClient<T extends Signable> implements Client<T> {
 
     private final RestTemplate _restTemplate = new RestTemplate();
@@ -53,6 +58,14 @@ public class SpringClient<T extends Signable> implements Client<T> {
     private DateProvider _dateProvider = new DateProvider();
     private byte[] _certificate;
 
+    /**
+     * Create a client instance.
+     *
+     * @param baseUri              base uri of the authority.
+     * @param deserializingFactory factory used to deserialize the payload with type T.
+     * @param clientKeyProvider    key provider that returns the client's public/private key pair.
+     * @param trustedKeys          a list of pre-shared, trusted keys used by the authority to sign certificates. The client uses this list to verify the authenticity of certificates.
+     */
     public SpringClient(final String baseUri,
                         final DeserializingFactory<T> deserializingFactory,
                         final KeyPairProvider clientKeyProvider,
@@ -82,11 +95,19 @@ public class SpringClient<T extends Signable> implements Client<T> {
         _certificateValidator.setDateProvider(_dateProvider);
     }
 
+    /**
+     * Used for internal (testing) purposes only.
+     *
+     * @param dateProvider
+     */
     public void setDateProvider(DateProvider dateProvider) {
         _dateProvider = dateProvider;
         _certificateValidator.setDateProvider(_dateProvider);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Certificate<T> signup(final Credentials credentials) throws IOException {
         final ResponseEntity<JsonWrappedCertificate> response;
@@ -111,6 +132,9 @@ public class SpringClient<T extends Signable> implements Client<T> {
         return deserializedCertificate;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Certificate<T> signin(final Credentials credentials) throws IOException {
         final ResponseEntity<JsonWrappedCertificate> response;
@@ -126,6 +150,9 @@ public class SpringClient<T extends Signable> implements Client<T> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Certificate<T> refresh() throws IOException {
 
@@ -138,6 +165,9 @@ public class SpringClient<T extends Signable> implements Client<T> {
         return extractCertificateFrom(response);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean signout() throws IOException {
         final ResponseEntity<Void> response;
@@ -149,6 +179,9 @@ public class SpringClient<T extends Signable> implements Client<T> {
         return response.getStatusCode() == HttpStatus.NO_CONTENT;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <REQUEST, RESPONSE> RESPONSE sendSignedPayloadTo(final String url,
                                                             final String httpMethod,

@@ -20,10 +20,21 @@ import java.security.PrivateKey;
 import java.util.Base64;
 import java.util.List;
 
+/**
+ * Creates signatures of http requests based on request headers.
+ */
 public class RequestSigner {
-
     public final Signer _signer = new Signer();
 
+    /**
+     * Creates a signature for the request with the provided private key. The signature will be based on
+     * the request headers specified in {@link SignatureHeaders}.
+     *
+     * @param request       the request to be signed
+     * @param keyToSignWith private key to be used for the signature
+     * @return signature as byte stream
+     * @throws IOException
+     */
     public byte[] getSignature(HttpRequest request, PrivateKey keyToSignWith) throws IOException {
         ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream();
         try {
@@ -38,9 +49,9 @@ public class RequestSigner {
         final byte[] requestBytes = (request.getMethod().name() + " " + request.getURI().getPath()).getBytes();
         bytesToSign.write(Ints.toByteArray(requestBytes.length));
         bytesToSign.write(requestBytes);
-        for(SignatureHeaders headerToInclude: SignatureHeaders.values()) {
+        for (SignatureHeaders headerToInclude : SignatureHeaders.values()) {
             final List<String> headerValues = request.getHeaders().get(headerToInclude.getHeaderName());
-            if(headerValues != null) {
+            if (headerValues != null) {
                 final byte[] headerBytes = (headerToInclude.getHeaderName() + ":" + headerValues.stream().findFirst().get()).getBytes();
                 bytesToSign.write(Ints.toByteArray(headerBytes.length));
                 bytesToSign.write(headerBytes);
