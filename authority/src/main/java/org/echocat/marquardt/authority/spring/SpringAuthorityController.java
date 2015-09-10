@@ -9,7 +9,9 @@
 package org.echocat.marquardt.authority.spring;
 
 import org.echocat.marquardt.authority.Authority;
+import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.common.domain.Credentials;
@@ -32,12 +34,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-public abstract class SpringAuthorityController<SIGNABLE extends Signable, USER extends User, CREDENTIALS extends Credentials> {
+public abstract class SpringAuthorityController<SIGNABLE extends Signable, USER extends User, CREDENTIALS extends Credentials, SESSION extends Session> {
 
     private final SessionStore _sessionStore;
     private final KeyPairProvider _issuerKeyProvider;
     private UserStore<SIGNABLE, USER> _userStore;
-    private Authority<SIGNABLE, USER> _authority;
+    private Authority<SIGNABLE, USER, SESSION> _authority;
 
     public SpringAuthorityController(final SessionStore sessionStore, final KeyPairProvider issuerKeyProvider, UserStore<SIGNABLE, USER> userStore) {
         _sessionStore = sessionStore;
@@ -104,6 +106,12 @@ public abstract class SpringAuthorityController<SIGNABLE extends Signable, USER 
     @ExceptionHandler(InvalidSessionException.class)
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "PersistentSession invalid.")
     public void handleInvalidSessionException(final InvalidSessionException ex) {
+        // TODO log
+    }
+
+    @ExceptionHandler(NoSessionFoundException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No session exists.")
+    public void handleNoSessionFoundException(final NoSessionFoundException ex) {
         // TODO log
     }
 

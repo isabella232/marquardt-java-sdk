@@ -6,12 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.authority.exceptions;
+package org.echocat.marquardt.common.exceptions;
 
 public class NoSessionFoundException extends RuntimeException {
 
-    public NoSessionFoundException() {
-        super();
+    public NoSessionFoundException(String message) {
+        super(message);
     }
 
 }

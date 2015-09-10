@@ -16,7 +16,6 @@ import java.util.UUID;
 public class TestSession implements Session {
 
     private UUID _userId;
-    private boolean _valid;
     private Date _expiredAt;
     private byte[] _publicKey;
 
@@ -68,15 +67,5 @@ public class TestSession implements Session {
     @Override
     public void setMechanism(String mechanism) {
 
-    }
-
-    @Override
-    public boolean isValid() {
-        return _valid;
-    }
-
-    @Override
-    public void setValid(boolean valid) {
-        _valid = valid;
     }
 }

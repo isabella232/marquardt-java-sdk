@@ -102,13 +102,4 @@ public class PersistentSession implements Session {
         this.mechanism = mechanism;
     }
 
-    @Override
-    public boolean isValid() {
-        return valid;
-    }
-
-    @Override
-    public void setValid(final boolean valid) {
-        this.valid = valid;
-    }
 }

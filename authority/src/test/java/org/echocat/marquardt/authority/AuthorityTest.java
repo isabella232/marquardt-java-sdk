@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.testdomain.TestSession;
@@ -36,7 +35,6 @@ public abstract class AuthorityTest {
     private static final TestUser TEST_USER = new TestUser();
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
     private static final UUID USER_ID = UUID.randomUUID();
-    private Session _invalidSession;
     protected TestSession _validSession;
 
     @Mock
@@ -48,13 +46,10 @@ public abstract class AuthorityTest {
     public void setup() throws Exception {
         when(_sessionStore.create()).thenReturn(createTestSession());
         _validSession = createTestSession();
-        _invalidSession = createTestSession();
-        _invalidSession.setValid(false);
     }
 
     protected static TestSession createTestSession() {
         final TestSession testSession = new TestSession();
-        testSession.setValid(true);
         testSession.setExpiresAt(new Date(new Date().getTime() + TimeUnit.DAYS.toMillis(60)));
         testSession.setUserId(USER_ID);
         testSession.setPublicKey(TestKeyPairProvider.create().getPublicKey().getEncoded());
@@ -68,17 +63,12 @@ public abstract class AuthorityTest {
     }
 
     protected void givenExistingSession() {
-        when(_sessionStore.isActiveAndValidSessionExists(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
+        when(_sessionStore.activeSessionExists(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
         when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.of(_validSession));
     }
 
-    protected void givenExistingInvalidSession() {
-        when(_sessionStore.isActiveAndValidSessionExists(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
-        when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.of(_invalidSession));
-    }
-
     protected void givenNoExistingSession() {
-        when(_sessionStore.isActiveAndValidSessionExists(eq(USER_ID), any(byte[].class), any(Date.class))).thenReturn(false);
+        when(_sessionStore.activeSessionExists(eq(USER_ID), any(byte[].class), any(Date.class))).thenReturn(false);
         when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.empty());
     }
 

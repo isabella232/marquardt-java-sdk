@@ -12,7 +12,7 @@ import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
-import org.echocat.marquardt.authority.exceptions.NoSessionFoundException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.common.Signer;
@@ -34,10 +34,10 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class Authority<SIGNABLE extends Signable, USER extends User> {
+public class Authority<SIGNABLE extends Signable, USER extends User, SESSION extends Session> {
 
     private final UserStore<SIGNABLE, USER> _userStore;
-    private final SessionStore _sessionStore;
+    private final SessionStore<SESSION> _sessionStore;
     private final Signer _signer = new Signer();
     private final KeyPairProvider _issuerKeyProvider;
 
@@ -64,7 +64,7 @@ public class Authority<SIGNABLE extends Signable, USER extends User> {
         if (user.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.isActiveAndValidSessionExists(user.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
+            if (_sessionStore.activeSessionExists(user.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
                 throw new AlreadyLoggedInException();
             } else {
                 return createCertificateAndSession(credentials, user);
@@ -74,7 +74,7 @@ public class Authority<SIGNABLE extends Signable, USER extends User> {
     }
 
     public JsonWrappedCertificate refresh(byte[] certificate) {
-        final Session session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
+        final SESSION session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
         final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
@@ -88,9 +88,8 @@ public class Authority<SIGNABLE extends Signable, USER extends User> {
     }
 
     public void signOut(byte[] certificate) {
-        final Session session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
-        session.setValid(false);
-        _sessionStore.save(session);
+        final SESSION session = getSessionBasedOnValidCertificate(Base64.getDecoder().decode(certificate));
+        _sessionStore.delete(session);
 
     }
 
@@ -123,9 +122,9 @@ public class Authority<SIGNABLE extends Signable, USER extends User> {
         return new PublicKeyWithMechanism(session.getMechanism(), session.getPublicKey()).toJavaKey();
     }
 
-    private Session getSessionBasedOnValidCertificate(final byte[] certificateBytes) {
-        final Session session = _sessionStore.findByCertificate(certificateBytes).orElseThrow(NoSessionFoundException::new);
-        if (!session.isValid() || session.getExpiresAt().before(_dateProvider.now())) {
+    private SESSION getSessionBasedOnValidCertificate(final byte[] certificateBytes) {
+        final SESSION session = _sessionStore.findByCertificate(certificateBytes).orElseThrow(() -> new NoSessionFoundException("No session found."));
+        if (session.getExpiresAt().before(_dateProvider.now())) {
             throw new InvalidSessionException();
         }
         return session;
@@ -133,13 +132,12 @@ public class Authority<SIGNABLE extends Signable, USER extends User> {
 
     private void createSession(final PublicKey publicKey, final UUID userId, final byte[] certificate) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
-        final Session session = _sessionStore.create();
+        final SESSION session = _sessionStore.create();
         session.setUserId(userId);
         session.setExpiresAt(nowPlus60Days());
         session.setPublicKey(publicKeyWithMechanism.getValue());
         session.setMechanism(publicKeyWithMechanism.getMechanism().getName());
         session.setCertificate(certificate);
-        session.setValid(true);
         _sessionStore.save(session);
     }
 

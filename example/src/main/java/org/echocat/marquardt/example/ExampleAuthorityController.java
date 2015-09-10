@@ -12,6 +12,7 @@ import org.echocat.marquardt.authority.spring.SpringAuthorityController;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.example.domain.PersistentSession;
 import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/auth")
-public class ExampleAuthorityController extends SpringAuthorityController<UserInfo, PersistentUser, UserCredentials> {
+public class ExampleAuthorityController extends SpringAuthorityController<UserInfo, PersistentUser, UserCredentials, PersistentSession> {
 
     @Autowired
     public ExampleAuthorityController(SessionStore sessionStore, KeyPairProvider issuerKeyProvider, UserStore<UserInfo, PersistentUser> userStore) {

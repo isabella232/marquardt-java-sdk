@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public interface PersistentSessionRepository extends CrudRepository<PersistentSession, Long> {
 
-    Optional<Session> findByCertificate(byte[] certificate);
+    Optional<PersistentSession> findByCertificate(byte[] certificate);
 
-    Long countByUserIdAndPublicKeyAndExpiresAtGreaterThanAndValid(UUID userId, byte[] publicKey, Date expiresAt, boolean valid);
+    Long countByUserIdAndPublicKeyAndExpiresAtGreaterThan(UUID userId, byte[] publicKey, Date expiresAt);
 }

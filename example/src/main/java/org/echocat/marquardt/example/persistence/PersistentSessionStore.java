@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.example.persistence;
 
-import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.example.domain.PersistentSession;
 import org.echocat.marquardt.example.persistence.jpa.PersistentSessionRepository;
@@ -20,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class PersistentSessionStore implements SessionStore {
+public class PersistentSessionStore implements SessionStore<PersistentSession> {
 
     private PersistentSessionRepository _sessionRepository;
 
@@ -30,23 +29,28 @@ public class PersistentSessionStore implements SessionStore {
     }
 
     @Override
-    public Optional<Session> findByCertificate(byte[] certificate) {
+    public Optional<PersistentSession> findByCertificate(byte[] certificate) {
         return _sessionRepository.findByCertificate(certificate);
     }
 
     @Override
-    public boolean isActiveAndValidSessionExists(UUID userId, byte[] publicKey, Date expiresAt) {
-        return _sessionRepository.countByUserIdAndPublicKeyAndExpiresAtGreaterThanAndValid(userId, publicKey, expiresAt, true) > 0;
+    public boolean activeSessionExists(UUID userId, byte[] publicKey, Date expiresAt) {
+        return _sessionRepository.countByUserIdAndPublicKeyAndExpiresAtGreaterThan(userId, publicKey, expiresAt) > 0;
     }
 
     @Override
-    public Session save(Session session) {
-        return _sessionRepository.save((PersistentSession) session);
+    public PersistentSession save(PersistentSession session) {
+        return _sessionRepository.save(session);
     }
 
     @Override
-    public Session create() {
+    public PersistentSession create() {
         return new PersistentSession();
+    }
+
+    @Override
+    public void delete(PersistentSession session) {
+        _sessionRepository.delete(session);
     }
 
     public void deleteAll() {

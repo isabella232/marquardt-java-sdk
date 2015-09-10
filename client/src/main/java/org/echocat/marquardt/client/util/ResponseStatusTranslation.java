@@ -10,6 +10,7 @@ package org.echocat.marquardt.client.util;
 
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 
 public enum ResponseStatusTranslation {
@@ -29,6 +30,10 @@ public enum ResponseStatusTranslation {
     FORBIDDEN(403) {
         @Override
         public RuntimeException translateToException(String message) { return new IllegalArgumentException(message); }
+    },
+    NOT_FOUND(404) {
+        @Override
+        public RuntimeException translateToException(String message) { return new NoSessionFoundException(message); }
     },
     CONFLICT(409) {
         @Override

@@ -15,14 +15,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-public interface SessionStore {
+public interface SessionStore<T extends Session> {
 
-    Optional<Session> findByCertificate(byte[] certificate);
+    Optional<T> findByCertificate(byte[] certificate);
 
-    boolean isActiveAndValidSessionExists(UUID userId, byte[] publicKey, Date expiresAt);
+    boolean activeSessionExists(UUID userId, byte[] publicKey, Date expiresAt);
 
-    Session save(Session session);
+    T save(T session);
 
-    Session create();
+    T create();
 
+    void delete(T session);
 }

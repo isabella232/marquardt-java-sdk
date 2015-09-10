@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.example;
 
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
@@ -77,7 +78,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
         thenCertificateIsProvided();
     }
 
-    @Test(expected = LoginFailedException.class)
+    @Test(expected = NoSessionFoundException.class)
     public void shouldNotRefreshCertificatesOfUsersThatAreSignedOut() throws Exception {
         givenExistingUser();
         givenCorrectCredentials();

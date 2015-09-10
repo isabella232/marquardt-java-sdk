@@ -106,8 +106,4 @@ public interface Session {
      * @param expiresAt Expiry date of this session.
      */
     void setExpiresAt(final Date expiresAt);
-
-    boolean isValid();
-
-    void setValid(final boolean valid);
 }

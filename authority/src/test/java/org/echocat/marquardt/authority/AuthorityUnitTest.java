@@ -10,9 +10,9 @@ package org.echocat.marquardt.authority;
 
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
-import org.echocat.marquardt.authority.exceptions.InvalidSessionException;
-import org.echocat.marquardt.authority.exceptions.NoSessionFoundException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
+import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
@@ -43,7 +43,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     private KeyPairProvider _issuerKeyProvider;
 
     @InjectMocks
-    private Authority<TestUserInfo, TestUser> _authority;
+    private Authority<TestUserInfo, TestUser, TestSession> _authority;
 
     private JsonWrappedCertificate _certificate;
 
@@ -145,26 +145,18 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenRefreshingCertificate();
     }
 
-    @Test(expected = InvalidSessionException.class)
-    public void shouldThrowInvalidSessionExceptionWhenSessionIsInvalid() throws Exception {
-        givenUserExists();
-        givenExistingInvalidSession();
-        whenRefreshingCertificate();
-    }
-
     @Test
     public void shouldSignOut() throws Exception {
         givenUserExists();
         givenExistingSession();
         whenSigningOut();
-        thenSessionIsInvalidated();
-        thenSessionIsUpdated();
+        thenSessionIsDeleted();
     }
 
-    @Test(expected = InvalidSessionException.class)
-    public void shouldThrowIllegalStateExceptionWhenSigningOutButNoUserExists() throws Exception {
+    @Test(expected = NoSessionFoundException.class)
+    public void shouldThrowNoSessionExceptionWhenSigningOutButNoUserExists() throws Exception {
         givenUserDoesNotExist();
-        givenExistingInvalidSession();
+        givenNoExistingSession();
         whenSigningOut();
     }
 
@@ -207,12 +199,12 @@ public class AuthorityUnitTest extends AuthorityTest {
         verify(_sessionStore).save(any(Session.class));
     }
 
-    private void thenSessionIsInvalidated() {
-        assertThat(_validSession.isValid(), is(false));
-    }
-
     private void thenSessionIsUpdated() {
         verify(_sessionStore).save(any(Session.class));
+    }
+
+    private void thenSessionIsDeleted() {
+        verify(_sessionStore).delete(any(Session.class));
     }
 
     private void thenCertificateIsMade() {
