@@ -10,6 +10,7 @@ package org.echocat.marquardt.client.util;
 
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.junit.Test;
 
@@ -63,6 +64,14 @@ public class ResponseStatusTranslationUnitTest {
         thenTranslatedExceptionIs(AlreadyLoggedInException.class);
     }
 
+    @Test
+    public void shouldTranslateNoSessionFound() throws Exception {
+        givenNotFound();
+        whenTranslating();
+        thenTranslationIs(NOT_FOUND);
+        thenTranslatedExceptionIs(NoSessionFoundException.class);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWhenResponseCodeIsUnknown() throws Exception {
         givenUnknownStatusCode();
@@ -83,6 +92,10 @@ public class ResponseStatusTranslationUnitTest {
 
     private void givenUnauthorized() {
         _statusCode = 401;
+    }
+
+    private void givenNotFound() {
+        _statusCode = 404;
     }
 
     private void givenConflict() {
