@@ -33,7 +33,7 @@ public final class Md5Creator {
         return INSTANCE.getMessageDigest("MD5").digest(input);
     }
 
-    private MessageDigest getMessageDigest(final String algorithm) {
+    MessageDigest getMessageDigest(final String algorithm) {
         try {
             return MessageDigest.getInstance(algorithm);
         } catch (final NoSuchAlgorithmException e) {
