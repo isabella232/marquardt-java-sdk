@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class PersistentUserStore implements UserStore<UserInfo, PersistentUser> {
+public class PersistentUserStore implements UserStore<PersistentUser, UserInfo> {
 
     private UserRepository _userRepository;
     private PasswordEncoder _passwordEncoder;

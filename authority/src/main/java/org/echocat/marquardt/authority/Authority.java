@@ -34,9 +34,9 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-public class Authority<SIGNABLE extends Signable, USER extends User, SESSION extends Session> {
+public class Authority<USER extends User, SESSION extends Session, SIGNABLE extends Signable> {
 
-    private final UserStore<SIGNABLE, USER> _userStore;
+    private final UserStore<USER, SIGNABLE> _userStore;
     private final SessionStore<SESSION> _sessionStore;
     private final Signer _signer = new Signer();
     private final KeyPairProvider _issuerKeyProvider;
@@ -44,7 +44,7 @@ public class Authority<SIGNABLE extends Signable, USER extends User, SESSION ext
 
     private DateProvider _dateProvider = new DateProvider();
 
-    public Authority(final UserStore<SIGNABLE, USER> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;

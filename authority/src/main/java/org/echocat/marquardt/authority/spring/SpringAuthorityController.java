@@ -34,14 +34,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-public abstract class SpringAuthorityController<SIGNABLE extends Signable, USER extends User, CREDENTIALS extends Credentials, SESSION extends Session> {
+public abstract class SpringAuthorityController<USER extends User, SESSION extends Session, SIGNABLE extends Signable, CREDENTIALS extends Credentials> {
 
     private final SessionStore _sessionStore;
     private final KeyPairProvider _issuerKeyProvider;
-    private UserStore<SIGNABLE, USER> _userStore;
-    private Authority<SIGNABLE, USER, SESSION> _authority;
+    private UserStore<USER, SIGNABLE> _userStore;
+    private Authority<USER, SESSION, SIGNABLE> _authority;
 
-    public SpringAuthorityController(final SessionStore sessionStore, final KeyPairProvider issuerKeyProvider, UserStore<SIGNABLE, USER> userStore) {
+    public SpringAuthorityController(final SessionStore sessionStore, final KeyPairProvider issuerKeyProvider, UserStore<USER, SIGNABLE> userStore) {
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
         _userStore = userStore;

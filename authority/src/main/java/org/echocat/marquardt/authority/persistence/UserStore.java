@@ -16,7 +16,7 @@ import org.echocat.marquardt.common.domain.Signable;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserStore<SIGNABLE extends Signable, USER extends User> extends UserToSignableMapper<SIGNABLE, USER> {
+public interface UserStore<USER extends User, SIGNABLE extends Signable> extends UserToSignableMapper<USER, SIGNABLE> {
 
     Optional<USER> findUserByCredentials(Credentials credentials);
 

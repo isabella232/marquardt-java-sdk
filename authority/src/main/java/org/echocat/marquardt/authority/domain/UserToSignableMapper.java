@@ -20,7 +20,7 @@ import org.echocat.marquardt.common.domain.Signable;
  * @see User
  */
 @FunctionalInterface
-public interface UserToSignableMapper<SIGNABLE extends Signable, USER extends User> {
+public interface UserToSignableMapper<USER extends User, SIGNABLE extends Signable> {
 
     /**
      * Creates a custom signable from a (persisted) user in the authority.

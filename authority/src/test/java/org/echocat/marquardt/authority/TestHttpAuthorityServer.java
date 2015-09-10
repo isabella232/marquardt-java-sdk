@@ -33,7 +33,7 @@ public class TestHttpAuthorityServer {
     private final ObjectMapper _objectMapper;
     private final Authority _authority;
 
-    public TestHttpAuthorityServer(final UserStore<TestUserInfo, TestUser> userStore, final SessionStore sessionStore) throws IOException {
+    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo> userStore, final SessionStore sessionStore) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
         _authority = new Authority<>(userStore, sessionStore, TestKeyPairProvider.create());

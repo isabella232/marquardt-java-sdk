@@ -43,7 +43,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     private KeyPairProvider _issuerKeyProvider;
 
     @InjectMocks
-    private Authority<TestUserInfo, TestUser, TestSession> _authority;
+    private Authority<TestUser, TestSession, TestUserInfo> _authority;
 
     private JsonWrappedCertificate _certificate;
 

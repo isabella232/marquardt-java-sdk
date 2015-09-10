@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/auth")
-public class ExampleAuthorityController extends SpringAuthorityController<UserInfo, PersistentUser, UserCredentials, PersistentSession> {
+public class ExampleAuthorityController extends SpringAuthorityController<PersistentUser, PersistentSession, UserInfo, UserCredentials> {
 
     @Autowired
-    public ExampleAuthorityController(SessionStore sessionStore, KeyPairProvider issuerKeyProvider, UserStore<UserInfo, PersistentUser> userStore) {
+    public ExampleAuthorityController(SessionStore sessionStore, KeyPairProvider issuerKeyProvider, UserStore<PersistentUser, UserInfo> userStore) {
         super(sessionStore, issuerKeyProvider, userStore);
     }
 }

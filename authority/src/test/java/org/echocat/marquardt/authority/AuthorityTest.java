@@ -38,7 +38,7 @@ public abstract class AuthorityTest {
     protected TestSession _validSession;
 
     @Mock
-    UserStore<TestUserInfo, TestUser> _userStore;
+    UserStore<TestUser, TestUserInfo> _userStore;
     @Mock
     SessionStore _sessionStore;
 
