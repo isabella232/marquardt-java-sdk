@@ -26,6 +26,6 @@ public class ExampleAuthorityController extends SpringAuthorityController<Persis
 
     @Autowired
     public ExampleAuthorityController(SessionStore sessionStore, KeyPairProvider issuerKeyProvider, UserStore<PersistentUser, UserInfo> userStore) {
-        super(sessionStore, issuerKeyProvider, userStore);
+        super(userStore, sessionStore, issuerKeyProvider);
     }
 }

@@ -14,12 +14,7 @@ package org.echocat.marquardt.common.exceptions;
  */
 public class UserExistsException extends RuntimeException {
 
-    public UserExistsException() {
-        super();
-    }
-
     public UserExistsException(String message) {
         super(message);
     }
-
 }

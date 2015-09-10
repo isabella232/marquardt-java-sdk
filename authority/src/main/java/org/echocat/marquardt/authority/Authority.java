@@ -86,7 +86,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
             final USER user = _userStore.createUserFromCredentials(credentials);
             return createCertificateAndSession(credentials, user);
         } else {
-            throw new UserExistsException();
+            throw new UserExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
     }
 
@@ -104,7 +104,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
             if (_sessionStore.activeSessionExists(user.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
-                throw new AlreadyLoggedInException();
+                throw new AlreadyLoggedInException("User with id " + user.getUserId() + " is already logged in for current client.");
             } else {
                 return createCertificateAndSession(credentials, user);
             }

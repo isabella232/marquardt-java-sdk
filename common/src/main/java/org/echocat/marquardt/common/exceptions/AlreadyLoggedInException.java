@@ -12,11 +12,6 @@ package org.echocat.marquardt.common.exceptions;
  * Exception intended to be thrown when a user tries to sign in but already has a valid session.
  */
 public class AlreadyLoggedInException extends RuntimeException {
-
-    public AlreadyLoggedInException() {
-        super();
-    }
-
     public AlreadyLoggedInException(String message) {
         super(message);
     }
