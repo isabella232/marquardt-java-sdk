@@ -10,7 +10,7 @@ package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.example.domain.UserInfo;
-import org.echocat.marquardt.service.security.CertificateAuthenticationFilter;
+import org.echocat.marquardt.service.spring.SpringSecurityCertificateAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,11 +36,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    private CertificateAuthenticationFilter<UserInfo> certificateAuthenticationFilter() {
-        return new CertificateAuthenticationFilter<UserInfo>(_certificateValidator) {
+    private SpringSecurityCertificateAuthenticationFilter<UserInfo> certificateAuthenticationFilter() {
+        return new SpringSecurityCertificateAuthenticationFilter<UserInfo>(_certificateValidator) {
             @Override
-            protected String getUserName(UserInfo userInfo) {
-                return userInfo.getUserId().toString();
+            protected String getIdentifier(UserInfo signable) {
+                return signable.getUserId().toString();
             }
         };
     }
