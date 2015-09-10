@@ -153,15 +153,15 @@ public class AuthorityUnitTest extends AuthorityTest {
         thenSessionIsDeleted();
     }
 
-    @Test(expected = NoSessionFoundException.class)
-    public void shouldThrowNoSessionExceptionWhenSigningOutButNoUserExists() throws Exception {
+    @Test
+    public void shouldQuietlyHandleNoSessionFoundExceptionWhenSigningOutButNoUserExists() throws Exception {
         givenUserDoesNotExist();
         givenNoExistingSession();
         whenSigningOut();
     }
 
-    @Test(expected = NoSessionFoundException.class)
-    public void shouldThrowNoSessionFoundExceptionWhenSigningOutWithoutSession() throws Exception {
+    @Test
+    public void shouldQuietlyHandleNoSessionFoundExceptionWhenSigningOutWithoutSession() throws Exception {
         givenUserExists();
         givenNoExistingSession();
         whenSigningOut();
