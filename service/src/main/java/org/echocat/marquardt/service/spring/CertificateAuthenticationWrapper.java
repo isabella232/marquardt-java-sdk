@@ -16,19 +16,22 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 
+/**
+ *
+ */
 public class CertificateAuthenticationWrapper implements Authentication {
 
-    private final String _userName;
+    private final String _identifier;
     private final Certificate<?> _certificate;
 
-    public CertificateAuthenticationWrapper(final String userName, final Certificate<?> certificate) {
-        _userName = userName;
+    public CertificateAuthenticationWrapper(final String identifier, final Certificate<?> certificate) {
+        _identifier = identifier;
         _certificate = certificate;
     }
 
     @Override
     public String getName() {
-        return _userName;
+        return _identifier;
     }
 
     @Override
