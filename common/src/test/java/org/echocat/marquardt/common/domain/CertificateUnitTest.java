@@ -9,7 +9,6 @@
 package org.echocat.marquardt.common.domain;
 
 import org.echocat.marquardt.common.SignablePayload;
-import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.junit.Before;
 import org.junit.Test;

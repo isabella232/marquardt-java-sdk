@@ -9,7 +9,7 @@
 package org.echocat.marquardt.common.exceptions;
 
 /**
- * Exception intendent to be thrown when a certificate cannot be accepted. This may be an expired or an untrusted
+ * Exception intended to be thrown when a certificate cannot be accepted. This may be an expired or an untrusted
  * certificate.
  */
 public class InvalidCertificateException extends RuntimeException {
