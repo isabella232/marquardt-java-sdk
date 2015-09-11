@@ -17,7 +17,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collection;
 
 /**
- *
+ * Wrapper for Certificates to create a Spring Security authentication.
  */
 public class CertificateAuthenticationWrapper implements Authentication {
 

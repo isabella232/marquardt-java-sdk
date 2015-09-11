@@ -25,6 +25,24 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Base64;
 
+/**
+ * Implement this filter to enable login at a marquardt service (not authority!).
+ *
+ * Clients must add a X-Certificate header which contains their (Base64 encoded) certificate payload.
+ * Clients must sign their header using their PrivateKey matching to the PublicKey in the certificate.
+ * This signature signes all headers including X-Certificate.<br/>
+ *
+ * The filter checks if
+ * <li>The certificate is signed by the authority using a trusted key</li>
+ * <li>The certificate is not expired</li>
+ * <li>The signature of the headers can be validated with the clients public key from the certificate</li><br/>
+ *
+ * Implement the abstract method authenticateUser to build your security context with the user info from the Certificate.
+ *
+ * @param <SIGNABLE> Your user information.
+ * @see org.echocat.marquardt.common.web.SignatureHeaders
+ * @see org.echocat.marquardt.service.spring.SpringSecurityCertificateAuthenticationFilter
+ */
 public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable> implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificateAuthenticationFilter.class);
@@ -55,6 +73,11 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable>
         }
     }
 
+    /**
+     * You can take over here and create a security context for the user.
+     *
+     * @param certificate Trusted and valid certificate.
+     */
     protected abstract void authenticateUser(Certificate<SIGNABLE> certificate);
 
     @Override

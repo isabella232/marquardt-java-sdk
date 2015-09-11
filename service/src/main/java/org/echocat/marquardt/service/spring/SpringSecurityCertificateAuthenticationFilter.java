@@ -16,9 +16,12 @@ import org.echocat.marquardt.service.CertificateAuthenticationFilter;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * @param <SIGNABLE>
+ * Marquardt Spring Security Filter. Wraps a certificate and adds the authentication to the Spring Security Context.
+ *
+ * @param <SIGNABLE> Your signable user information.
  */
-public abstract class SpringSecurityCertificateAuthenticationFilter<SIGNABLE extends Signable> extends CertificateAuthenticationFilter<SIGNABLE> {
+public abstract class SpringSecurityCertificateAuthenticationFilter<SIGNABLE extends Signable>
+        extends CertificateAuthenticationFilter<SIGNABLE> {
 
     public SpringSecurityCertificateAuthenticationFilter(CertificateValidator certificateValidator) {
         super(certificateValidator, new RequestValidator());
@@ -30,8 +33,10 @@ public abstract class SpringSecurityCertificateAuthenticationFilter<SIGNABLE ext
     }
 
     /**
-     * @param signable
-     * @return
+     * Extract a identifier (username) from your Signable implementation.
+     *
+     * @param signable Your signable implementation.
+     * @return The identifier of your user info wrapped into the certificate.
      */
     protected abstract String getIdentifier(SIGNABLE signable);
 }
