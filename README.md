@@ -1,6 +1,7 @@
 # marquardt-java-sdk
 [![Build Status](https://api.travis-ci.org/echocat/marquardt-java-sdk.svg?branch=master)](https://travis-ci.org/echocat/marquardt-java-sdk)
 [![Coverage Status](https://coveralls.io/repos/echocat/marquardt-java-sdk/badge.svg?branch=master&service=github)](https://coveralls.io/github/echocat/marquardt-java-sdk?branch=master)
+[![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)](http://mozilla.org/MPL/2.0/)
 
 ## Setup project
 
