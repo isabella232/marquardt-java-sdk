@@ -30,13 +30,13 @@ import java.util.Base64;
  *
  * Clients must add a X-Certificate header which contains their (Base64 encoded) certificate payload.
  * Clients must sign their header using their PrivateKey matching to the PublicKey in the certificate.
- * This signature signes all headers including X-Certificate.<br/>
+ * This signature signes all headers including X-Certificate.<br>
  *
  * The filter checks if
  * <ul>
  * <li>The certificate is signed by the authority using a trusted key</li>
  * <li>The certificate is not expired</li>
- * <li>The signature of the headers can be validated with the clients public key from the certificate</li></ul><br/>
+ * <li>The signature of the headers can be validated with the clients public key from the certificate</li></ul><br>
  *
  * Implement the abstract method authenticateUser to build your security context with the user info from the Certificate.
  *
