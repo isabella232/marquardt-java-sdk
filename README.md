@@ -18,6 +18,12 @@ In order to access protected services, a client must obtain a certificate issued
 
 ![marquardt login](https://raw.githubusercontent.com/echocat/marquardt-java-sdk/master/docs/login.png "Marquardt Login")
 
+### Marquardt Refresh Process
+
+Certificates expire after ~15 minutes and need to be refreshed by the client:
+
+![marquardt refresh](https://raw.githubusercontent.com/echocat/marquardt-java-sdk/master/docs/refresh.png "Marquardt Refresh")
+
 ### Marquardt Sign Out Process
 
 To log out, a client must send it's current certificate - also expired ones - to the authority sign out endpoint:
