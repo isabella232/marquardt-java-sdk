@@ -56,8 +56,16 @@ cd .git_hooks
 ./enable_hooks.sh
 ```
 
+## Credits
+
+[![marquardt login](docs/teufel-t.png "Teufel Logo")](https://teufelaudio.com) [![marquardt login](docs/raumfeld-logo.png "Raumfeld Logo")](https://raumfeld.com)
+
+Development of this project is sponsored by [Lautsprecher Teufel GmbH](https://teufelaudio.com) and is used in their [Raumfeld products](https://raumfeld.com). 
+
+
 ## License
 
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
