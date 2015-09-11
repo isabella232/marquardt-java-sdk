@@ -14,7 +14,8 @@
   ~ **** END LICENSE BLOCK *****
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.echocat.marquardt</groupId>
@@ -22,7 +23,9 @@
     <name>Marquardt Java SDK</name>
     <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <description>A library for access control based on signed certificates from a central authority. Certificates can be verified without roundtrips to the authority.</description>
+    <description>A library for access control based on signed certificates from a central authority. Certificates can be
+        verified without roundtrips to the authority.
+    </description>
     <url>https://github.com/echocat/marquardt-java-sdk</url>
 
     <modules>
@@ -95,7 +98,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.3</version>
                 <configuration>
                     <source>${version.java}</source>
                     <target>${version.java}</target>
@@ -150,6 +153,28 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>site</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <aggregate>true</aggregate>
+                </configuration>
             </plugin>
         </plugins>
     </build>
