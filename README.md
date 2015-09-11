@@ -4,7 +4,7 @@
 [![Dependency Status](https://www.versioneye.com/user/projects/55f2c1ced4d2040019000161/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55f2c1ced4d2040019000161)
 [![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)](http://mozilla.org/MPL/2.0/)
 
-Echocat Marquardt is a certificate based distributed authentication / authorization framework. 
+echocat Marquardt is a certificate based distributed authentication / authorization framework. 
 
 It uses a central authority which holds the session of a user. The authority produces certificates which are signed using a key pair with a public key trusted by Marquardt services and clients. Certificates have a short time to live of ~ 15 minutes. When they are expired, they must be refreshed.
 
