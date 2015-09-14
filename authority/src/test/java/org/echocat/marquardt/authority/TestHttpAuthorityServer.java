@@ -20,25 +20,31 @@ import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
+import org.echocat.marquardt.common.domain.Signature;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.Base64;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestHttpAuthorityServer {
 
     private final HttpServer _server;
     private final ObjectMapper _objectMapper;
     private final Authority _authority;
+    private final Signature _signature = mock(Signature.class);
 
     public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo> userStore, final SessionStore sessionStore) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
         _authority = new Authority<>(userStore, sessionStore, TestKeyPairProvider.create());
+        when(_signature.isValidFor(any(), any())).thenReturn(true);
     }
 
     public void start() throws IOException {
@@ -104,7 +110,7 @@ public class TestHttpAuthorityServer {
         @Override
         String getResponse(InputStream requestBody, Headers headers) throws IOException {
             final byte[] certificate = Base64.getDecoder().decode(headers.get("X-Certificate").get(0));
-            final JsonWrappedCertificate refresh = _authority.refresh(certificate);
+            final JsonWrappedCertificate refresh = _authority.refresh(certificate, certificate, _signature);
             return _objectMapper.writeValueAsString(refresh);
         }
     }

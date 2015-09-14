@@ -21,7 +21,9 @@ import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
@@ -30,8 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.security.PublicKey;
-import java.util.Date;
+import java.security.PublicKey;import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -115,15 +116,19 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
 
     /**
      * Implements refresh. Updates the Session of the User with a fresh certificate.
+     *
      * @param certificate Certificate to replace (may be an expired one - but must be the last one created for this session).
+     * @param signedBytes byte sequence signed by the client.
+     * @param signature signature of the byte sequence.
      * @return Ready-to-send JSON wrapped certificate for the client.
      * @throws NoSessionFoundException If no session exists for this certificate. You must sign in again to handle this.
      * @throws ExpiredSessionException When the session is already expired. You must sign in again to handle this.
      * @throws IllegalStateException When the user id of the session is not found. Caused by a data inconsistency or a wrong UserStore implementation.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public JsonWrappedCertificate refresh(final byte[] certificate) {
+    public JsonWrappedCertificate refresh(final byte[] certificate, byte[] signedBytes, Signature signature) {
         final SESSION session = getValidSessionBasedOnCertificate(decodeBase64(certificate));
+        verifySignature(signedBytes, signature, session);
         final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
@@ -139,11 +144,14 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
     /**
      *
      * @param certificate Certificate to sign out with (may be an expired one - but must be the last one created for this session).
+     * @param signedBytes byte sequence signed by the client.
+     * @param signature signature of the byte sequence.
      */
-    public void signOut(final byte[] certificate) {
+    public void signOut(final byte[] certificate, byte[] signedBytes, Signature signature) {
         final SESSION session;
         try {
             session = getSessionBasedOnCertificate(decodeBase64(certificate));
+            verifySignature(signedBytes, signature, session);
             _sessionStore.delete(session);
         } catch (final NoSessionFoundException ignored) {
             LOGGER.info("Received sign out, but session was not found for provided certificate.");
@@ -152,6 +160,13 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
 
     public void setDateProvider(final DateProvider dateProvider) {
         _dateProvider = dateProvider;
+    }
+
+    private void verifySignature(byte[] signedBytes, Signature signature, SESSION session) {
+        final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(session.getMechanism(), session.getPublicKey());
+        if (!signature.isValidFor(signedBytes, publicKeyWithMechanism.toJavaKey())){
+            throw new InvalidSignatureException("failed to verify signature with client's public key");
+        }
     }
 
     private JsonWrappedCertificate createCertificateAndSession(final Credentials credentials, final USER user) {

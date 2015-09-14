@@ -10,19 +10,24 @@ package org.echocat.marquardt.authority.spring;
 
 import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
+import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.common.CertificateValidator;
+import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
-import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
+import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.web.RequestValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -34,21 +39,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Base64;
 
 /**
  * Blueprint of an authority controller for the Spring MVC framework.
  * See examples to see how it is used.
  *
- * @param <USER> Your authority's user implementation.
- * @param <SESSION> Your authority's session implementation.
- * @param <SIGNABLE> Your user information that is wrapped into the Certificate.
+ * @param <USER>        Your authority's user implementation.
+ * @param <SESSION>     Your authority's session implementation.
+ * @param <SIGNABLE>    Your user information that is wrapped into the Certificate.
  * @param <CREDENTIALS> Your credentials implementation.
  */
 public abstract class SpringAuthorityController<USER extends User,
-                                                SESSION extends Session,
-                                                SIGNABLE extends Signable,
-                                                CREDENTIALS extends Credentials> {
+        SESSION extends Session,
+        SIGNABLE extends Signable,
+        CREDENTIALS extends Credentials> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
@@ -56,18 +63,21 @@ public abstract class SpringAuthorityController<USER extends User,
     private final KeyPairProvider _issuerKeyProvider;
     private UserStore<USER, SIGNABLE> _userStore;
     private Authority<USER, SESSION, SIGNABLE> _authority;
+    private final RequestValidator _requestValidator = new RequestValidator();
+    private CertificateValidator<SIGNABLE> _certificateValidator;
 
     /**
      * Wire this with your stores.
      *
-     * @param userStore Your user store implementation.
-     * @param sessionStore Your session store implementation.
+     * @param userStore         Your user store implementation.
+     * @param sessionStore      Your session store implementation.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
+    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider, CertificateValidator<SIGNABLE> certificateValidator) {
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
         _userStore = userStore;
+        _certificateValidator = certificateValidator;
         _authority = new Authority<>(_userStore, _sessionStore, _issuerKeyProvider);
     }
 
@@ -86,14 +96,18 @@ public abstract class SpringAuthorityController<USER extends User,
 
     @RequestMapping(value = "/refresh", method = RequestMethod.POST)
     @ResponseBody
-    public JsonWrappedCertificate refresh(@RequestHeader("X-Certificate") final byte[] certificate) {
-        return _authority.refresh(certificate);
+    public JsonWrappedCertificate refresh(@RequestHeader("X-Certificate") final byte[] certificate, HttpServletRequest request) {
+        byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
+        Signature signature = _requestValidator.extractSignatureFromHeader(request);
+        return _authority.refresh(certificate, signedBytesFromRequest, signature);
     }
 
     @RequestMapping(value = "/signout", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void signOut(@RequestHeader("X-Certificate") final byte[] certificate) {
-        _authority.signOut(certificate);
+    public void signOut(@RequestHeader("X-Certificate") final byte[] certificate, HttpServletRequest request) {
+        byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
+        Signature signature = _requestValidator.extractSignatureFromHeader(request);
+        _authority.signOut(certificate, signedBytesFromRequest, signature);
     }
 
     @ExceptionHandler(UserExistsException.class)
@@ -137,6 +151,5 @@ public abstract class SpringAuthorityController<USER extends User,
     public void handleIOException(final IOException ex) {
         LOGGER.error("Unhandled IOException catched.", ex);
     }
-
 
 }

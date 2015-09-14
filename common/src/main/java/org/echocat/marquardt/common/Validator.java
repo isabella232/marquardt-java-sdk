@@ -86,14 +86,14 @@ public class Validator {
                 final byte[] signableBytesWithoutSignature = readBytesAgainForLaterValidation(bufferedInputStream);
 
                 if (publicKey == null) {
-                    throw new InvalidSignatureException();
+                    throw new InvalidSignatureException("no public key provided");
                 }
                 final int signatureLength = InputStreamUtils.readInt(bufferedInputStream);
                 final Signature signature = new Signature(InputStreamUtils.readBytes(bufferedInputStream, signatureLength));
                 if (signature.isValidFor(signableBytesWithoutSignature, publicKey)) {
                     return signable;
                 }
-                throw new InvalidSignatureException();
+                throw new InvalidSignatureException("signature is invalid for provided public key");
             } finally {
                 IOUtils.closeQuietly(bufferedInputStream);
             }

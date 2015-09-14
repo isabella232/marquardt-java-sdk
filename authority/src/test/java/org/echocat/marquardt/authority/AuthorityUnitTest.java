@@ -10,7 +10,6 @@ package org.echocat.marquardt.authority;
 
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
-import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
@@ -18,8 +17,11 @@ import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +48,8 @@ public class AuthorityUnitTest extends AuthorityTest {
     private Authority<TestUser, TestSession, TestUserInfo> _authority;
 
     private JsonWrappedCertificate _certificate;
+    @Mock
+    private Signature _signature;
 
     @Before
     @Override
@@ -53,6 +57,7 @@ public class AuthorityUnitTest extends AuthorityTest {
         final KeyPairProvider keyPairProvider = TestKeyPairProvider.create();
         when(_issuerKeyProvider.getPrivateKey()).thenReturn(keyPairProvider.getPrivateKey());
         when(_issuerKeyProvider.getPublicKey()).thenReturn(keyPairProvider.getPublicKey());
+        when(_signature.isValidFor(any(), any())).thenReturn(true);
         super.setup();
     }
 
@@ -123,6 +128,18 @@ public class AuthorityUnitTest extends AuthorityTest {
         thenCertificateIsMade();
     }
 
+    @Test(expected = InvalidSignatureException.class)
+    public void shouldThrowExceptionWhenSignatureIsInvalidOnRefresh() throws Exception {
+        givenUserExists();
+        givenExistingSession();
+        givenInvalidSignature();
+        whenRefreshingCertificate();
+    }
+
+    private void givenInvalidSignature() {
+        when(_signature.isValidFor(any(), any())).thenReturn(false);
+    }
+
     @Test(expected = CertificateCreationException.class)
     public void shouldThrowCertificateCreationFailedExceptionWhenRefreshingInButPayloadCannotBeSigned() throws Exception {
         givenUserExists();
@@ -151,6 +168,14 @@ public class AuthorityUnitTest extends AuthorityTest {
         givenExistingSession();
         whenSigningOut();
         thenSessionIsDeleted();
+    }
+
+    @Test(expected = InvalidSignatureException.class)
+    public void shouldThrowExceptionWhenSignatureIsInvalidOnSignOut() throws Exception {
+        givenUserExists();
+        givenExistingSession();
+        givenInvalidSignature();
+        whenSigningOut();
     }
 
     @Test
@@ -184,11 +209,11 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void whenRefreshingCertificate() {
-        _certificate = _authority.refresh(CERTIFICATE);
+        _certificate = _authority.refresh(CERTIFICATE, new byte[0], _signature);
     }
 
     private void whenSigningOut() {
-        _authority.signOut(CERTIFICATE);
+        _authority.signOut(CERTIFICATE, new byte[0], _signature);
     }
 
     private void thenUserIsStored() {
