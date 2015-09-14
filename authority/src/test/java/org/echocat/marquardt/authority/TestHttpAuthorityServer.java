@@ -28,7 +28,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -97,7 +96,7 @@ public class TestHttpAuthorityServer {
         @Override
         String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
             final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
-            _authority.signOut(certificate);
+            _authority.signOut(certificate, certificate, _signature);
             return null;
         }
     }
@@ -109,7 +108,7 @@ public class TestHttpAuthorityServer {
         }
         @Override
         String getResponse(InputStream requestBody, Headers headers) throws IOException {
-            final byte[] certificate = Base64.getDecoder().decode(headers.get("X-Certificate").get(0));
+            final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
             final JsonWrappedCertificate refresh = _authority.refresh(certificate, certificate, _signature);
             return _objectMapper.writeValueAsString(refresh);
         }
