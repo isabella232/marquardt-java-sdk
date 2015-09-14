@@ -53,10 +53,18 @@ public class RequestSigner {
         for (SignatureHeaders headerToInclude : SignatureHeaders.values()) {
             final List<String> headerValues = request.getHeaders().get(headerToInclude.getHeaderName());
             if (headerValues != null) {
-                final byte[] headerBytes = (headerToInclude.getHeaderName() + ":" + headerValues.stream().findFirst().get()).getBytes();
+                final byte[] headerBytes = (headerToInclude.getHeaderName() + ":" + getFirstHeaderValue(headerValues)).getBytes();
                 bytesToSign.write(Ints.toByteArray(headerBytes.length));
                 bytesToSign.write(headerBytes);
             }
+        }
+    }
+
+    private String getFirstHeaderValue(List<String> headerValues) {
+        try {
+            return headerValues.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("No payload of known signature header.");
         }
     }
 }
