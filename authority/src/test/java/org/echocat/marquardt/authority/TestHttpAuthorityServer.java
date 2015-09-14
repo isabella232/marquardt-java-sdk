@@ -13,8 +13,8 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Base64;
+
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 public class TestHttpAuthorityServer {
 
@@ -88,7 +90,7 @@ public class TestHttpAuthorityServer {
 
         @Override
         String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
-            final byte[] certificate = Base64.getDecoder().decode(headers.get("X-Certificate").get(0));
+            final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
             _authority.signOut(certificate);
             return null;
         }

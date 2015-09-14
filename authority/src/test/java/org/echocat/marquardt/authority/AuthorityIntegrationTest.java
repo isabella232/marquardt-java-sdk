@@ -10,6 +10,7 @@ package org.echocat.marquardt.authority;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.junit.After;
@@ -23,13 +24,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Base64;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthorityIntegrationTest extends AuthorityTest {
@@ -122,7 +121,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
         _connection = (HttpURLConnection) urlToPost.openConnection();
         _connection.setRequestMethod("POST");
         _connection.setRequestProperty("Content-Type", "application/json");
-        _connection.setRequestProperty("X-Certificate", Base64.getEncoder().encodeToString(CERTIFICATE));
+        _connection.setRequestProperty("X-Certificate", Base64.encodeBase64URLSafeString(CERTIFICATE));
         _connection.setDoOutput(true);
         _objectMapper.writeValue(_connection.getOutputStream(), content);
     }

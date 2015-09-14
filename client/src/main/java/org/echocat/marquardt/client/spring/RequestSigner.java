@@ -17,8 +17,9 @@ import org.springframework.http.HttpRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PrivateKey;
-import java.util.Base64;
 import java.util.List;
+
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
 /**
  * Creates signatures of http requests based on request headers.
@@ -39,7 +40,7 @@ public class RequestSigner {
         ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream();
         try {
             writeRequestTo(request, bytesToSign);
-            return Base64.getEncoder().encode(_signer.signatureOf(bytesToSign.toByteArray(), keyToSignWith));
+            return encodeBase64(_signer.signatureOf(bytesToSign.toByteArray(), keyToSignWith));
         } finally {
             IOUtils.closeQuietly(bytesToSign);
         }

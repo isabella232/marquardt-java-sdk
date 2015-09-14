@@ -9,7 +9,8 @@
 package org.echocat.marquardt.common.domain;
 
 import javax.annotation.Nonnull;
-import java.util.Base64;
+
+import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 
 /**
  * Intended for internal use only.
@@ -69,7 +70,7 @@ public abstract class BytesWithMechanism<M extends BytesWithMechanism.Mechanism>
 
     @Override
     public String toString() {
-        return getMechanism() + ":" + Base64.getEncoder().withoutPadding().encodeToString(getValue());
+        return getMechanism() + ":" + encodeBase64URLSafeString(getValue());
     }
 
 }

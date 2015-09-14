@@ -13,7 +13,8 @@ import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.Base64;
+
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
 public class PublicKeySerializer extends com.fasterxml.jackson.databind.JsonSerializer<PublicKey> {
 
@@ -23,7 +24,7 @@ public class PublicKeySerializer extends com.fasterxml.jackson.databind.JsonSeri
     public void serialize(final PublicKey publicKey, final JsonGenerator jsonGenerator, final com.fasterxml.jackson.databind.SerializerProvider serializerProvider) throws IOException {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
         jsonGenerator.writeStartObject();
-        jsonGenerator.writeBinaryField(KEY, Base64.getEncoder().encode(publicKeyWithMechanism.getContent()));
+        jsonGenerator.writeBinaryField(KEY, encodeBase64(publicKeyWithMechanism.getContent()));
         jsonGenerator.writeEndObject();
     }
 }

@@ -22,10 +22,10 @@ import org.junit.Test;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
@@ -107,7 +107,7 @@ public class CertificateValidatorUnitTest {
     }
 
     private void thenCertificateExpiredAsNowIsInTheFuture() {
-        final Date dateIn16MinutesFuture = Date.from(ZonedDateTime.now().plusMinutes(16).toInstant());
+        final Date dateIn16MinutesFuture = new Date(new Date().getTime() + TimeUnit.MINUTES.toMillis(16));
         doReturn(dateIn16MinutesFuture).when(_mockedDateProvider).now();
         final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, asList(_issuerKeys.getPublicKey()));
         validator.deserializeAndValidateCertificate(_signedPayload);

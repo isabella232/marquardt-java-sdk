@@ -8,13 +8,12 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.domain.Session;
+import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
@@ -24,6 +23,7 @@ import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.slf4j.Logger;
@@ -31,10 +31,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 /**
  * Authority implementation. Wrap this with your favorite server implementation.
@@ -122,7 +123,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public JsonWrappedCertificate refresh(final byte[] certificate) {
-        final SESSION session = getValidSessionBasedOnCertificate(Base64.getDecoder().decode(certificate));
+        final SESSION session = getValidSessionBasedOnCertificate(decodeBase64(certificate));
         final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
@@ -142,7 +143,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
     public void signOut(final byte[] certificate) {
         final SESSION session;
         try {
-            session = getSessionBasedOnCertificate(Base64.getDecoder().decode(certificate));
+            session = getSessionBasedOnCertificate(decodeBase64(certificate));
             _sessionStore.delete(session);
         } catch (final NoSessionFoundException ignored) {
             LOGGER.info("Received sign out, but session was not found for provided certificate.");

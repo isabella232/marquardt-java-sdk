@@ -35,8 +35,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.Base64;
 import java.util.List;
+
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
+import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 
 /**
  * Spring implementation of the client.
@@ -80,8 +82,8 @@ public class SpringClient<T extends Signable> implements Client<T> {
                                                         final byte[] bytes,
                                                         final ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
                         HttpHeaders headers = httpRequest.getHeaders();
-                        headers.add(SignatureHeaders.CONTENT.getHeaderName(), Base64.getEncoder().encodeToString(Md5Creator.create(bytes)));
-                        headers.add(SignatureHeaders.X_CERTIFICATE.getHeaderName(), new String(Base64.getEncoder().encode(_certificate)));
+                        headers.add(SignatureHeaders.CONTENT.getHeaderName(), encodeBase64URLSafeString(Md5Creator.create(bytes)));
+                        headers.add(SignatureHeaders.X_CERTIFICATE.getHeaderName(), new String(encodeBase64(_certificate)));
                         headers.add("X-Signature", new String(_requestSigner.getSignature(httpRequest, _clientKeyProvider.getPrivateKey())));
                         return clientHttpRequestExecution.execute(httpRequest, bytes);
                     }

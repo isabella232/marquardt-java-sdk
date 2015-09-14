@@ -23,7 +23,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Base64;
+
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 /**
  * Implement this filter to enable login at a marquardt service (not authority!).
@@ -61,7 +62,7 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable>
         try {
             final String header = httpServletRequest.getHeader("X-Certificate");
             if (header != null) {
-                final byte[] decodedCertificate = Base64.getDecoder().decode(header);
+                final byte[] decodedCertificate = decodeBase64(header);
                 final Certificate<SIGNABLE> certificate = _certificateValidator.deserializeAndValidateCertificate(decodedCertificate);
                 LOGGER.debug("Successful extracted user info from header {}", certificate.getPayload());
                 if (_requestValidator.isValid(httpServletRequest, certificate.getClientPublicKey())) {

@@ -19,8 +19,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.UUID;
+
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
 public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
@@ -57,7 +58,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
         final UserInfo userInfo = new UserInfo(UUID.randomUUID());
         final Certificate<UserInfo> certificate = Certificate.create(_clientKeyProvider.getPublicKey(), _clientKeyProvider.getPublicKey(), 666L, userInfo);
         final byte[] selfSignedCertificate = _clientSigner.sign(certificate, _clientKeyProvider.getPrivateKey());
-        _selfSignedCertificate = Base64.getEncoder().encode(selfSignedCertificate);
+        _selfSignedCertificate = encodeBase64(selfSignedCertificate);
     }
 
     private void givenSignedInUser() throws IOException {
@@ -81,7 +82,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
     private void whenAccessingProtectedResourceWithSelfSignedCertificate(byte[] attackersCertificate) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-Certificate", new String(Base64.getEncoder().encode(attackersCertificate)));
+        headers.add("X-Certificate", new String(encodeBase64(attackersCertificate)));
         HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
         restTemplate.exchange(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST, requestEntity, Void.class);

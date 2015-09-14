@@ -18,7 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.Base64;
+
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 /**
  * Client signed header validator. Clients must sign their requests (including their certificate) with a
@@ -60,7 +61,7 @@ public class RequestValidator {
         if (header == null) {
             throw new IllegalArgumentException("Expected non-empty signature header.");
         }
-        return new Signature(Base64.getDecoder().decode(header));
+        return new Signature(decodeBase64(header));
     }
 
     private void writeRequestTo(HttpServletRequest request, ByteArrayOutputStream bytesToSign) throws IOException {

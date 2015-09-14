@@ -29,15 +29,13 @@ import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Base64;
 
+import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateAuthenticationFilterUnitTest {
@@ -120,7 +118,7 @@ public class CertificateAuthenticationFilterUnitTest {
     }
 
     private void givenValidRequest() {
-        String encodedCertificate = Base64.getEncoder().encodeToString("CERTIFICATE".getBytes());
+        String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
         _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenReturn(_certificate);
         when(_requestValidator.isValid(_httpServletRequest, null)).thenReturn(true);
@@ -131,13 +129,13 @@ public class CertificateAuthenticationFilterUnitTest {
     }
 
     private void givenRequestWithInvalidCertificate() {
-        String encodedCertificate = Base64.getEncoder().encodeToString("CERTIFICATE".getBytes());
+        String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
         _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenThrow(InvalidCertificateException.class);
     }
 
     private void givenRequestWithInvalidSignature() {
-        String encodedCertificate = Base64.getEncoder().encodeToString("CERTIFICATE".getBytes());
+        String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
         _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenReturn(_certificate);
         when(_requestValidator.isValid(_httpServletRequest, null)).thenReturn(false);

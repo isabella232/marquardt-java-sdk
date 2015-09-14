@@ -17,13 +17,14 @@ import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.Base64;
+
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 public class PublicKeyDeserializer extends JsonDeserializer<PublicKey> {
     @Override
     public PublicKey deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
         final ObjectCodec oc = jsonParser.getCodec();
         final JsonNode node = oc.readTree(jsonParser);
-        return new PublicKeyWithMechanism(Base64.getDecoder().decode(node.get(PublicKeySerializer.KEY).binaryValue())).toJavaKey();
+        return new PublicKeyWithMechanism(decodeBase64(node.get(PublicKeySerializer.KEY).binaryValue())).toJavaKey();
     }
 }

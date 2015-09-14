@@ -18,7 +18,6 @@ import java.io.InputStream;
  *
  * @param <T> Signable this factory can deserialize.
  */
-@FunctionalInterface
 public interface DeserializingFactory<T extends Signable> {
 
     /**
