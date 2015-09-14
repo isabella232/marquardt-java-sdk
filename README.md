@@ -16,7 +16,19 @@ __Services__ can authenticate and authorize client requests without roundtrips t
 
 In order to access protected services, a client must obtain a certificate issued by the authority. The following diagram explains the basic process: A client sends its credentials to the authority. The authority checks that the user exists and its credentials are valid, creates a new session if necessary and issues the certificate. 
 
-![marquardt login](https://raw.githubusercontent.com/echocat/marquardt-java-sdk/master/docs/login.png "Marquardt Login")
+![marquardt login](docs/login.png "Marquardt Login")
+
+### Marquardt Refresh Process
+
+Certificates expire after ~15 minutes and need to be refreshed by the client:
+
+![marquardt refresh](docs/refresh.png "Marquardt Refresh")
+
+### Marquardt Sign Out Process
+
+To log out, a client must send it's current certificate - also expired ones - to the authority sign out endpoint:
+
+![marquardt logout](docs/logout.png "Marquardt Logout")
 
 ## Modules
 
@@ -44,8 +56,16 @@ cd .git_hooks
 ./enable_hooks.sh
 ```
 
+## Credits
+
+[![marquardt login](docs/teufel-t.png "Teufel Logo")](https://teufelaudio.com) [![marquardt login](docs/raumfeld-logo.png "Raumfeld Logo")](https://raumfeld.com)
+
+Development of this project is sponsored by [Lautsprecher Teufel GmbH](https://teufelaudio.com) and is used in their [Raumfeld products](https://raumfeld.com). 
+
+
 ## License
 
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
