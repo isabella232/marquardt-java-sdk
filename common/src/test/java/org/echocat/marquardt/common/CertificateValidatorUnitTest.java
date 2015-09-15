@@ -13,7 +13,7 @@ import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
-import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.exceptions.SecurityMechanismException;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.junit.Before;
@@ -82,7 +82,7 @@ public class CertificateValidatorUnitTest {
         whenValidatedPayloadIsDeserialized();
     }
 
-    @Test(expected = InvalidSignatureException.class)
+    @Test(expected = SignatureValidationFailedException.class)
     public void shouldNotValidateCertificateFromUnknownIssuer() throws Exception {
         givenSignedCertificateFromUnknownIssuer();
         whenValidatedPayloadIsDeserialized();

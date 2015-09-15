@@ -11,7 +11,7 @@ package org.echocat.marquardt.common.web;
 import com.google.common.primitives.Ints;
 import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.domain.Signature;
-import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,15 +51,15 @@ public class RequestValidator {
             final Signature signature = extractSignatureFromHeader(request);
             return signature.isValidFor(byteArray, keyToValidateWith);
         } catch (IOException e) {
-            LOGGER.warn("Invalid signature found.", e);
+            throw new SignatureValidationFailedException(e.getMessage());
         } finally {
             IOUtils.closeQuietly(bytesToSign);
         }
-        return false;
     }
 
     /**
      * Extract the signed bytes from the request.
+     *
      * @param request the http request
      * @return the signed byte sequence
      * @see SignatureHeaders
@@ -69,7 +69,7 @@ public class RequestValidator {
         try {
             return extractSignedBytesFromRequest(request, bytesToSign);
         } catch (IOException e) {
-            throw new InvalidSignatureException("could not extract signed bytes from header", e);
+            throw new SignatureValidationFailedException("could not extract signed bytes from header", e);
         } finally {
             IOUtils.closeQuietly(bytesToSign);
         }
@@ -82,6 +82,7 @@ public class RequestValidator {
 
     /**
      * Extract the signature from the request.
+     *
      * @param request the http request
      * @return the signature
      */

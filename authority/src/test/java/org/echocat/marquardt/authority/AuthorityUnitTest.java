@@ -19,7 +19,7 @@ import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
-import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
@@ -128,7 +128,7 @@ public class AuthorityUnitTest extends AuthorityTest {
         thenCertificateIsMade();
     }
 
-    @Test(expected = InvalidSignatureException.class)
+    @Test(expected = SignatureValidationFailedException.class)
     public void shouldThrowExceptionWhenSignatureIsInvalidOnRefresh() throws Exception {
         givenUserExists();
         givenExistingSession();
@@ -170,7 +170,7 @@ public class AuthorityUnitTest extends AuthorityTest {
         thenSessionIsDeleted();
     }
 
-    @Test(expected = InvalidSignatureException.class)
+    @Test(expected = SignatureValidationFailedException.class)
     public void shouldThrowExceptionWhenSignatureIsInvalidOnSignOut() throws Exception {
         givenUserExists();
         givenExistingSession();

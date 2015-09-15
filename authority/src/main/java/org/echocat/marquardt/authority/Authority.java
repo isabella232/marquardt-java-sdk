@@ -23,7 +23,7 @@ import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
-import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
@@ -165,7 +165,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
     private void verifySignature(byte[] signedBytes, Signature signature, SESSION session) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(session.getMechanism(), session.getPublicKey());
         if (!signature.isValidFor(signedBytes, publicKeyWithMechanism.toJavaKey())){
-            throw new InvalidSignatureException("failed to verify signature with client's public key");
+            throw new SignatureValidationFailedException("failed to verify signature with client's public key");
         }
     }
 

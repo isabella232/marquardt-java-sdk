@@ -11,6 +11,8 @@ package org.echocat.marquardt.service;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.web.RequestValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,17 +30,17 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 /**
  * Implement this filter to enable login at a marquardt service (not authority!).
- *
+ * <p>
  * Clients must add a X-Certificate header which contains their (Base64 encoded) certificate payload.
  * Clients must sign their header using their PrivateKey matching to the PublicKey in the certificate.
  * This signature signes all headers including X-Certificate.<br>
- *
+ * <p>
  * The filter checks if
  * <ul>
  * <li>The certificate is signed by the authority using a trusted key</li>
  * <li>The certificate is not expired</li>
  * <li>The signature of the headers can be validated with the clients public key from the certificate</li></ul><br>
- *
+ * <p>
  * Implement the abstract method authenticateUser to build your security context with the user info from the Certificate.
  *
  * @param <SIGNABLE> Your user information.
@@ -68,8 +70,11 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable>
                 if (_requestValidator.isValid(httpServletRequest, certificate.getClientPublicKey())) {
                     authenticateUser(certificate);
                 }
-
             }
+        } catch (InvalidCertificateException e) {
+            LOGGER.debug("invalid certificate provided: ", e);
+        }  catch (SignatureValidationFailedException e) {
+            LOGGER.debug("request signature could not be validated: ", e);
         } finally {
             filterChain.doFilter(servletRequest, servletResponse);
         }

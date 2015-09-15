@@ -14,7 +14,7 @@ import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
-import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.util.InputStreamUtils;
 
 import java.io.ByteArrayInputStream;
@@ -69,7 +69,7 @@ public class Validator {
      * @param <T> Type of your Signable. Also Certificate uses this.
      * @return Deserialized and validated Signable.
      *
-     * @throws InvalidSignatureException If the signature cannot be read or no key is provided to check.
+     * @throws SignatureValidationFailedException If the signature cannot be read or no key is provided to check.
      * @throws IllegalArgumentException when Signable cannot be deserialized from content using the provided factory or
      * no Signature can be extracted from provided content.
      */
@@ -86,14 +86,14 @@ public class Validator {
                 final byte[] signableBytesWithoutSignature = readBytesAgainForLaterValidation(bufferedInputStream);
 
                 if (publicKey == null) {
-                    throw new InvalidSignatureException("no public key provided");
+                    throw new SignatureValidationFailedException("no public key provided");
                 }
                 final int signatureLength = InputStreamUtils.readInt(bufferedInputStream);
                 final Signature signature = new Signature(InputStreamUtils.readBytes(bufferedInputStream, signatureLength));
                 if (signature.isValidFor(signableBytesWithoutSignature, publicKey)) {
                     return signable;
                 }
-                throw new InvalidSignatureException("signature is invalid for provided public key");
+                throw new SignatureValidationFailedException("signature is invalid for provided public key");
             } finally {
                 IOUtils.closeQuietly(bufferedInputStream);
             }

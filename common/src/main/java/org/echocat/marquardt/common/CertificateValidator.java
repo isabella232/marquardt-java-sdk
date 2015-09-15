@@ -13,7 +13,7 @@ import org.echocat.marquardt.common.domain.CertificateFactory;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
-import org.echocat.marquardt.common.exceptions.InvalidSignatureException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +74,7 @@ public abstract class CertificateValidator<USERINFO extends Signable> {
      * @param encodedCertificate bytes of the certificate with it's signature.
      * @return Deserialized Certificate.
      * @throws InvalidCertificateException If the certificate is from an untrusted authority or expired.
-     * @throws InvalidSignatureException if the signature cannot be read or used.
+     * @throws SignatureValidationFailedException if the signature cannot be read or used.
      */
     public Certificate<USERINFO> deserializeAndValidateCertificate(final byte[] encodedCertificate) {
         final Certificate<USERINFO> certificate = _validator.deserialize(encodedCertificate, getCertificateDeserializingFactory());

@@ -11,13 +11,13 @@ package org.echocat.marquardt.common.exceptions;
 /**
  * Exception intended to be thrown when a signature cannot be read or is invalid to the given key.
  */
-public class InvalidSignatureException extends RuntimeException {
+public class SignatureValidationFailedException extends RuntimeException {
 
-    public InvalidSignatureException(String message) {
+    public SignatureValidationFailedException(String message) {
         super(message);
     }
 
-    public InvalidSignatureException(String message, Throwable cause) {
+    public SignatureValidationFailedException(String message, Throwable cause) {
         super(message, cause);
     }
 }

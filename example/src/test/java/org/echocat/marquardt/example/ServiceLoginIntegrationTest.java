@@ -82,7 +82,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
     private void whenAccessingProtectedResourceWithSelfSignedCertificate(byte[] attackersCertificate) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-Certificate", new String(encodeBase64(attackersCertificate)));
+        headers.add("X-Certificate", new String(attackersCertificate));
         HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
         restTemplate.exchange(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST, requestEntity, Void.class);

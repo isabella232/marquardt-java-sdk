@@ -82,7 +82,7 @@ public class CertificateAuthenticationFilterUnitTest {
         thenDoFilterIsCalled();
     }
 
-    @Test(expected = InvalidCertificateException.class)
+    @Test
     public void shouldNotAuthenticateUserWithInvalidCertificate() throws IOException, ServletException {
         givenRequestWithInvalidCertificate();
         whenFilterIsExecuted();
