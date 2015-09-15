@@ -8,9 +8,9 @@
 
 package org.echocat.marquardt.authority.persistence;
 
+import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.domain.UserToSignableMapper;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.common.domain.Signable;
 
 import java.util.Optional;

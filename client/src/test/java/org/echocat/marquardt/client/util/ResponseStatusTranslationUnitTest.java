@@ -14,7 +14,12 @@ import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.junit.Test;
 
-import static org.echocat.marquardt.client.util.ResponseStatusTranslation.*;
+import static org.echocat.marquardt.client.util.ResponseStatusTranslation.BAD_REQUEST;
+import static org.echocat.marquardt.client.util.ResponseStatusTranslation.CONFLICT;
+import static org.echocat.marquardt.client.util.ResponseStatusTranslation.FORBIDDEN;
+import static org.echocat.marquardt.client.util.ResponseStatusTranslation.NOT_FOUND;
+import static org.echocat.marquardt.client.util.ResponseStatusTranslation.PRECONDITION_FAILED;
+import static org.echocat.marquardt.client.util.ResponseStatusTranslation.UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.assertThat;

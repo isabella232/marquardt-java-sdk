@@ -8,9 +8,9 @@
 
 package org.echocat.marquardt.example;
 
-import org.echocat.marquardt.authority.spring.SpringAuthorityController;
-import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.persistence.SessionStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.spring.SpringAuthorityController;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.example.domain.PersistentSession;

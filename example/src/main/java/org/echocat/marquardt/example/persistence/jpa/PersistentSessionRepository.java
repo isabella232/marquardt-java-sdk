@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.example.persistence.jpa;
 
-import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.example.domain.PersistentSession;
 import org.springframework.data.repository.CrudRepository;
 

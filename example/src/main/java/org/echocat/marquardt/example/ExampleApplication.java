@@ -12,7 +12,6 @@ import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
-import org.echocat.marquardt.common.util.DateProvider;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
