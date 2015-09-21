@@ -11,6 +11,8 @@ package org.echocat.marquardt.example;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
+import org.echocat.marquardt.common.serialization.RolesDeserializer;
+import org.echocat.marquardt.example.domain.PersistentRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -34,12 +36,27 @@ public class ExampleApplication {
     }
 
     @Bean
-    @Autowired
-    public CertificateValidator<UserInfo> clientSignedContentValidator(TrustedKeysProvider keysProvider) {
-        return new CertificateValidator<UserInfo>(keysProvider.getPublicKeys()) {
+    RolesDeserializer<PersistentRoles> rolesSerializer() {
+        return new RolesDeserializer<PersistentRoles>() {
             @Override
-            protected DeserializingFactory<UserInfo> getDeserializingFactory() {
+            public PersistentRoles createRoleFromId(Number id) {
+                return PersistentRoles.fromId(id.intValue());
+            }
+        };
+    }
+
+    @Bean
+    @Autowired
+    public CertificateValidator<UserInfo, PersistentRoles> clientSignedContentValidator(TrustedKeysProvider keysProvider) {
+        return new CertificateValidator<UserInfo, PersistentRoles>(keysProvider.getPublicKeys()) {
+            @Override
+            protected DeserializingFactory<UserInfo> deserializingFactory() {
                 return UserInfo.FACTORY;
+            }
+
+            @Override
+            protected RolesDeserializer<PersistentRoles> roleCodeDeserializer() {
+                return rolesSerializer();
             }
         };
     }

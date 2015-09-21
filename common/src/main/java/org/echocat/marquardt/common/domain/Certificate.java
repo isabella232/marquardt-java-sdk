@@ -12,6 +12,7 @@ package org.echocat.marquardt.common.domain;
 import com.google.common.primitives.Longs;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.echocat.marquardt.common.serialization.RolesSerializer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.PublicKey;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,7 +42,7 @@ public class Certificate<T extends Signable> implements Signable {
     private final PublicKey _issuerPublicKey;
     private final PublicKey _clientPublicKey;
     private final Date _expiresAt;
-    private final long _roleCodes;
+    private final Set<Role> _roles;
     private final T _payload;
 
     /**
@@ -48,19 +50,19 @@ public class Certificate<T extends Signable> implements Signable {
      *
      * @param issuerPublicKey Authority's public key. Must be trusted by clients and services.
      * @param clientPublicKey Client's public key. Enables login of the same user on different clients.
-     * @param roleCodes Roles of the user to enable authorization in clients and services.
+     * @param roles Roles of the user to enable authorization in clients and services.
      * @param payload Wrapped payload, for example additional user information to use on clients and services
      * @param <T> Class of wrapped payload, for example additional user information to use on clients and services.
      * @return A certificate.
      */
-    public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, long roleCodes, final T payload) {
-        return new Certificate<T>(issuerPublicKey, clientPublicKey, roleCodes, payload);
+    public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<Role> roles, final T payload) {
+        return new Certificate<T>(issuerPublicKey, clientPublicKey, roles, payload);
     }
 
-    private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final long roleCodes, final T payload) {
+    private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<Role> roles, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
-        _roleCodes = roleCodes;
+        _roles = roles;
         _expiresAt = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15));
         _payload = payload;
     }
@@ -71,15 +73,15 @@ public class Certificate<T extends Signable> implements Signable {
      * @param issuerPublicKey Authority's public key. Must be trusted by clients and services.
      * @param clientPublicKey Client's public key. Enabled login of the same user on different clients.
      * @param expiresAt Timestamp of expiration. Should be a relative short timeframe compared to the session of the authority.
-     * @param roleCodes Roles of the user to enable authorization in clients and services.
+     * @param roles Roles of the user to enable authorization in clients and services.
      * @param payload Wrapped payload, for example additional user information to use on clients and services
      * @return A certificate.
      */
-    Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Date expiresAt, long roleCodes, final T payload) {
+    Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Date expiresAt, final Set<Role> roles, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
         _expiresAt = expiresAt;
-        _roleCodes = roleCodes;
+        _roles = roles;
         _payload = payload;
     }
 
@@ -116,8 +118,8 @@ public class Certificate<T extends Signable> implements Signable {
     /**
      * @return Roles of the user to enable authorization in clients and services.
      */
-    public long getRoleCodes() {
-        return _roleCodes;
+    public Set<Role> getRoles() {
+        return _roles;
     }
 
     @Override
@@ -126,7 +128,7 @@ public class Certificate<T extends Signable> implements Signable {
         new PublicKeyWithMechanism(_issuerPublicKey).writeTo(out);
         new PublicKeyWithMechanism(_clientPublicKey).writeTo(out);
         out.write(Longs.toByteArray(_expiresAt.getTime()));
-        out.write(Longs.toByteArray(_roleCodes));
+        out.write(Longs.toByteArray(RolesSerializer.from(_roles)));
         _payload.writeTo(out);
     }
 
@@ -147,7 +149,7 @@ public class Certificate<T extends Signable> implements Signable {
                 .append("_issuerPublicKey", _issuerPublicKey)
                 .append("_clientPublicKey", _clientPublicKey)
                 .append("_expiresAt", _expiresAt)
-                .append("_roleCodes", _roleCodes)
+                .append("_roles", _roles)
                 .append("_payload", _payload)
                 .toString();
     }

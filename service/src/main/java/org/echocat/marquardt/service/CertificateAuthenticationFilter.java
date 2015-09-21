@@ -10,6 +10,7 @@ package org.echocat.marquardt.service;
 
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
@@ -44,16 +45,17 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
  * Implement the abstract method authenticateUser to build your security context with the user info from the Certificate.
  *
  * @param <SIGNABLE> Your user information.
+ * @param <ROLE> Your roles implementation.
  * @see org.echocat.marquardt.common.web.SignatureHeaders
  * @see org.echocat.marquardt.service.spring.SpringSecurityCertificateAuthenticationFilter
  */
-public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable> implements Filter {
+public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable, ROLE extends Role> implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificateAuthenticationFilter.class);
-    private final CertificateValidator<SIGNABLE> _certificateValidator;
+    private final CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
     private final RequestValidator _requestValidator;
 
-    public CertificateAuthenticationFilter(final CertificateValidator<SIGNABLE> certificateValidator, RequestValidator requestValidator) {
+    public CertificateAuthenticationFilter(final CertificateValidator<SIGNABLE, ROLE> certificateValidator, RequestValidator requestValidator) {
         _certificateValidator = certificateValidator;
         _requestValidator = requestValidator;
     }

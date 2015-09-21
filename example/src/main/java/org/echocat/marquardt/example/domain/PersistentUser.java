@@ -16,9 +16,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -40,7 +42,8 @@ public class PersistentUser implements User {
     @NotNull
     private String encodedPassword;
 
-    private long roles;
+    @OneToMany
+    private Set<PersistentRoles> roles;
 
     private Date created;
 
@@ -80,12 +83,12 @@ public class PersistentUser implements User {
         return _passwordEncoder.matches(password, getEncodedPassword());
     }
 
-    public void setRoles(final long roles) {
+    public void setRoles(final Set<PersistentRoles> roles) {
         this.roles = roles;
     }
 
     @Override
-    public long getRoles() {
+    public Set<PersistentRoles> getRoles() {
         return roles;
     }
 

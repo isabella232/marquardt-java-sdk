@@ -18,6 +18,7 @@ import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -52,6 +53,7 @@ import java.io.IOException;
 public abstract class SpringAuthorityController<USER extends User,
         SESSION extends Session,
         SIGNABLE extends Signable,
+        ROLE extends Role,
         CREDENTIALS extends Credentials> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
@@ -61,7 +63,7 @@ public abstract class SpringAuthorityController<USER extends User,
     private UserStore<USER, SIGNABLE> _userStore;
     private Authority<USER, SESSION, SIGNABLE> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
-    private CertificateValidator<SIGNABLE> _certificateValidator;
+    private CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
 
     /**
      * Wire this with your stores.
@@ -70,7 +72,7 @@ public abstract class SpringAuthorityController<USER extends User,
      * @param sessionStore      Your session store implementation.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider, CertificateValidator<SIGNABLE> certificateValidator) {
+    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider, CertificateValidator<SIGNABLE, ROLE> certificateValidator) {
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
         _userStore = userStore;

@@ -14,6 +14,8 @@ import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
+import org.echocat.marquardt.common.serialization.RolesDeserializer;
+import org.echocat.marquardt.example.domain.PersistentRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
@@ -31,6 +33,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 
 @IntegrationTest("server.port=0")
@@ -50,6 +53,8 @@ public abstract class AbstractSsoIntegrationTest {
     private UserRepository _userRepository;
     @Autowired
     private PersistentSessionStore _sessionStore;
+    @Autowired
+    private RolesDeserializer<PersistentRoles> _rolesDeserializer;
 
     @Value("${local.server.port}")
     private String _port;
@@ -84,7 +89,7 @@ public abstract class AbstractSsoIntegrationTest {
 
     @Before
     public void setup() {
-        _client = new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _clientKeyProvider, _trustedKeysProvider.getPublicKeys());
+        _client = new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _rolesDeserializer, _clientKeyProvider, _trustedKeysProvider.getPublicKeys());
     }
 
     @After
@@ -98,7 +103,7 @@ public abstract class AbstractSsoIntegrationTest {
         persistentUser.setUserId(UUID.randomUUID());
         persistentUser.setEmail("testuser@example.com");
         persistentUser.setEncodedPassword("$2a$10$NPdMDuROCDzrzourXzI1eONBa21Xglg9IzuLc1kecWeG3w/DnQjT.");
-        persistentUser.setRoles(123);
+        persistentUser.setRoles(Collections.emptySet());
         _userRepository.save(persistentUser);
     }
 }

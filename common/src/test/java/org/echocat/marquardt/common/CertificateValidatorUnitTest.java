@@ -8,13 +8,16 @@
 
 package org.echocat.marquardt.common;
 
+import com.google.common.collect.Sets;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SecurityMechanismException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
+import org.echocat.marquardt.common.serialization.RolesDeserializer;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +28,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
@@ -37,7 +41,7 @@ import static org.mockito.Mockito.mock;
 
 public class CertificateValidatorUnitTest {
 
-    private static final long ROLE_CODES = 123L;
+    private static final Set<Role> ROLES = Sets.<Role>newHashSet(TestRoles.TEST_ROLE_1);
     private static final String SOME_PAYLOAD = "Some payload";
 
     private KeyPairProvider _issuerKeys;
@@ -46,7 +50,6 @@ public class CertificateValidatorUnitTest {
 
     private Signable _signable;
     private byte[] _signedPayload;
-    private Certificate<SignablePayload> _deserializedCertificate;
 
     private final DateProvider _mockedDateProvider = mock(DateProvider.class);
 
@@ -96,14 +99,14 @@ public class CertificateValidatorUnitTest {
 
 
     private void givenDefectUserInfoCertificate() throws IOException {
-        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLE_CODES, new SignablePayload(SOME_PAYLOAD));
+        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
         whenSigningWithIssuerKey();
         _signedPayload[30] = Byte.MAX_VALUE;
     }
 
     private void whenValidatedPayloadIsDeserialized() {
         final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, asList(_issuerKeys.getPublicKey()));
-        _deserializedCertificate = validator.deserializeAndValidateCertificate(_signedPayload);
+        validator.deserializeAndValidateCertificate(_signedPayload);
     }
 
     private void thenCertificateExpiredAsNowIsInTheFuture() {
@@ -140,7 +143,7 @@ public class CertificateValidatorUnitTest {
     }
 
     private void givenUserInfoCertificate() {
-        _signable =  Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLE_CODES, new SignablePayload(SOME_PAYLOAD));
+        _signable =  Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
     }
 
     private void whenSigningWithIssuerKey() throws IOException {
@@ -151,7 +154,7 @@ public class CertificateValidatorUnitTest {
         _signedPayload = _signer.sign(_signable, privateKey);
     }
 
-    private static class TestCertificateValidator extends CertificateValidator<SignablePayload> {
+    private static class TestCertificateValidator extends CertificateValidator<SignablePayload, TestRoles> {
 
         public TestCertificateValidator(final DateProvider dateProvider, final List<PublicKey> trustedPublicKeys) {
             super(trustedPublicKeys);
@@ -159,8 +162,18 @@ public class CertificateValidatorUnitTest {
         }
 
         @Override
-        protected DeserializingFactory<SignablePayload> getDeserializingFactory() {
+        protected DeserializingFactory<SignablePayload> deserializingFactory() {
             return SignablePayload.FACTORY;
+        }
+
+        @Override
+        protected RolesDeserializer<TestRoles> roleCodeDeserializer() {
+            return new RolesDeserializer<TestRoles>() {
+                @Override
+                public TestRoles createRoleFromId(Number id) {
+                    return TestRoles.fromId(id.intValue());
+                }
+            };
         }
     }
 }

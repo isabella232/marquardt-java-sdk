@@ -10,6 +10,7 @@ package org.echocat.marquardt.service.spring;
 
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.web.RequestValidator;
 import org.echocat.marquardt.service.CertificateAuthenticationFilter;
@@ -20,8 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
  *
  * @param <SIGNABLE> Your signable user information.
  */
-public abstract class SpringSecurityCertificateAuthenticationFilter<SIGNABLE extends Signable>
-        extends CertificateAuthenticationFilter<SIGNABLE> {
+public abstract class SpringSecurityCertificateAuthenticationFilter<SIGNABLE extends Signable, ROLE extends Role>
+        extends CertificateAuthenticationFilter<SIGNABLE, ROLE> {
 
     public SpringSecurityCertificateAuthenticationFilter(CertificateValidator certificateValidator) {
         super(certificateValidator, new RequestValidator());

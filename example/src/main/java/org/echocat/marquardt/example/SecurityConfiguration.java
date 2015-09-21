@@ -9,6 +9,7 @@
 package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.common.CertificateValidator;
+import org.echocat.marquardt.example.domain.PersistentRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.echocat.marquardt.service.spring.SpringSecurityCertificateAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private CertificateValidator<UserInfo> _certificateValidator;
+    private CertificateValidator<UserInfo, PersistentRoles> _certificateValidator;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -36,8 +37,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    private SpringSecurityCertificateAuthenticationFilter<UserInfo> certificateAuthenticationFilter() {
-        return new SpringSecurityCertificateAuthenticationFilter<UserInfo>(_certificateValidator) {
+    private SpringSecurityCertificateAuthenticationFilter<UserInfo,PersistentRoles> certificateAuthenticationFilter() {
+        return new SpringSecurityCertificateAuthenticationFilter<UserInfo,PersistentRoles>(_certificateValidator) {
             @Override
             protected String getIdentifier(UserInfo signable) {
                 return signable.getUserId().toString();

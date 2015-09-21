@@ -11,9 +11,11 @@ package org.echocat.marquardt.common;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.CertificateFactory;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
+import org.echocat.marquardt.common.serialization.RolesDeserializer;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +33,7 @@ import java.util.List;
  * @see Signable
  * @see Certificate
  */
-public abstract class CertificateValidator<USERINFO extends Signable> {
+public abstract class CertificateValidator<USERINFO extends Signable, ROLE extends Role> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificateValidator.class);
 
@@ -55,14 +57,25 @@ public abstract class CertificateValidator<USERINFO extends Signable> {
      * Provide your DeserializingFactory for your wrapped signable user information here!
      * @return
      */
-    protected abstract DeserializingFactory<USERINFO> getDeserializingFactory();
+    protected abstract DeserializingFactory<USERINFO> deserializingFactory();
+
+    /**
+     * Provide your RoleCodeGenerator for your roles implementation here!
+     * @return
+     */
+    protected abstract RolesDeserializer<ROLE> roleCodeDeserializer();
 
 
-    protected CertificateFactory<USERINFO> getCertificateDeserializingFactory() {
-        return new CertificateFactory<USERINFO>() {
+    protected CertificateFactory<USERINFO, ROLE> getCertificateDeserializingFactory() {
+        return new CertificateFactory<USERINFO, ROLE>() {
             @Override
             protected DeserializingFactory<USERINFO> getFactoryOfWrapped() {
-                return getDeserializingFactory();
+                return deserializingFactory();
+            }
+
+            @Override
+            protected RolesDeserializer<ROLE> getRolesDeserializer() {
+                return roleCodeDeserializer();
             }
         };
     }

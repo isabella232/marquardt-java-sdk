@@ -9,7 +9,10 @@
 package org.echocat.marquardt.authority.testdomain;
 
 import org.echocat.marquardt.authority.domain.User;
+import org.echocat.marquardt.common.domain.Role;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 public class TestUser implements User {
@@ -24,7 +27,7 @@ public class TestUser implements User {
     }
 
     @Override
-    public long getRoles() {
-        return 0;
+    public Set<Role> getRoles() {
+        return Collections.emptySet();
     }
 }

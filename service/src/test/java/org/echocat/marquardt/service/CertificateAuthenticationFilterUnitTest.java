@@ -11,6 +11,7 @@ package org.echocat.marquardt.service;
 
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.CertificateValidator;
+import org.echocat.marquardt.common.TestRoles;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.web.RequestValidator;
@@ -35,9 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateAuthenticationFilterUnitTest {
@@ -49,7 +48,7 @@ public class CertificateAuthenticationFilterUnitTest {
     private Certificate<TestUserInfo> _certificate;
 
     @Mock
-    private CertificateValidator<TestUserInfo> _certificateValidator;
+    private CertificateValidator<TestUserInfo, TestRoles> _certificateValidator;
 
     @Mock
     private RequestValidator _requestValidator;
@@ -160,11 +159,11 @@ public class CertificateAuthenticationFilterUnitTest {
         verify(_filterChain).doFilter(_httpServletRequest, _httpServletResponse);
     }
 
-    class TestCertificateAuthenticationFilter extends CertificateAuthenticationFilter<TestUserInfo> {
+    class TestCertificateAuthenticationFilter extends CertificateAuthenticationFilter<TestUserInfo, TestRoles> {
 
         private boolean _authenticated = false;
 
-        public TestCertificateAuthenticationFilter(CertificateValidator<TestUserInfo> certificateValidator, RequestValidator requestValidator) {
+        public TestCertificateAuthenticationFilter(CertificateValidator<TestUserInfo, TestRoles> certificateValidator, RequestValidator requestValidator) {
             super(certificateValidator, requestValidator);
         }
 

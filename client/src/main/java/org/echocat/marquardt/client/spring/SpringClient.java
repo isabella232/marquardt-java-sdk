@@ -16,8 +16,10 @@ import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
+import org.echocat.marquardt.common.serialization.RolesDeserializer;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.SignatureHeaders;
@@ -43,16 +45,16 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 /**
  * Spring implementation of the client.
  *
- * @param <T> type of the payload contained in the certificate.
+ * @param <SIGNABLE> type of the payload contained in the certificate.
  */
-public class SpringClient<T extends Signable> implements Client<T> {
+public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implements Client<SIGNABLE> {
 
     private final RestTemplate _restTemplate = new RestTemplate();
     private final RestTemplate _authorizedRestTemplate = new RestTemplate();
     private final String _baseUri;
-    private final DeserializingFactory<T> _deserializingFactory;
+    private final DeserializingFactory<SIGNABLE> _deserializingFactory;
 
-    private final CertificateValidator<T> _certificateValidator;
+    private final CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
 
     private final RequestSigner _requestSigner = new RequestSigner();
 
@@ -64,12 +66,14 @@ public class SpringClient<T extends Signable> implements Client<T> {
      * Create a client instance.
      *
      * @param baseUri              base uri of the authority.
-     * @param deserializingFactory factory used to deserialize the payload with type T.
+     * @param deserializingFactory factory used to deserialize the payload with type SIGNABLE.
+     * @param roleRolesDeserializer RolesDeserializer for your roles implementation.
      * @param clientKeyProvider    key provider that returns the client's public/private key pair.
      * @param trustedKeys          a list of pre-shared, trusted keys used by the authority to sign certificates. The client uses this list to verify the authenticity of certificates.
      */
     public SpringClient(final String baseUri,
-                        final DeserializingFactory<T> deserializingFactory,
+                        final DeserializingFactory<SIGNABLE> deserializingFactory,
+                        final RolesDeserializer<ROLE> roleRolesDeserializer,
                         final KeyPairProvider clientKeyProvider,
                         final List<PublicKey> trustedKeys) {
         _baseUri = baseUri;
@@ -88,10 +92,15 @@ public class SpringClient<T extends Signable> implements Client<T> {
                         return clientHttpRequestExecution.execute(httpRequest, bytes);
                     }
                 });
-        _certificateValidator = new CertificateValidator<T>(trustedKeys) {
+        _certificateValidator = new CertificateValidator<SIGNABLE, ROLE>(trustedKeys) {
             @Override
-            protected DeserializingFactory<T> getDeserializingFactory() {
+            protected DeserializingFactory<SIGNABLE> deserializingFactory() {
                 return _deserializingFactory;
+            }
+
+            @Override
+            protected RolesDeserializer<ROLE> roleCodeDeserializer() {
+                return roleRolesDeserializer;
             }
         };
         _certificateValidator.setDateProvider(_dateProvider);
@@ -111,7 +120,7 @@ public class SpringClient<T extends Signable> implements Client<T> {
      * {@inheritDoc}
      */
     @Override
-    public Certificate<T> signup(final Credentials credentials) throws IOException {
+    public Certificate<SIGNABLE> signup(final Credentials credentials) throws IOException {
         final ResponseEntity<JsonWrappedCertificate> response;
         try {
             response = _restTemplate.postForEntity(_baseUri + "/auth/signup/", credentials, JsonWrappedCertificate.class);
@@ -125,8 +134,8 @@ public class SpringClient<T extends Signable> implements Client<T> {
         }
     }
 
-    private Certificate<T> extractCertificateFrom(ResponseEntity<JsonWrappedCertificate> response) {
-        Certificate<T> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(response.getBody().getCertificate());
+    private Certificate<SIGNABLE> extractCertificateFrom(ResponseEntity<JsonWrappedCertificate> response) {
+        Certificate<SIGNABLE> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(response.getBody().getCertificate());
         if (!deserializedCertificate.getClientPublicKey().equals(_clientKeyProvider.getPublicKey())) {
             throw new InvalidCertificateException("certificate key does not match my public key");
         }
@@ -138,7 +147,7 @@ public class SpringClient<T extends Signable> implements Client<T> {
      * {@inheritDoc}
      */
     @Override
-    public Certificate<T> signin(final Credentials credentials) throws IOException {
+    public Certificate<SIGNABLE> signin(final Credentials credentials) throws IOException {
         final ResponseEntity<JsonWrappedCertificate> response;
         try {
             response = _restTemplate.postForEntity(_baseUri + "/auth/signin/", credentials, JsonWrappedCertificate.class);
@@ -156,7 +165,7 @@ public class SpringClient<T extends Signable> implements Client<T> {
      * {@inheritDoc}
      */
     @Override
-    public Certificate<T> refresh() throws IOException {
+    public Certificate<SIGNABLE> refresh() throws IOException {
 
         final ResponseEntity<JsonWrappedCertificate> response;
         try {

@@ -19,6 +19,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64;
@@ -56,7 +57,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
     private void givenSelfSignedCertificate() throws IOException {
         final UserInfo userInfo = new UserInfo(UUID.randomUUID());
-        final Certificate<UserInfo> certificate = Certificate.create(_clientKeyProvider.getPublicKey(), _clientKeyProvider.getPublicKey(), 666L, userInfo);
+        final Certificate<UserInfo> certificate = Certificate.create(_clientKeyProvider.getPublicKey(), _clientKeyProvider.getPublicKey(), Collections.emptySet(), userInfo);
         final byte[] selfSignedCertificate = _clientSigner.sign(certificate, _clientKeyProvider.getPrivateKey());
         _selfSignedCertificate = encodeBase64(selfSignedCertificate);
     }

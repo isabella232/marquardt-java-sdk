@@ -8,6 +8,9 @@
 
 package org.echocat.marquardt.authority.domain;
 
+import org.echocat.marquardt.common.domain.Role;
+
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -15,7 +18,7 @@ import java.util.UUID;
  *
  * Implement this in your Authority implementation with a domain object that can be stored into a database.
  */
-public interface User {
+public interface User<ROLE extends Role> {
 
     /**
      * Unique user id of the user.
@@ -32,10 +35,5 @@ public interface User {
      */
     boolean passwordMatches(String password);
 
-    /**
-     * Roles of the user masked with bitmask.
-     *
-     * @return Roles of the user to read with the bitmask.
-     */
-    long getRoles();
+    Set<ROLE> getRoles();
 }

@@ -8,6 +8,8 @@
 
 package org.echocat.marquardt.common.domain;
 
+import org.echocat.marquardt.common.serialization.RolesDeserializer;
+
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
 import java.io.IOException;
@@ -22,9 +24,10 @@ import static org.echocat.marquardt.common.util.InputStreamUtils.readLong;
  *
  * Used to deserialize Certificates from Bytes.
  *
- * @param <T> Class of wrapped payload, for example additional user information to use on clients and services.
+ * @param <SIGNABLE> Class of wrapped payload, for example additional user information to use on clients and services.
+ * @param <ROLE> Class of your role implementation.
  */
-public abstract class CertificateFactory<T extends Signable> implements DeserializingFactory<Certificate<T>> {
+public abstract class CertificateFactory<SIGNABLE extends Signable, ROLE extends Role> implements DeserializingFactory<Certificate<SIGNABLE>> {
 
     /**
      * Provides the factory to deserialize the wrapped content.
@@ -33,11 +36,20 @@ public abstract class CertificateFactory<T extends Signable> implements Deserial
      *
      * @see DeserializingFactory
      */
-    protected abstract DeserializingFactory<T> getFactoryOfWrapped();
+    protected abstract DeserializingFactory<SIGNABLE> getFactoryOfWrapped();
+
+    /**
+     * Provides the roles deserializer for your roles implementation.
+     *
+     * @return RolesDeserializer capable to produce your roles.
+     *
+     * @see RolesDeserializer
+     */
+    protected abstract RolesDeserializer<ROLE> getRolesDeserializer();
 
     @Nonnull
     @Override
-    public Certificate<T> consume(@Nonnull @WillNotClose final InputStream in) throws IOException {
+    public Certificate<SIGNABLE> consume(@Nonnull @WillNotClose final InputStream in) throws IOException {
         final byte versionFromInput = readByte(in);
         if (versionFromInput != Certificate.VERSION) {
             throw new IllegalArgumentException("Expected Certificate with version '" + Certificate.VERSION + "' but received '" + versionFromInput + "'");
@@ -46,8 +58,8 @@ public abstract class CertificateFactory<T extends Signable> implements Deserial
         final PublicKeyWithMechanism clientKeyWithMechanism = PublicKeyWithMechanism.readFrom(in);
         final Date expiryDate = new Date(readLong(in));
         final long roleCodes = readLong(in);
-        final T wrapped = getFactoryOfWrapped().consume(in);
-        return new Certificate<T>(publicKeyWithMechanism.toJavaKey(), clientKeyWithMechanism.toJavaKey(), expiryDate, roleCodes, wrapped);
+        final SIGNABLE wrapped = getFactoryOfWrapped().consume(in);
+        return new Certificate<SIGNABLE>(publicKeyWithMechanism.toJavaKey(), clientKeyWithMechanism.toJavaKey(), expiryDate, getRolesDeserializer().from(roleCodes), wrapped);
     }
 
 }

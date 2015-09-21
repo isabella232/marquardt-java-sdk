@@ -8,10 +8,14 @@
 
 package org.echocat.marquardt.common.domain;
 
+import com.google.common.collect.Sets;
 import org.echocat.marquardt.common.SignablePayload;
 import org.echocat.marquardt.common.TestKeyPairProvider;
+import org.echocat.marquardt.common.TestRoles;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
@@ -20,7 +24,7 @@ public class CertificateUnitTest {
 
     private Certificate<SignablePayload> _certificate;
     private SignablePayload _payload;
-    private static final long ROLE_CODES = 123L;
+    private static final Set<Role> ROLES = Sets.<Role>newHashSet(TestRoles.TEST_ROLE_1);
     private static final String SOME_PAYLOAD = "Some payload";
 
     private KeyPairProvider _issuerKeys;
@@ -40,7 +44,7 @@ public class CertificateUnitTest {
 
     private void whenCertificateIsCreated() {
         _payload = new SignablePayload(SOME_PAYLOAD);
-        _certificate = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLE_CODES, _payload);
+        _certificate = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, _payload);
     }
 
     private void thenCerificateCanBeWrittenAsString() {
