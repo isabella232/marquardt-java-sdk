@@ -9,7 +9,6 @@
 package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.common.CertificateValidator;
-import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
 import org.echocat.marquardt.example.domain.UserInfo;
@@ -27,11 +26,6 @@ public class ExampleApplication {
 
     public static void main(final String[] args) {
         SpringApplication.run(ExampleApplication.class, args);
-    }
-
-    @Bean
-    public Signer contentSigner() {
-        return new Signer();
     }
 
     @Bean

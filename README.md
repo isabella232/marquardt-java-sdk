@@ -38,10 +38,10 @@ To log out, a client must send its current certificate - also expired ones - to 
 This module contains generic shared classes like custom exceptions and json (de-)serializers. Most notably, this module provides the basic infrastructure for the creation and
 validation of signatures and certificates.
 
-Signable payload is created by implementing _Signable_. Deserialization from byte arrays to the object type is performed by implementations of DeserializingFactory<Signable>.
+Signable payload is created by implementing _Signable_. Deserialization from byte arrays to the object type is performed by implementations of _DeserializingFactory_.
 The factory consumes a byte input stream and produces the deserialized signable.
 
-The _Signer_ class is used to create signatures for signables. The _Validator_ is used to both deserialize signables using the respective DeserializingFactory and to verify
+The _Signer_ class is used to create signatures for signables. The _Validator_ is used to both deserialize signables using the respective _DeserializingFactory_ and to verify
 their signatures.
 
 #### Certificates
@@ -59,8 +59,9 @@ _getFactoryOfWrapped_.
 
 #### The certificate byte format
 
-Certificates are transported in a serialized byte format. The authority returns newly issues certificates as a JSON object ( _JsonWrappedCertificate_ ) containing the
-certificate bytes in the 'certificate' attribute. Clients provide the certificate to the authority and services in an _X-Certificate_ request header.
+Certificates are transported in a serialized byte format. The authority returns newly issued certificates as a JSON object ( _JsonWrappedCertificate_ ) containing the
+certificate bytes in the 'certificate' attribute. Clients provide the certificate to the authority and services in an _X-Certificate_ request header. The certificate is always
+transported Base64 encoded.
 
 <pre>
 [[ VERSION ] [ ISSUER PUBLIC KEY ] [ CLIENT PUBLIC KEY ] [ EXPIRY DATE ] [ ROLES ] [ USER INFO PAYLOAD ]]   [[ AUTHORITY SIGNATURE  ]]
@@ -81,9 +82,9 @@ This module contains all code related to the _authority_, the central entity tha
 
 In order to use the authority, the following interfaces must be implemented:
 
-* Signable - The Signable payload to be included in the certificate. This is usually a subset of the user information or even just the user id or some other identifier.
-* User and UserStore - The user object and its persistency store. The user store also provides a method to translate from a user object to the signable certificate payload.
-* Session and SessionStore - The server session and its persistency store.
+* _Signable_ - The Signable payload to be included in the certificate. This is usually a subset of the user information or even just the user id or some other identifier.
+* _User_ and _UserStore_ - The user object and its persistency store. The user store also provides a method to translate from a user object to the signable certificate payload.
+* _Session_ and _SessionStore_ - The server session and its persistency store.
 
 ### Client
 [![Dependency Status](https://www.versioneye.com/user/projects/55f2c431d4d204001c000118/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55f2c431d4d204001c000118)
@@ -104,12 +105,12 @@ _SpringSecurityCertificateAuthenticationFilter_.
 ### Example
 [![Dependency Status](https://www.versioneye.com/user/projects/55f2c431d4d2040019000185/badge.svg?style=flat)](https://www.versioneye.com/user/projects/55f2c431d4d2040019000185)
 
-This module is a Spring Boot example application that showcases how to use the different Marquardt components. Start the application by running the ExampleApplication main class.
+This module is a Spring Boot example application that showcases how to use the different Marquardt components. Start the application by running the _ExampleApplication_ main class.
 
 The example project implements session and user persistence with an H2 database and Spring Data repositories. The REST API of the authority is based on the provided Spring MVC controller.
 
-The class ExampleServiceController implements a simple service API with both protected and unprotected endpoints. For example usage and client calls, see the integration tests of the module:
-AuthenticationIntegrationTest and ServiceLoginIntegrationTest.
+The class _ExampleServiceController_ implements a simple service API with both protected and unprotected endpoints. For example usage and client calls, see the integration tests of the module:
+_AuthenticationIntegrationTest_ and _ServiceLoginIntegrationTest_.
 
 ## How to Contribute
 
