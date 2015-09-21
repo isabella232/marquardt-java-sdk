@@ -42,6 +42,7 @@ public interface SessionStore<T extends Session> {
      * Implement to persist a new or updated session.
      * @param session Session to persist.
      * @return Session after persisting.
+     * @throws org.echocat.marquardt.common.exceptions.AlreadyLoggedInException If there is already a session for the current client.
      */
     T save(T session);
 
