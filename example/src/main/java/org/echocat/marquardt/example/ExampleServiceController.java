@@ -24,6 +24,12 @@ public class ExampleServiceController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExampleServiceController.class);
 
+    @RequestMapping(value = "/someUnprotectedResource", method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.OK)
+    public void someUnprotectedResource() throws IOException {
+        LOGGER.info("/exampleservice/someUnprotectedResource received a request");
+    }
+
     @RequestMapping(value = "/adminResource", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public void adminResource() throws IOException {

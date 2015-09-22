@@ -32,6 +32,11 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
     private String _payloadToSign;
 
     @Test
+    public void shouldAllowAccessOfAnUnprotectedResourceWithoutCertificate() throws Exception {
+        whenAccessingUnprotectedResourceOnService();
+    }
+
+    @Test
     public void shouldLoginAtServiceWithValidCertificate() throws Exception {
         givenSignedInUser();
         whenAccessingProtectedResourceOnService();
@@ -98,6 +103,11 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
     private void whenAccessingProtectedResourceOnService() {
         getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST.name(), null, Void.class);
+    }
+
+    private void whenAccessingUnprotectedResourceOnService() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.exchange(baseUriOfApp() + "/exampleservice/someUnprotectedResource", HttpMethod.POST, null, Void.class);
     }
 
     private void whenAccessingAdminResourceOnService() {
