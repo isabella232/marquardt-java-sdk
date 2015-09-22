@@ -16,7 +16,7 @@ import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
-import org.echocat.marquardt.example.domain.PersistentRoles;
+import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings({"AbstractClassWithoutAbstractMethods", "SpringJavaAutowiredMembersInspection"})
@@ -57,7 +57,7 @@ public abstract class AbstractSsoIntegrationTest {
     @Autowired
     private PersistentSessionStore _sessionStore;
     @Autowired
-    private RolesDeserializer<PersistentRoles> _rolesDeserializer;
+    private RolesDeserializer<ExampleRoles> _rolesDeserializer;
 
     @Value("${local.server.port}")
     private String _port;
@@ -100,12 +100,12 @@ public abstract class AbstractSsoIntegrationTest {
         _sessionStore.deleteAll();
     }
 
-    void givenExistingUser() {
+    void givenExistingUser(Set<ExampleRoles> roles) {
         final PersistentUser persistentUser = new PersistentUser();
         persistentUser.setUserId(UUID.randomUUID());
         persistentUser.setEmail("testuser@example.com");
         persistentUser.setEncodedPassword("$2a$10$NPdMDuROCDzrzourXzI1eONBa21Xglg9IzuLc1kecWeG3w/DnQjT.");
-        persistentUser.setRoles(Collections.emptySet());
+        persistentUser.setRoles(roles);
         _userRepository.save(persistentUser);
     }
 

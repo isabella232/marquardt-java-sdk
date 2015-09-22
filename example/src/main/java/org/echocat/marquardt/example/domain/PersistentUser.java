@@ -13,18 +13,20 @@ import org.echocat.marquardt.authority.domain.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-public class PersistentUser implements User<PersistentRoles> {
+public class PersistentUser implements User<ExampleRoles> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -42,8 +44,9 @@ public class PersistentUser implements User<PersistentRoles> {
     @NotNull
     private String encodedPassword;
 
-    @OneToMany
-    private Set<PersistentRoles> roles;
+    @ElementCollection(targetClass = ExampleRoles.class)
+    @Enumerated(EnumType.STRING)
+    private Set<ExampleRoles> roles;
 
     @SuppressWarnings("unused")
     public Long getId() {
@@ -82,12 +85,12 @@ public class PersistentUser implements User<PersistentRoles> {
         return _passwordEncoder.matches(password, getEncodedPassword());
     }
 
-    public void setRoles(final Set<PersistentRoles> roles) {
+    public void setRoles(final Set<ExampleRoles> roles) {
         this.roles = Sets.newHashSet(roles);
     }
 
     @Override
-    public Set<PersistentRoles> getRoles() {
+    public Set<ExampleRoles> getRoles() {
         return roles;
     }
 

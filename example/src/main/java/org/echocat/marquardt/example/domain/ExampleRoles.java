@@ -10,17 +10,12 @@ package org.echocat.marquardt.example.domain;
 
 import org.echocat.marquardt.common.domain.Role;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+public enum ExampleRoles implements Role {
+    ROLE_USER(0), ROLE_ADMIN(1);
 
-@Entity
-public enum PersistentRoles implements Role {
-    USER(0), ADMIN(1);
-
-    @Id
     private final int _id;
 
-    PersistentRoles(final int id) {
+    ExampleRoles(final int id) {
         _id = id;
     }
 
@@ -29,8 +24,8 @@ public enum PersistentRoles implements Role {
         return _id;
     }
 
-    public static PersistentRoles fromId(final int id) {
-        for(final PersistentRoles role: PersistentRoles.values()) {
+    public static ExampleRoles fromId(final int id) {
+        for(final ExampleRoles role: ExampleRoles.values()) {
             if(role.id() == id) {
                 return role;
             }

@@ -12,7 +12,7 @@ import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
-import org.echocat.marquardt.example.domain.PersistentRoles;
+import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -36,26 +36,26 @@ public class ExampleApplication {
     }
 
     @Bean
-    RolesDeserializer<PersistentRoles> rolesSerializer() {
-        return new RolesDeserializer<PersistentRoles>() {
+    RolesDeserializer<ExampleRoles> rolesSerializer() {
+        return new RolesDeserializer<ExampleRoles>() {
             @Override
-            public PersistentRoles createRoleFromId(final Number id) {
-                return PersistentRoles.fromId(id.intValue());
+            public ExampleRoles createRoleFromId(final Number id) {
+                return ExampleRoles.fromId(id.intValue());
             }
         };
     }
 
     @Bean
     @Autowired
-    public CertificateValidator<UserInfo, PersistentRoles> clientSignedContentValidator(final TrustedKeysProvider keysProvider) {
-        return new CertificateValidator<UserInfo, PersistentRoles>(keysProvider.getPublicKeys()) {
+    public CertificateValidator<UserInfo, ExampleRoles> clientSignedContentValidator(final TrustedKeysProvider keysProvider) {
+        return new CertificateValidator<UserInfo, ExampleRoles>(keysProvider.getPublicKeys()) {
             @Override
             protected DeserializingFactory<UserInfo> deserializingFactory() {
                 return UserInfo.FACTORY;
             }
 
             @Override
-            protected RolesDeserializer<PersistentRoles> roleCodeDeserializer() {
+            protected RolesDeserializer<ExampleRoles> roleCodeDeserializer() {
                 return rolesSerializer();
             }
         };

@@ -10,7 +10,7 @@ package org.echocat.marquardt.example.persistence;
 
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.example.domain.PersistentRoles;
+import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.echocat.marquardt.example.persistence.jpa.UserRepository;
@@ -50,7 +50,7 @@ public class PersistentUserStore implements UserStore<PersistentUser, UserInfo> 
         persistentUserToCreate.setEmail(credentials.getIdentifier());
         persistentUserToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
         persistentUserToCreate.setUserId(UUID.randomUUID());
-        persistentUserToCreate.setRoles(Collections.<PersistentRoles>emptySet());
+        persistentUserToCreate.setRoles(Collections.<ExampleRoles>emptySet());
         return _userRepository.save(persistentUserToCreate);
     }
 

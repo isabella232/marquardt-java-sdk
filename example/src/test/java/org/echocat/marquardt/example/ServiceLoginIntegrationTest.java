@@ -9,7 +9,9 @@
 package org.echocat.marquardt.example;
 
 
+import com.google.common.collect.Sets;
 import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
@@ -55,6 +57,18 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
         whenSignedContentIsSent();
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldDenyAccessToAdminResourceWhenRoleIsMissing() throws Exception{
+        givenSignedInUser();
+        whenAccessingAdminResourceOnService();
+    }
+
+    @Test
+    public void shouldAllowAccessToAdminResourceWhenRoleIsPresent() throws Exception {
+        givenSignedInAdmin();
+        whenAccessingAdminResourceOnService();
+    }
+
     private void givenSelfSignedCertificate() throws IOException {
         final UserInfo userInfo = new UserInfo(UUID.randomUUID());
         final Certificate<UserInfo> certificate = Certificate.create(getClientKeyProvider().getPublicKey(), getClientKeyProvider().getPublicKey(), Collections.emptySet(), userInfo);
@@ -62,8 +76,14 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
         _selfSignedCertificate = encodeBase64(selfSignedCertificate);
     }
 
+    private void givenSignedInAdmin() throws IOException {
+        givenExistingUser(Sets.newHashSet(ExampleRoles.ROLE_ADMIN));
+        givenCorrectCredentials();
+        whenSigningIn();
+    }
+
     private void givenSignedInUser() throws IOException {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningIn();
     }
@@ -78,6 +98,10 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
     private void whenAccessingProtectedResourceOnService() {
         getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST.name(), null, Void.class);
+    }
+
+    private void whenAccessingAdminResourceOnService() {
+        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/adminResource", HttpMethod.POST.name(), null, Void.class);
     }
 
     private void whenAccessingProtectedResourceWithSelfSignedCertificate(final byte[] attackersCertificate) {

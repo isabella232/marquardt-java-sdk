@@ -15,6 +15,7 @@ import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -25,7 +26,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     @Test
     public void shouldSignInWithCorrectCredentials() throws IOException {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningIn();
         thenCertificateIsProvided();
@@ -33,14 +34,14 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     @Test(expected = LoginFailedException.class)
     public void shouldRejectLoginWithIncorrectCredentials() throws IOException {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenIncorrectCredentials();
         whenSigningIn();
     }
 
     @Test(expected = AlreadyLoggedInException.class)
     public void shouldRejectLoginWhenUserIsLoggedIn() throws IOException {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningIn();
         whenSigningIn();
@@ -55,14 +56,14 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     @Test(expected = UserExistsException.class)
     public void shouldNotSignupExistingUser() throws IOException {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningUp();
     }
 
     @Test
     public void shouldLogoutALoggedInUser() throws IOException {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningIn();
         whenLoggingOut();
@@ -71,7 +72,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     @Test
     public void shouldRefreshCertificateOfSignedInUsers() throws IOException {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningIn();
         whenRefreshingCertificate();
@@ -80,7 +81,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     @Test(expected = NoSessionFoundException.class)
     public void shouldNotRefreshCertificatesOfUsersThatAreSignedOut() throws Exception {
-        givenExistingUser();
+        givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningIn();
         whenLoggingOut();
