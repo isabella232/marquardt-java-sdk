@@ -36,17 +36,11 @@ public class ExampleServiceController {
         LOGGER.info("/exampleservice/someProtectedResource received a request");
     }
 
-    @RequestMapping(value = "/someUnprotectedResource", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.OK)
-    public void someUnprotectedResource() throws IOException {
-        LOGGER.info("/exampleservice/someUnprotectedResource received a request");
-    }
-
     @SuppressWarnings("UnusedParameters")
     @RequestMapping(value = "/someProtectedResourceWithPayload", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public void someProtectedResourceWithPayload(final String payload) throws IOException {
-        LOGGER.info("/exampleservice/someUnprotectedResource received a request");
+        LOGGER.info("/exampleservice/someProtectedResourceWithPayload received a request");
     }
 
 }
