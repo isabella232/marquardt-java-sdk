@@ -47,8 +47,7 @@ public class Validator {
             final CountingInputStream bufferedInputStream = new CountingInputStream(inputStream);
             try {
                 bufferedInputStream.mark(0);
-                final T signable = signableDeserializingFactory.consume(bufferedInputStream);
-                return signable;
+                return signableDeserializingFactory.consume(bufferedInputStream);
             } finally {
                 IOUtils.closeQuietly(bufferedInputStream);
             }
@@ -75,7 +74,7 @@ public class Validator {
      */
     public <T extends Signable> T deserializeAndValidate(final byte[] content,
                                                          final DeserializingFactory<T> signableDeserializingFactory,
-                                                         PublicKey publicKey) {
+                                                         final PublicKey publicKey) {
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
         try {
             final CountingInputStream bufferedInputStream = new CountingInputStream(inputStream);

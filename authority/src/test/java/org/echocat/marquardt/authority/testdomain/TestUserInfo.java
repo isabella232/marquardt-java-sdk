@@ -17,7 +17,7 @@ import java.io.OutputStream;
 
 public class TestUserInfo implements Signable {
     @Override
-    public void writeTo(@Nonnull @WillNotClose OutputStream out) throws IOException {
+    public void writeTo(@Nonnull @WillNotClose final OutputStream out) throws IOException {
 
     }
 

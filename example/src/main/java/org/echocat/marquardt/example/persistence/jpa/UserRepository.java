@@ -14,6 +14,7 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("InterfaceNeverImplemented")
 public interface UserRepository extends CrudRepository<PersistentUser, Long> {
     Optional<PersistentUser> findByEmailIgnoreCase(String email);
 

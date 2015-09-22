@@ -31,10 +31,10 @@ public final class TestKeyPairProvider implements KeyPairProvider {
             keyGenerator.initialize(1024, random);
             final KeyPair keyPair = keyGenerator.generateKeyPair();
             final TestKeyPairProvider testKeyProvider = new TestKeyPairProvider();
-            testKeyProvider._privateKey = keyPair.getPrivate();
-            testKeyProvider._publicKey = keyPair.getPublic();
+            testKeyProvider.setPrivateKey(keyPair.getPrivate());
+            testKeyProvider.setPublicKey(keyPair.getPublic());
             return testKeyProvider;
-        } catch (NoSuchAlgorithmException e) {
+        } catch (final NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
@@ -44,8 +44,16 @@ public final class TestKeyPairProvider implements KeyPairProvider {
         return _publicKey;
     }
 
+    private void setPublicKey(final PublicKey publicKey) {
+        _publicKey = publicKey;
+    }
+
     @Override
     public PrivateKey getPrivateKey() {
         return _privateKey;
     }
-}
+
+    private void setPrivateKey(final PrivateKey privateKey) {
+        _privateKey = privateKey;
+    }
+ }

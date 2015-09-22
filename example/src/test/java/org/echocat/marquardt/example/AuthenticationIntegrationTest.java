@@ -88,12 +88,12 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     }
 
     private void whenRefreshingCertificate() throws IOException {
-        _certificate = _client.refresh();
+        setCertificate(getClient().refresh());
     }
 
 
     private void thenCertificateIsProvided() {
-        assertThat(_certificate, is(not(nullValue())));
+        assertThat(getCertificate(), is(not(nullValue())));
     }
 
 }

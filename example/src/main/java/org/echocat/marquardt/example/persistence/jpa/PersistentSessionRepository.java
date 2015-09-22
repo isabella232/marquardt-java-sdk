@@ -15,9 +15,10 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("InterfaceNeverImplemented")
 public interface PersistentSessionRepository extends CrudRepository<PersistentSession, Long> {
 
     Optional<PersistentSession> findByCertificate(byte[] certificate);
 
-    Long countByUserIdAndPublicKeyAndExpiresAtGreaterThan(UUID userId, byte[] publicKey, Date expiresAt);
+    Long countByUserIdAndPublicKeyAndExpiresAtGreaterThan(UUID userId, byte[] publicKey, @SuppressWarnings("UseOfObsoleteDateTimeApi") Date expiresAt);
 }

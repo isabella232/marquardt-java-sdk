@@ -16,7 +16,7 @@ import java.io.OutputStream;
 public class IOExceptionThrowingTestUserInfo extends TestUserInfo {
 
     @Override
-    public void writeTo(@Nonnull @WillNotClose OutputStream out) throws IOException {
+    public void writeTo(@Nonnull @WillNotClose final OutputStream out) throws IOException {
         throw new IOException();
     }
 

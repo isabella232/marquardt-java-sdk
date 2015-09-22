@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public class UserInfo implements Signable {
 
-    public static DeserializingFactory<UserInfo> FACTORY = (@Nonnull @WillNotClose InputStream in) -> {
+    public static final DeserializingFactory<UserInfo> FACTORY = (@Nonnull @WillNotClose InputStream in) -> {
         final byte versionFromInput = InputStreamUtils.readByte(in);
         if (versionFromInput != UserInfo.VERSION) {
             throw new IllegalArgumentException("Expected UserInfo with version '" + UserInfo.VERSION + "' but received '" + versionFromInput + "'");

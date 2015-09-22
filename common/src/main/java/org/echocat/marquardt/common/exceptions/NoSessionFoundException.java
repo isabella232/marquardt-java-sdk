@@ -10,7 +10,7 @@ package org.echocat.marquardt.common.exceptions;
 
 public class NoSessionFoundException extends RuntimeException {
 
-    public NoSessionFoundException(String message) {
+    public NoSessionFoundException(final String message) {
         super(message);
     }
 

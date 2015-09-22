@@ -14,12 +14,7 @@ import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
 import org.junit.Test;
 
-import static org.echocat.marquardt.client.util.ResponseStatusTranslation.BAD_REQUEST;
-import static org.echocat.marquardt.client.util.ResponseStatusTranslation.CONFLICT;
-import static org.echocat.marquardt.client.util.ResponseStatusTranslation.FORBIDDEN;
-import static org.echocat.marquardt.client.util.ResponseStatusTranslation.NOT_FOUND;
-import static org.echocat.marquardt.client.util.ResponseStatusTranslation.PRECONDITION_FAILED;
-import static org.echocat.marquardt.client.util.ResponseStatusTranslation.UNAUTHORIZED;
+import static org.echocat.marquardt.client.util.ResponseStatusTranslation.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.assertThat;
@@ -115,10 +110,11 @@ public class ResponseStatusTranslationUnitTest {
         _translation = ResponseStatusTranslation.from(_statusCode);
     }
 
-    private void thenTranslationIs(ResponseStatusTranslation translation) {
+    private void thenTranslationIs(final ResponseStatusTranslation translation) {
         assertThat(_translation, is(translation));
     }
 
+    @SuppressWarnings("unchecked")
     private void thenTranslatedExceptionIs(final Class<? extends RuntimeException> exceptionClass) {
         assertThat(_translation.translateToException("test"), isA((Class<? super RuntimeException>)exceptionClass));
     }

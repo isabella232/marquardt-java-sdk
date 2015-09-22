@@ -11,6 +11,7 @@ package org.echocat.marquardt.example;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.spring.SpringClient;
 import org.echocat.marquardt.common.Signer;
+import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.TrustedKeysProvider;
@@ -36,19 +37,21 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
 
+@SuppressWarnings({"AbstractClassWithoutAbstractMethods", "SpringJavaAutowiredMembersInspection"})
 @IntegrationTest("server.port=0")
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ExampleApplication.class)
 @WebAppConfiguration
 @ActiveProfiles("tests")
 public abstract class AbstractSsoIntegrationTest {
-    Certificate<UserInfo> _certificate;
-    KeyPairProvider _clientKeyProvider = TestKeyPairProvider.create();
+
+    private Certificate<UserInfo> _certificate;
+
+    private final KeyPairProvider _clientKeyProvider = TestKeyPairProvider.create();
+    private final Signer _clientSigner = new Signer();
 
     @Autowired
     private TrustedKeysProvider _trustedKeysProvider;
-
-    Signer _clientSigner = new Signer();
     @Autowired
     private UserRepository _userRepository;
     @Autowired
@@ -60,27 +63,26 @@ public abstract class AbstractSsoIntegrationTest {
     private String _port;
     private UserCredentials _userCredentials;
 
-    protected Client<UserInfo> _client;
-    protected boolean _signOutSuccessful;
+    private Client<UserInfo> _client;
 
     protected String baseUriOfApp() {
         return "http://127.0.0.1:" + _port;
     }
 
     void whenLoggingOut() throws IOException {
-        _signOutSuccessful = _client.signout();
+        getClient().signout();
     }
 
     void whenSigningUp() throws IOException {
-        _certificate = _client.signup(_userCredentials);
+        setCertificate(getClient().signup(_userCredentials));
     }
 
     void whenSigningIn() throws IOException {
-        _certificate = _client.signin(_userCredentials);
+        setCertificate(getClient().signin(_userCredentials));
     }
 
     void givenCorrectCredentials() {
-        _userCredentials = new UserCredentials("testuser@example.com", "Mutti123", _clientKeyProvider.getPublicKey());
+        _userCredentials = new UserCredentials("testuser@example.com", "Mutti123", getClientKeyProvider().getPublicKey());
     }
 
     void givenIncorrectCredentials() {
@@ -89,7 +91,7 @@ public abstract class AbstractSsoIntegrationTest {
 
     @Before
     public void setup() {
-        _client = new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _rolesDeserializer, _clientKeyProvider, _trustedKeysProvider.getPublicKeys());
+        setClient(new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _rolesDeserializer, getClientKeyProvider(), _trustedKeysProvider.getPublicKeys()));
     }
 
     @After
@@ -106,4 +108,29 @@ public abstract class AbstractSsoIntegrationTest {
         persistentUser.setRoles(Collections.emptySet());
         _userRepository.save(persistentUser);
     }
+
+    protected Certificate<UserInfo> getCertificate() {
+        return _certificate;
+    }
+
+    protected void setCertificate(final Certificate<UserInfo> certificate) {
+        _certificate = certificate;
+    }
+
+    protected KeyPairProvider getClientKeyProvider() {
+        return _clientKeyProvider;
+    }
+
+    protected Signer getClientSigner() {
+        return _clientSigner;
+    }
+
+    protected Client<UserInfo> getClient() {
+        return _client;
+    }
+
+    protected void setClient(final Client<UserInfo> client) {
+        _client = client;
+    }
+
 }

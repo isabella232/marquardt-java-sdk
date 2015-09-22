@@ -203,8 +203,8 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
                     _authorizedRestTemplate.exchange(
                             url, HttpMethod.valueOf(httpMethod.toUpperCase()), new HttpEntity<REQUEST>(payload), responseType);
             return exchange.getBody();
-        } catch (HttpClientErrorException e) {
-            throw ResponseStatusTranslation.from(e.getStatusCode().value()).translateToException(e.getMessage());
+        } catch (HttpClientErrorException ignored) {
+            throw ResponseStatusTranslation.from(ignored.getStatusCode().value()).translateToException(ignored.getMessage());
         }
     }
 

@@ -27,7 +27,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private CertificateValidator<UserInfo, PersistentRoles> _certificateValidator;
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/exampleservice/someProtectedResource**").authenticated()
@@ -40,7 +40,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private SpringSecurityCertificateAuthenticationFilter<UserInfo,PersistentRoles> certificateAuthenticationFilter() {
         return new SpringSecurityCertificateAuthenticationFilter<UserInfo,PersistentRoles>(_certificateValidator) {
             @Override
-            protected String getIdentifier(UserInfo signable) {
+            protected String getIdentifier(final UserInfo signable) {
                 return signable.getUserId().toString();
             }
         };

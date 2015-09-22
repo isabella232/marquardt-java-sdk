@@ -14,7 +14,7 @@ package org.echocat.marquardt.common.exceptions;
  */
 public class InvalidCertificateException extends RuntimeException {
 
-    public InvalidCertificateException(String message) {
+    public InvalidCertificateException(final String message) {
         super(message);
     }
 

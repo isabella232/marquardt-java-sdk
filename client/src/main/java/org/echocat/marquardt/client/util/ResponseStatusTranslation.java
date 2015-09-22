@@ -22,40 +22,40 @@ public enum ResponseStatusTranslation {
 
     BAD_REQUEST(400) {
         @Override
-        public RuntimeException translateToException(String message) {
+        public RuntimeException translateToException(final String message) {
             return new IllegalArgumentException(message);
         }
     },
     UNAUTHORIZED(401) {
         @Override
-        public RuntimeException translateToException(String message) {
+        public RuntimeException translateToException(final String message) {
             return new LoginFailedException(message);
         }
     },
     FORBIDDEN(403) {
         @Override
-        public RuntimeException translateToException(String message) { return new IllegalArgumentException(message); }
+        public RuntimeException translateToException(final String message) { return new IllegalArgumentException(message); }
     },
     NOT_FOUND(404) {
         @Override
-        public RuntimeException translateToException(String message) { return new NoSessionFoundException(message); }
+        public RuntimeException translateToException(final String message) { return new NoSessionFoundException(message); }
     },
     CONFLICT(409) {
         @Override
-        public RuntimeException translateToException(String message) {
+        public RuntimeException translateToException(final String message) {
             return new UserExistsException(message);
         }
     },
     PRECONDITION_FAILED(412) {
         @Override
-        public RuntimeException translateToException(String message) {
+        public RuntimeException translateToException(final String message) {
             return new AlreadyLoggedInException(message);
         }
     };
 
-    private Integer _statusCode;
+    private final Integer _statusCode;
 
-    ResponseStatusTranslation(Integer statusCode) {
+    ResponseStatusTranslation(final Integer statusCode) {
         _statusCode = statusCode;
     }
 
@@ -70,12 +70,9 @@ public enum ResponseStatusTranslation {
 
     /**
      * Returns the response status translation for a given status code.
-     *
-     * @param statusCode
-     * @return
      */
-    public static ResponseStatusTranslation from(Integer statusCode) {
-        for(ResponseStatusTranslation statusToExceptionMapper: values()) {
+    public static ResponseStatusTranslation from(final Integer statusCode) {
+        for(final ResponseStatusTranslation statusToExceptionMapper: values()) {
             if (statusToExceptionMapper.getStatusCode().equals(statusCode)) {
                 return statusToExceptionMapper;
             }
@@ -86,9 +83,6 @@ public enum ResponseStatusTranslation {
     /**
      * Implementations of this method should return the corresponding RuntimeException for the status code and
      * reuse the provided message for the exception.
-     *
-     * @param message
-     * @return
      */
     public abstract RuntimeException translateToException(String message);
 }

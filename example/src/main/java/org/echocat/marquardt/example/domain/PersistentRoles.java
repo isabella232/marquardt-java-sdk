@@ -20,7 +20,7 @@ public enum PersistentRoles implements Role {
     @Id
     private final int _id;
 
-    PersistentRoles(int id) {
+    PersistentRoles(final int id) {
         _id = id;
     }
 
@@ -29,9 +29,9 @@ public enum PersistentRoles implements Role {
         return _id;
     }
 
-    public static PersistentRoles fromId(int id) {
-        for(PersistentRoles role: PersistentRoles.values()) {
-            if(role._id == id) {
+    public static PersistentRoles fromId(final int id) {
+        for(final PersistentRoles role: PersistentRoles.values()) {
+            if(role.id() == id) {
                 return role;
             }
         }

@@ -10,12 +10,14 @@ package org.echocat.marquardt.authority.testdomain;
 
 import org.echocat.marquardt.authority.domain.Session;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
 public class TestSession implements Session {
 
     private UUID _userId;
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     private Date _expiredAt;
     private byte[] _publicKey;
 
@@ -25,7 +27,7 @@ public class TestSession implements Session {
     }
 
     @Override
-    public void setUserId(UUID userId) {
+    public void setUserId(final UUID userId) {
         _userId = userId;
     }
 
@@ -35,17 +37,18 @@ public class TestSession implements Session {
     }
 
     @Override
-    public void setCertificate(byte[] certificate) {
+    public void setCertificate(final byte[] certificate) {
 
     }
 
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     @Override
     public Date getExpiresAt() {
         return _expiredAt;
     }
 
     @Override
-    public void setExpiresAt(Date expiresAt) {
+    public void setExpiresAt(@SuppressWarnings("UseOfObsoleteDateTimeApi") final Date expiresAt) {
         _expiredAt = expiresAt;
     }
 
@@ -55,8 +58,8 @@ public class TestSession implements Session {
     }
 
     @Override
-    public void setPublicKey(byte[] publicKey) {
-        _publicKey = publicKey;
+    public void setPublicKey(final byte[] publicKey) {
+        _publicKey = Arrays.copyOf(publicKey, publicKey.length);
     }
 
     @Override
@@ -65,7 +68,7 @@ public class TestSession implements Session {
     }
 
     @Override
-    public void setMechanism(String mechanism) {
+    public void setMechanism(final String mechanism) {
 
     }
 }

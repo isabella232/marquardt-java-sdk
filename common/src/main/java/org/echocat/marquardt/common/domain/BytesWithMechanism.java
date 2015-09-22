@@ -9,6 +9,7 @@
 package org.echocat.marquardt.common.domain;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 
@@ -18,7 +19,6 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
  * @see PublicKeyWithMechanism
  * @see Signature
  */
-@SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
 public abstract class BytesWithMechanism<M extends BytesWithMechanism.Mechanism> {
 
     public interface Mechanism {
@@ -35,7 +35,7 @@ public abstract class BytesWithMechanism<M extends BytesWithMechanism.Mechanism>
 
     protected BytesWithMechanism(@Nonnull final M mechanism, @Nonnull final byte[] value) {
         _mechanism = mechanism;
-        _value = value;
+        _value = Arrays.copyOf(value, value.length);
     }
 
     protected BytesWithMechanism(@Nonnull final byte[] content) {

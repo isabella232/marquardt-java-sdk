@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.common;
 
+import com.google.common.collect.Lists;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.echocat.marquardt.common.domain.CertificateFactory;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
@@ -49,19 +50,17 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
      * @see Validator
      */
     public CertificateValidator(final List<PublicKey> trustedPublicKeys) {
-        _trustedPublicKeys = trustedPublicKeys;
+        _trustedPublicKeys = Lists.newArrayList(trustedPublicKeys);
         _dateProvider = new DateProvider();
     }
 
     /**
      * Provide your DeserializingFactory for your wrapped signable user information here!
-     * @return
      */
     protected abstract DeserializingFactory<USERINFO> deserializingFactory();
 
     /**
      * Provide your RoleCodeGenerator for your roles implementation here!
-     * @return
      */
     protected abstract RolesDeserializer<ROLE> roleCodeDeserializer();
 
@@ -104,11 +103,12 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
     }
 
     private boolean isExpired(final Certificate<USERINFO> certificate) {
+        //noinspection UseOfObsoleteDateTimeApi
         final Date now = _dateProvider.now();
         return now.after(certificate.getExpiresAt());
     }
 
-    public void setDateProvider(DateProvider dateProvider) {
+    public void setDateProvider(final DateProvider dateProvider) {
         _dateProvider = dateProvider;
     }
 }

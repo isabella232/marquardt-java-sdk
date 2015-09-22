@@ -35,14 +35,13 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateAuthenticationFilterUnitTest {
 
-    private MockHttpServletRequest _httpServletRequest = new MockHttpServletRequest();
-    private MockHttpServletResponse _httpServletResponse = new MockHttpServletResponse();
+    private final MockHttpServletRequest _httpServletRequest = new MockHttpServletRequest();
+    private final MockHttpServletResponse _httpServletResponse = new MockHttpServletResponse();
 
     @Mock
     private Certificate<TestUserInfo> _certificate;
@@ -119,7 +118,7 @@ public class CertificateAuthenticationFilterUnitTest {
     }
 
     private void givenValidRequest() {
-        String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
+        final String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
         _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenReturn(_certificate);
         when(_requestValidator.isValid(_httpServletRequest, null)).thenReturn(true);
@@ -130,13 +129,14 @@ public class CertificateAuthenticationFilterUnitTest {
     }
 
     private void givenRequestWithInvalidCertificate() {
-        String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
+        final String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
         _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
+        //noinspection unchecked
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenThrow(InvalidCertificateException.class);
     }
 
     private void givenRequestWithInvalidSignature() {
-        String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
+        final String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
         _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenReturn(_certificate);
         when(_requestValidator.isValid(_httpServletRequest, null)).thenReturn(false);
@@ -161,15 +161,15 @@ public class CertificateAuthenticationFilterUnitTest {
 
     class TestCertificateAuthenticationFilter extends CertificateAuthenticationFilter<TestUserInfo, TestRoles> {
 
-        private boolean _authenticated = false;
+        private boolean _authenticated;
 
-        public TestCertificateAuthenticationFilter(CertificateValidator<TestUserInfo, TestRoles> certificateValidator, RequestValidator requestValidator) {
+        public TestCertificateAuthenticationFilter(final CertificateValidator<TestUserInfo, TestRoles> certificateValidator, final RequestValidator requestValidator) {
             super(certificateValidator, requestValidator);
         }
 
 
         @Override
-        protected void authenticateUser(Certificate<TestUserInfo> certificate) {
+        protected void authenticateUser(final Certificate<TestUserInfo> certificate) {
             _authenticated = true;
         }
 
@@ -179,10 +179,10 @@ public class CertificateAuthenticationFilterUnitTest {
 
     }
 
-    private Matcher<byte[]> byteArrayEqualTo(String certificate) {
+    private Matcher<byte[]> byteArrayEqualTo(final String certificate) {
         return new FeatureMatcher<byte[], String>(equalTo(certificate), "bytes equal to ", "bytes") {
             @Override
-            protected String featureValueOf(byte[] bytes) {
+            protected String featureValueOf(final byte[] bytes) {
                 return new String(bytes);
             }
         };

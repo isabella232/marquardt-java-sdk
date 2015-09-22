@@ -33,7 +33,7 @@ public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyFileReadingKeyPairProvider.class);
 
-    private List<PublicKey> _publicKeys = new ArrayList<>();
+    private final List<PublicKey> _publicKeys = new ArrayList<>();
 
     @Autowired
     public KeyFileReadingTrustedKeysProvider(@Value("${authentication.trusted.public.keys.files}") final String publicKeyFiles) {
@@ -44,6 +44,7 @@ public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
         Arrays.stream(publicKeyFiles.split(",")).forEach(p -> _publicKeys.add(loadPublicKey(p.trim())));
     }
 
+    @Override
     public List<PublicKey> getPublicKeys() {
         return _publicKeys;
     }
@@ -56,13 +57,16 @@ public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
         try {
             final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePublic(spec);
-        } catch (GeneralSecurityException e) {
+        } catch (final GeneralSecurityException e) {
             throw new IllegalArgumentException("Failed to create public key from keyfile " + publicKeyFileName + ".", e);
         }
     }
 
     private byte[] readKeyFile(final String keyFileName) {
         final URL resource = getClass().getClassLoader().getResource(keyFileName);
+        if(resource == null) {
+            throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
+        }
         final File keyFile = new File(resource.getFile());
         try (FileInputStream fileInputStream = new FileInputStream(keyFile)) {
             try (DataInputStream dataInputStream = new DataInputStream(fileInputStream)) {
@@ -70,7 +74,7 @@ public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
                 dataInputStream.readFully(keyBytes);
                 return keyBytes;
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IllegalArgumentException("Failed to read key file " + keyFile + ".", e);
         }
     }

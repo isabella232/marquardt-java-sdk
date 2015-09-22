@@ -13,11 +13,11 @@ package org.echocat.marquardt.common.exceptions;
  */
 public class SignatureValidationFailedException extends RuntimeException {
 
-    public SignatureValidationFailedException(String message) {
+    public SignatureValidationFailedException(final String message) {
         super(message);
     }
 
-    public SignatureValidationFailedException(String message, Throwable cause) {
+    public SignatureValidationFailedException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

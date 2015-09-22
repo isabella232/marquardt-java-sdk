@@ -8,13 +8,13 @@
 
 package org.echocat.marquardt.service.spring;
 
-import com.google.common.collect.Lists;
 import org.echocat.marquardt.common.domain.Certificate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Wrapper for Certificates to create a Spring Security authentication.
@@ -36,8 +36,7 @@ public class CertificateAuthenticationWrapper implements Authentication {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        //TODO: transform roles from userInfo to Spring granted authorities.
-        return Lists.newArrayList(new SimpleGrantedAuthority("ROLE_USER"));
+        return _certificate.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.name())).collect(Collectors.toSet());
     }
 
     @Override

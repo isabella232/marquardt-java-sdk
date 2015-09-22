@@ -15,14 +15,16 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 
-public class RolesDeserializerTest {
+public class RolesDeserializerUnitTest {
 
-    private RolesDeserializer<TestRoles> _rolesDeserializer = new RolesDeserializer<TestRoles>() {
+    private final RolesDeserializer<TestRoles> _rolesDeserializer = new RolesDeserializer<TestRoles>() {
         @Override
-        public TestRoles createRoleFromId(Number id) {
+        public TestRoles createRoleFromId(final Number id) {
             return TestRoles.fromId(id.intValue());
         }
     };
@@ -56,7 +58,7 @@ public class RolesDeserializerTest {
         whenCreatingRoles();
     }
 
-    private void givenRoleCode(Long roleCode) {
+    private void givenRoleCode(final Long roleCode) {
         _roleCode = roleCode;
     }
 
@@ -67,6 +69,7 @@ public class RolesDeserializerTest {
 
     private void thenRolesAreGenerated() {
         assertThat(_roles.size(), is(2));
+        assertThat(_roles, allOf(hasItem(TestRoles.TEST_ROLE_1), hasItem(TestRoles.TEST_ROLE_2)));
     }
 
 

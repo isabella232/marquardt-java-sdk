@@ -25,7 +25,7 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64;
  * Creates signatures of http requests based on request headers.
  */
 public class RequestSigner {
-    public final Signer _signer = new Signer();
+    private final Signer _signer = new Signer();
 
     /**
      * Creates a signature for the request with the provided private key. The signature will be based on
@@ -36,21 +36,21 @@ public class RequestSigner {
      * @return signature as byte stream
      * @throws IOException
      */
-    public byte[] getSignature(HttpRequest request, PrivateKey keyToSignWith) throws IOException {
-        ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream();
+    public byte[] getSignature(final HttpRequest request, final PrivateKey keyToSignWith) throws IOException {
+        final ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream();
         try {
             writeRequestTo(request, bytesToSign);
-            return encodeBase64(_signer.signatureOf(bytesToSign.toByteArray(), keyToSignWith));
+            return encodeBase64(getSigner().signatureOf(bytesToSign.toByteArray(), keyToSignWith));
         } finally {
             IOUtils.closeQuietly(bytesToSign);
         }
     }
 
-    private void writeRequestTo(HttpRequest request, ByteArrayOutputStream bytesToSign) throws IOException {
+    private void writeRequestTo(final HttpRequest request, final ByteArrayOutputStream bytesToSign) throws IOException {
         final byte[] requestBytes = (request.getMethod().name() + " " + request.getURI().getPath()).getBytes();
         bytesToSign.write(Ints.toByteArray(requestBytes.length));
         bytesToSign.write(requestBytes);
-        for (SignatureHeaders headerToInclude : SignatureHeaders.values()) {
+        for (final SignatureHeaders headerToInclude : SignatureHeaders.values()) {
             final List<String> headerValues = request.getHeaders().get(headerToInclude.getHeaderName());
             if (headerValues != null) {
                 final byte[] headerBytes = (headerToInclude.getHeaderName() + ":" + getFirstHeaderValue(headerValues)).getBytes();
@@ -60,11 +60,15 @@ public class RequestSigner {
         }
     }
 
-    private String getFirstHeaderValue(List<String> headerValues) {
+    private String getFirstHeaderValue(final List<String> headerValues) {
         try {
             return headerValues.get(0);
-        } catch (IndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("No payload of known signature header.");
+        } catch (final IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("No payload of known signature header.", e);
         }
+    }
+
+    public Signer getSigner() {
+        return _signer;
     }
 }

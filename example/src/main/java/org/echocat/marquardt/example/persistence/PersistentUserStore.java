@@ -25,37 +25,37 @@ import java.util.UUID;
 @Component
 public class PersistentUserStore implements UserStore<PersistentUser, UserInfo> {
 
-    private UserRepository _userRepository;
-    private PasswordEncoder _passwordEncoder;
+    private final UserRepository _userRepository;
+    private final PasswordEncoder _passwordEncoder;
 
     @Autowired
-    PersistentUserStore(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    PersistentUserStore(final UserRepository userRepository, final PasswordEncoder passwordEncoder) {
         _userRepository = userRepository;
         _passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public Optional<PersistentUser> findUserByCredentials(Credentials credentials) {
+    public Optional<PersistentUser> findUserByCredentials(final Credentials credentials) {
         return _userRepository.findByEmailIgnoreCase(credentials.getIdentifier());
     }
 
     @Override
-    public Optional<PersistentUser> findUserByUuid(UUID userId) {
+    public Optional<PersistentUser> findUserByUuid(final UUID userId) {
         return _userRepository.findByUserId(userId);
     }
 
     @Override
-    public PersistentUser createUserFromCredentials(Credentials credentials) {
+    public PersistentUser createUserFromCredentials(final Credentials credentials) {
         final PersistentUser persistentUserToCreate = new PersistentUser();
         persistentUserToCreate.setEmail(credentials.getIdentifier());
         persistentUserToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
-        persistentUserToCreate.setUserId(UUID.randomUUID()); // TODO! What is the stored format?
+        persistentUserToCreate.setUserId(UUID.randomUUID());
         persistentUserToCreate.setRoles(Collections.<PersistentRoles>emptySet());
         return _userRepository.save(persistentUserToCreate);
     }
 
     @Override
-    public UserInfo createSignableFromUser(PersistentUser persistentUser) {
+    public UserInfo createSignableFromUser(final PersistentUser persistentUser) {
         return new UserInfo(persistentUser.getUserId());
     }
 }

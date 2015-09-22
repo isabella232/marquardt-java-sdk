@@ -24,12 +24,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 public abstract class SpringSecurityCertificateAuthenticationFilter<SIGNABLE extends Signable, ROLE extends Role>
         extends CertificateAuthenticationFilter<SIGNABLE, ROLE> {
 
-    public SpringSecurityCertificateAuthenticationFilter(CertificateValidator certificateValidator) {
+    public SpringSecurityCertificateAuthenticationFilter(final CertificateValidator<SIGNABLE,ROLE> certificateValidator) {
         super(certificateValidator, new RequestValidator());
     }
 
     @Override
-    protected void authenticateUser(Certificate<SIGNABLE> certificate) {
+    protected void authenticateUser(final Certificate<SIGNABLE> certificate) {
         SecurityContextHolder.getContext().setAuthentication(new CertificateAuthenticationWrapper(getIdentifier(certificate.getPayload()), certificate));
     }
 

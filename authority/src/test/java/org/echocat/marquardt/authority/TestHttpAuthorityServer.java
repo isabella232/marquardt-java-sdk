@@ -15,6 +15,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
@@ -36,10 +37,10 @@ public class TestHttpAuthorityServer {
 
     private final HttpServer _server;
     private final ObjectMapper _objectMapper;
-    private final Authority _authority;
+    private final Authority<TestUser, TestSession, TestUserInfo> _authority;
     private final Signature _signature = mock(Signature.class);
 
-    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo> userStore, final SessionStore sessionStore) throws IOException {
+    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo> userStore, final SessionStore<TestSession> sessionStore) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
         _authority = new Authority<>(userStore, sessionStore, TestKeyPairProvider.create());
@@ -62,12 +63,12 @@ public class TestHttpAuthorityServer {
 
     class SignupHandler extends Handler {
 
-        public SignupHandler(Integer successResponseCode) {
+        public SignupHandler(final Integer successResponseCode) {
             super(successResponseCode);
         }
 
         @Override
-        String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
+        String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
             final JsonWrappedCertificate jsonWrappedCertificate = _authority.signUp(testUserCredentials);
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
@@ -76,12 +77,12 @@ public class TestHttpAuthorityServer {
 
     class SigninHandler extends Handler {
 
-        public SigninHandler(Integer successResponseCode) {
+        public SigninHandler(final Integer successResponseCode) {
             super(successResponseCode);
         }
 
         @Override
-        String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
+        String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
             final JsonWrappedCertificate jsonWrappedCertificate = _authority.signIn(testUserCredentials);
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
@@ -89,12 +90,12 @@ public class TestHttpAuthorityServer {
     }
 
     class SignoutHandler extends Handler {
-        public SignoutHandler(Integer successResponseCode) {
+        public SignoutHandler(final Integer successResponseCode) {
             super(successResponseCode);
         }
 
         @Override
-        String getResponse(final InputStream requestBody, Headers headers)  throws IOException {
+        String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
             final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
             _authority.signOut(certificate, certificate, _signature);
             return null;
@@ -103,11 +104,11 @@ public class TestHttpAuthorityServer {
 
     class RefreshHandler extends Handler {
 
-        public RefreshHandler(Integer successResponseCode) {
+        public RefreshHandler(final Integer successResponseCode) {
             super(successResponseCode);
         }
         @Override
-        String getResponse(InputStream requestBody, Headers headers) throws IOException {
+        String getResponse(final InputStream requestBody, final Headers headers) throws IOException {
             final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
             final JsonWrappedCertificate refresh = _authority.refresh(certificate, certificate, _signature);
             return _objectMapper.writeValueAsString(refresh);
@@ -118,7 +119,7 @@ public class TestHttpAuthorityServer {
 
         private final Integer _successResponseCode;
 
-        public Handler(Integer successResponseCode) {
+        public Handler(final Integer successResponseCode) {
             _successResponseCode = successResponseCode;
         }
 
@@ -129,10 +130,10 @@ public class TestHttpAuthorityServer {
             } else if (!"application/json".equals(httpExchange.getRequestHeaders().get("Content-Type").get(0))) {
                 httpExchange.sendResponseHeaders(415, 0);
             }
-            String response = getResponse(httpExchange.getRequestBody(), httpExchange.getRequestHeaders());
+            final String response = getResponse(httpExchange.getRequestBody(), httpExchange.getRequestHeaders());
             if (response != null) {
                 httpExchange.sendResponseHeaders(_successResponseCode, response.length());
-                OutputStream os = httpExchange.getResponseBody();
+                final OutputStream os = httpExchange.getResponseBody();
                 os.write(response.getBytes());
                 os.close();
             } else {

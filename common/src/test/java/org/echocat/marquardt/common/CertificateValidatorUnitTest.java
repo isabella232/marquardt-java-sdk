@@ -26,12 +26,12 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -105,14 +105,15 @@ public class CertificateValidatorUnitTest {
     }
 
     private void whenValidatedPayloadIsDeserialized() {
-        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, asList(_issuerKeys.getPublicKey()));
+        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
         validator.deserializeAndValidateCertificate(_signedPayload);
     }
 
     private void thenCertificateExpiredAsNowIsInTheFuture() {
+        //noinspection UseOfObsoleteDateTimeApi
         final Date dateIn16MinutesFuture = new Date(new Date().getTime() + TimeUnit.MINUTES.toMillis(16));
         doReturn(dateIn16MinutesFuture).when(_mockedDateProvider).now();
-        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, asList(_issuerKeys.getPublicKey()));
+        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
         validator.deserializeAndValidateCertificate(_signedPayload);
     }
 
@@ -122,7 +123,7 @@ public class CertificateValidatorUnitTest {
     }
 
     private void thenCertificateCanBeDeserializedAndVerified() {
-        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, asList(_issuerKeys.getPublicKey()));
+        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
         final Certificate<SignablePayload> result = validator.deserializeAndValidateCertificate(_signedPayload);
         assertThat(result, is(notNullValue()));
     }
@@ -150,7 +151,7 @@ public class CertificateValidatorUnitTest {
         whenSigningWith(_issuerKeys.getPrivateKey());
     }
 
-    private void whenSigningWith(PrivateKey privateKey) throws IOException {
+    private void whenSigningWith(final PrivateKey privateKey) throws IOException {
         _signedPayload = _signer.sign(_signable, privateKey);
     }
 
@@ -170,7 +171,7 @@ public class CertificateValidatorUnitTest {
         protected RolesDeserializer<TestRoles> roleCodeDeserializer() {
             return new RolesDeserializer<TestRoles>() {
                 @Override
-                public TestRoles createRoleFromId(Number id) {
+                public TestRoles createRoleFromId(final Number id) {
                     return TestRoles.fromId(id.intValue());
                 }
             };

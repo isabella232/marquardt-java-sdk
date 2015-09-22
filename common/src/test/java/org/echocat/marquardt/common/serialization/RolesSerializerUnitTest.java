@@ -18,7 +18,7 @@ import static org.echocat.marquardt.common.TestRoles.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class RolesSerializerTest {
+public class RolesSerializerUnitTest {
 
     private Set<Role> _roles = new HashSet<Role>();
     private long _roleCode;

@@ -55,14 +55,14 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
     private final CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
     private final RequestValidator _requestValidator;
 
-    public CertificateAuthenticationFilter(final CertificateValidator<SIGNABLE, ROLE> certificateValidator, RequestValidator requestValidator) {
+    public CertificateAuthenticationFilter(final CertificateValidator<SIGNABLE, ROLE> certificateValidator, final RequestValidator requestValidator) {
         _certificateValidator = certificateValidator;
         _requestValidator = requestValidator;
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+    public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
+        final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         try {
             final String header = httpServletRequest.getHeader("X-Certificate");
             if (header != null) {
@@ -73,9 +73,9 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
                     authenticateUser(certificate);
                 }
             }
-        } catch (InvalidCertificateException e) {
+        } catch (final InvalidCertificateException e) {
             LOGGER.debug("invalid certificate provided: ", e);
-        }  catch (SignatureValidationFailedException e) {
+        }  catch (final SignatureValidationFailedException e) {
             LOGGER.debug("request signature could not be validated: ", e);
         } finally {
             filterChain.doFilter(servletRequest, servletResponse);
@@ -89,11 +89,13 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
      */
     protected abstract void authenticateUser(Certificate<SIGNABLE> certificate);
 
+    @SuppressWarnings("NoopMethodInAbstractClass")
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(final FilterConfig filterConfig) throws ServletException {
         // empty default implementation
     }
 
+    @SuppressWarnings("NoopMethodInAbstractClass")
     @Override
     public void destroy() {
         // empty default implementation

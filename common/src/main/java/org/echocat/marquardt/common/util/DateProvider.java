@@ -15,6 +15,7 @@ import java.util.Date;
  */
 public class DateProvider {
 
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     public Date now() {
         return new Date();
     }

@@ -14,7 +14,7 @@ package org.echocat.marquardt.authority.exceptions;
  * This may be caused by corrupt data or IO problems of the authority.
  */
 public class CertificateCreationException extends RuntimeException {
-    public CertificateCreationException(String message, Throwable cause) {
+    public CertificateCreationException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

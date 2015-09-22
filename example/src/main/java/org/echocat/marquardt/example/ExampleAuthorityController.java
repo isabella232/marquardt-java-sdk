@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ExampleAuthorityController extends SpringAuthorityController<PersistentUser, PersistentSession, UserInfo, PersistentRoles, UserCredentials> {
 
     @Autowired
-    public ExampleAuthorityController(SessionStore sessionStore, KeyPairProvider issuerKeyProvider, UserStore<PersistentUser, UserInfo> userStore, CertificateValidator<UserInfo, PersistentRoles> certificateValidator) {
+    public ExampleAuthorityController(final SessionStore<PersistentSession> sessionStore,
+                                      final KeyPairProvider issuerKeyProvider,
+                                      final UserStore<PersistentUser, UserInfo> userStore,
+                                      final CertificateValidator<UserInfo, PersistentRoles> certificateValidator) {
         super(userStore, sessionStore, issuerKeyProvider, certificateValidator);
     }
 }

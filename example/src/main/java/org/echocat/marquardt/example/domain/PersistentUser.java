@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.example.domain;
 
+import com.google.common.collect.Sets;
 import org.echocat.marquardt.authority.domain.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,12 +20,11 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-public class PersistentUser implements User {
+public class PersistentUser implements User<PersistentRoles> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -45,14 +45,12 @@ public class PersistentUser implements User {
     @OneToMany
     private Set<PersistentRoles> roles;
 
-    private Date created;
-
-    private Date modified;
-
+    @SuppressWarnings("unused")
     public Long getId() {
         return id;
     }
 
+    @SuppressWarnings("unused")
     public void setId(final Long id) {
         this.id = id;
     }
@@ -61,6 +59,7 @@ public class PersistentUser implements User {
         this.email = email.toLowerCase();
     }
 
+    @SuppressWarnings("unused")
     public String getEmail() {
         return email;
     }
@@ -79,12 +78,12 @@ public class PersistentUser implements User {
     }
 
     @Override
-    public boolean passwordMatches(String password) {
+    public boolean passwordMatches(final String password) {
         return _passwordEncoder.matches(password, getEncodedPassword());
     }
 
     public void setRoles(final Set<PersistentRoles> roles) {
-        this.roles = roles;
+        this.roles = Sets.newHashSet(roles);
     }
 
     @Override

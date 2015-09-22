@@ -28,6 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class AuthorityTest {
     protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TestKeyPairProvider.create().getPublicKey());
     protected static final Credentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey());
@@ -35,17 +36,18 @@ public abstract class AuthorityTest {
     private static final TestUser TEST_USER = new TestUser();
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
     private static final UUID USER_ID = UUID.randomUUID();
-    protected TestSession _validSession;
+    private TestSession _validSession;
 
     @Mock
-    UserStore<TestUser, TestUserInfo> _userStore;
+    private UserStore<TestUser, TestUserInfo> _userStore;
+
     @Mock
-    SessionStore _sessionStore;
+    private SessionStore<TestSession> _sessionStore;
 
     @Before
     public void setup() throws Exception {
-        when(_sessionStore.create()).thenReturn(createTestSession());
-        _validSession = createTestSession();
+        when(getSessionStore().create()).thenReturn(createTestSession());
+        setValidSession(createTestSession());
     }
 
     protected static TestSession createTestSession() {
@@ -57,25 +59,43 @@ public abstract class AuthorityTest {
     }
 
     protected void givenUserExists() {
-        when(_userStore.findUserByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
-        when(_userStore.createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
-        when(_userStore.findUserByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
+        when(getUserStore().findUserByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
+        when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(getUserStore().findUserByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
     }
 
     protected void givenExistingSession() {
-        when(_sessionStore.activeSessionExists(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
-        when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.of(_validSession));
+        //noinspection UseOfObsoleteDateTimeApi
+        when(getSessionStore().activeSessionExists(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
+        when(getSessionStore().findByCertificate(any(byte[].class))).thenReturn(Optional.of(getValidSession()));
     }
 
     protected void givenNoExistingSession() {
-        when(_sessionStore.activeSessionExists(eq(USER_ID), any(byte[].class), any(Date.class))).thenReturn(false);
-        when(_sessionStore.findByCertificate(any(byte[].class))).thenReturn(Optional.empty());
+        //noinspection UseOfObsoleteDateTimeApi
+        when(getSessionStore().activeSessionExists(eq(USER_ID), any(byte[].class), any(Date.class))).thenReturn(false);
+        when(getSessionStore().findByCertificate(any(byte[].class))).thenReturn(Optional.empty());
     }
 
     protected void givenUserDoesNotExist() {
-        when(_userStore.findUserByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
-        when(_userStore.findUserByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
-        when(_userStore.createUserFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
-        when(_userStore.createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(getUserStore().findUserByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
+        when(getUserStore().findUserByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
+        when(getUserStore().createUserFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
+        when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+    }
+
+    protected TestSession getValidSession() {
+        return _validSession;
+    }
+
+    protected void setValidSession(final TestSession validSession) {
+        _validSession = validSession;
+    }
+
+    protected UserStore<TestUser, TestUserInfo> getUserStore() {
+        return _userStore;
+    }
+
+    protected SessionStore<TestSession> getSessionStore() {
+        return _sessionStore;
     }
 }

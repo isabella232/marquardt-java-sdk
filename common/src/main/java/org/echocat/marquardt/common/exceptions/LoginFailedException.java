@@ -14,7 +14,7 @@ package org.echocat.marquardt.common.exceptions;
  */
 public class LoginFailedException extends RuntimeException {
 
-    public LoginFailedException(String message) {
+    public LoginFailedException(final String message) {
         super(message);
     }
 }

@@ -20,6 +20,7 @@ import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
+import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -52,7 +53,7 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
  * @see Certificate
  * @see org.echocat.marquardt.authority.spring.SpringAuthorityController
  */
-public class Authority<USER extends User, SESSION extends Session, SIGNABLE extends Signable> {
+public class Authority<USER extends User<? extends Role>, SESSION extends Session, SIGNABLE extends Signable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
@@ -127,7 +128,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
      * @throws IllegalStateException When the user id of the session is not found. Caused by a data inconsistency or a wrong UserStore implementation.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public JsonWrappedCertificate refresh(final byte[] certificate, byte[] signedBytes, Signature signature) {
+    public JsonWrappedCertificate refresh(final byte[] certificate, final byte[] signedBytes, final Signature signature) {
         final SESSION session = getValidSessionBasedOnCertificate(decodeBase64(certificate));
         verifySignature(signedBytes, signature, session);
         final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
@@ -148,7 +149,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
      * @param signedBytes byte sequence signed by the client.
      * @param signature signature of the byte sequence.
      */
-    public void signOut(final byte[] certificate, byte[] signedBytes, Signature signature) {
+    public void signOut(final byte[] certificate, final byte[] signedBytes, final Signature signature) {
         final SESSION session;
         try {
             session = getSessionBasedOnCertificate(decodeBase64(certificate));
@@ -159,11 +160,12 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
         }
     }
 
+    @SuppressWarnings("unused")
     public void setDateProvider(final DateProvider dateProvider) {
         _dateProvider = dateProvider;
     }
 
-    private void verifySignature(byte[] signedBytes, Signature signature, SESSION session) {
+    private void verifySignature(final byte[] signedBytes, final Signature signature, final SESSION session) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(session.getMechanism(), session.getPublicKey());
         if (!signature.isValidFor(signedBytes, publicKeyWithMechanism.toJavaKey())){
             throw new SignatureValidationFailedException("failed to verify signature with client's public key");
@@ -218,6 +220,7 @@ public class Authority<USER extends User, SESSION extends Session, SIGNABLE exte
         _sessionStore.save(session);
     }
 
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     private Date nowPlus60Days() {
         return new Date(_dateProvider.now().getTime() + TimeUnit.DAYS.toMillis(60));
     }

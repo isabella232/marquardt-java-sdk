@@ -50,7 +50,7 @@ import java.io.IOException;
  * @param <SIGNABLE>    Your user information that is wrapped into the Certificate.
  * @param <CREDENTIALS> Your credentials implementation.
  */
-public abstract class SpringAuthorityController<USER extends User,
+public abstract class SpringAuthorityController<USER extends User<ROLE>,
         SESSION extends Session,
         SIGNABLE extends Signable,
         ROLE extends Role,

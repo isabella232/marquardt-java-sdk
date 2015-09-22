@@ -60,7 +60,7 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
         try {
             final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePublic(spec);
-        } catch (GeneralSecurityException e) {
+        } catch (final GeneralSecurityException e) {
             throw new IllegalArgumentException("Failed to create public key from keyfile " + publicKeyFileName + ".", e);
         }
     }
@@ -73,13 +73,16 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
         try {
             final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePrivate(spec);
-        } catch (GeneralSecurityException e) {
+        } catch (final GeneralSecurityException e) {
             throw new IllegalArgumentException("Failed to create public key from keyfile " + privateKeyFile + ".", e);
         }
     }
 
     private byte[] readKeyFile(final String keyFileName) {
         final URL resource = getClass().getClassLoader().getResource(keyFileName);
+        if(resource == null) {
+            throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
+        }
         final File keyFile = new File(resource.getFile());
         try (FileInputStream fileInputStream = new FileInputStream(keyFile)) {
             try (DataInputStream dataInputStream = new DataInputStream(fileInputStream)) {
@@ -87,7 +90,7 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
                 dataInputStream.readFully(keyBytes);
                 return keyBytes;
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IllegalArgumentException("Failed to read key file " + keyFile + ".", e);
         }
     }

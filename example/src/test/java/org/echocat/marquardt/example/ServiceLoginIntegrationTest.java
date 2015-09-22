@@ -57,8 +57,8 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
     private void givenSelfSignedCertificate() throws IOException {
         final UserInfo userInfo = new UserInfo(UUID.randomUUID());
-        final Certificate<UserInfo> certificate = Certificate.create(_clientKeyProvider.getPublicKey(), _clientKeyProvider.getPublicKey(), Collections.emptySet(), userInfo);
-        final byte[] selfSignedCertificate = _clientSigner.sign(certificate, _clientKeyProvider.getPrivateKey());
+        final Certificate<UserInfo> certificate = Certificate.create(getClientKeyProvider().getPublicKey(), getClientKeyProvider().getPublicKey(), Collections.emptySet(), userInfo);
+        final byte[] selfSignedCertificate = getClientSigner().sign(certificate, getClientKeyProvider().getPrivateKey());
         _selfSignedCertificate = encodeBase64(selfSignedCertificate);
     }
 
@@ -77,19 +77,19 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
     }
 
     private void whenAccessingProtectedResourceOnService() {
-        _client.sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST.name(), null, Void.class);
+        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST.name(), null, Void.class);
     }
 
-    private void whenAccessingProtectedResourceWithSelfSignedCertificate(byte[] attackersCertificate) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
+    private void whenAccessingProtectedResourceWithSelfSignedCertificate(final byte[] attackersCertificate) {
+        final RestTemplate restTemplate = new RestTemplate();
+        final HttpHeaders headers = new HttpHeaders();
         headers.add("X-Certificate", new String(attackersCertificate));
-        HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
+        final HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
         restTemplate.exchange(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST, requestEntity, Void.class);
     }
 
     private void whenSignedContentIsSent() {
-        _client.sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResourceWithPayload", HttpMethod.POST.name(), _payloadToSign, String.class);
+        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResourceWithPayload", HttpMethod.POST.name(), _payloadToSign, String.class);
     }
 }

@@ -13,4 +13,6 @@ public interface Role {
     int MAX_ROLE_ID = 63;
 
     Integer id();
+
+    String name();
 }

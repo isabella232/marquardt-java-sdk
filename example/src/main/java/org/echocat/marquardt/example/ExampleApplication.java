@@ -39,7 +39,7 @@ public class ExampleApplication {
     RolesDeserializer<PersistentRoles> rolesSerializer() {
         return new RolesDeserializer<PersistentRoles>() {
             @Override
-            public PersistentRoles createRoleFromId(Number id) {
+            public PersistentRoles createRoleFromId(final Number id) {
                 return PersistentRoles.fromId(id.intValue());
             }
         };
@@ -47,7 +47,7 @@ public class ExampleApplication {
 
     @Bean
     @Autowired
-    public CertificateValidator<UserInfo, PersistentRoles> clientSignedContentValidator(TrustedKeysProvider keysProvider) {
+    public CertificateValidator<UserInfo, PersistentRoles> clientSignedContentValidator(final TrustedKeysProvider keysProvider) {
         return new CertificateValidator<UserInfo, PersistentRoles>(keysProvider.getPublicKeys()) {
             @Override
             protected DeserializingFactory<UserInfo> deserializingFactory() {

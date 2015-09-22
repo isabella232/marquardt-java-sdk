@@ -15,21 +15,21 @@ import java.util.Set;
 
 public final class RolesSerializer {
 
-    private static RolesSerializer INSTANCE = new RolesSerializer();
+    private static final RolesSerializer INSTANCE = new RolesSerializer();
 
-    public static long from(Set<Role> roles) {
+    public static long from(final Set<? extends Role> roles) {
         return INSTANCE.fromInternal(roles);
     }
 
     private RolesSerializer() {}
 
-    private long fromInternal(Set<Role> roles) {
+    private long fromInternal(final Set<? extends Role> roles) {
         if(roles == null) {
             throw new IllegalArgumentException("roles must not be null");
         }
         long result = 0;
-        for (Role role : roles) {
-            Preconditions.checkArgument(role.id().intValue() >= 0 && role.id().intValue() < 64);
+        for (final Role role : roles) {
+            Preconditions.checkArgument(role.id() >= 0 && role.id() < 64);
             result += Math.pow(2, role.id().doubleValue());
         }
         return result;

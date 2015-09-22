@@ -56,6 +56,7 @@ public abstract class CertificateFactory<SIGNABLE extends Signable, ROLE extends
         }
         final PublicKeyWithMechanism publicKeyWithMechanism = PublicKeyWithMechanism.readFrom(in);
         final PublicKeyWithMechanism clientKeyWithMechanism = PublicKeyWithMechanism.readFrom(in);
+        //noinspection UseOfObsoleteDateTimeApi
         final Date expiryDate = new Date(readLong(in));
         final long roleCodes = readLong(in);
         final SIGNABLE wrapped = getFactoryOfWrapped().consume(in);

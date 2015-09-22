@@ -81,7 +81,7 @@ public class ValidatorUnitTest {
         whenSigning(_issuerKeys.getPrivateKey());
     }
 
-    private void whenSigning(PrivateKey privateKey) throws IOException {
+    private void whenSigning(final PrivateKey privateKey) throws IOException {
         _signedPayload = _signer.sign(_signable, privateKey);
     }
 

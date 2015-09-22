@@ -21,25 +21,25 @@ import java.util.UUID;
 @Component
 public class PersistentSessionStore implements SessionStore<PersistentSession> {
 
-    private PersistentSessionRepository _sessionRepository;
+    private final PersistentSessionRepository _sessionRepository;
 
     @Autowired
-    public PersistentSessionStore(PersistentSessionRepository sessionRepository) {
+    public PersistentSessionStore(final PersistentSessionRepository sessionRepository) {
         _sessionRepository = sessionRepository;
     }
 
     @Override
-    public Optional<PersistentSession> findByCertificate(byte[] certificate) {
+    public Optional<PersistentSession> findByCertificate(final byte[] certificate) {
         return _sessionRepository.findByCertificate(certificate);
     }
 
     @Override
-    public boolean activeSessionExists(UUID userId, byte[] clientPublicKey, Date dateToCheck) {
+    public boolean activeSessionExists(final UUID userId, final byte[] clientPublicKey, @SuppressWarnings("UseOfObsoleteDateTimeApi") final Date dateToCheck) {
         return _sessionRepository.countByUserIdAndPublicKeyAndExpiresAtGreaterThan(userId, clientPublicKey, dateToCheck) > 0;
     }
 
     @Override
-    public PersistentSession save(PersistentSession session) {
+    public PersistentSession save(final PersistentSession session) {
         return _sessionRepository.save(session);
     }
 
@@ -49,7 +49,7 @@ public class PersistentSessionStore implements SessionStore<PersistentSession> {
     }
 
     @Override
-    public void delete(PersistentSession session) {
+    public void delete(final PersistentSession session) {
         _sessionRepository.delete(session);
     }
 

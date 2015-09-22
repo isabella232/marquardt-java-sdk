@@ -145,8 +145,6 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
     /**
      * Reads this key from an input stream.
      *
-     * @param in
-     * @return PublicKeyWithMechanism
      * @throws IOException That happened while reading from the stream.
      */
     public static PublicKeyWithMechanism readFrom(@Nonnull @WillNotClose final InputStream in) throws IOException {

@@ -70,6 +70,7 @@ public class SignatureUnitTest {
     }
 
     private void whenCheckingSignature() {
+        //noinspection ConstantConditions
         _signature.isValidFor(new byte[0], null);
     }
 

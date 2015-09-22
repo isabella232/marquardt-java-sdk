@@ -41,9 +41,10 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     private String _response;
     private int _status;
 
+    @Override
     @Before
     public void setup() throws Exception{
-        _testHttpAuthorityServer = new TestHttpAuthorityServer(_userStore, _sessionStore);
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore());
         _testHttpAuthorityServer.start();
         super.setup();
     }
@@ -98,12 +99,9 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     }
 
     private void whenCallingAuthority() throws IOException {
-        final InputStream inputStream = _connection.getInputStream();
-        try {
+        try (InputStream inputStream = _connection.getInputStream()) {
             _status = _connection.getResponseCode();
             _response = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
-        } finally {
-            inputStream.close();
         }
     }
 
@@ -116,7 +114,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
         assertThat(_status, is(204));
     }
 
-    private void doPost(String url, Object content) throws Exception {
+    private void doPost(final String url, final Object content) throws Exception {
         final URL urlToPost = new URL(url);
         _connection = (HttpURLConnection) urlToPost.openConnection();
         _connection.setRequestMethod("POST");

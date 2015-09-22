@@ -9,6 +9,7 @@
 
 package org.echocat.marquardt.common.domain;
 
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -41,8 +42,9 @@ public class Certificate<T extends Signable> implements Signable {
 
     private final PublicKey _issuerPublicKey;
     private final PublicKey _clientPublicKey;
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     private final Date _expiresAt;
-    private final Set<Role> _roles;
+    private final Set<? extends Role> _roles;
     private final T _payload;
 
     /**
@@ -55,11 +57,11 @@ public class Certificate<T extends Signable> implements Signable {
      * @param <T> Class of wrapped payload, for example additional user information to use on clients and services.
      * @return A certificate.
      */
-    public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<Role> roles, final T payload) {
+    public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<? extends Role> roles, final T payload) {
         return new Certificate<T>(issuerPublicKey, clientPublicKey, roles, payload);
     }
 
-    private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<Role> roles, final T payload) {
+    private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<? extends Role> roles, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
         _roles = roles;
@@ -75,13 +77,12 @@ public class Certificate<T extends Signable> implements Signable {
      * @param expiresAt Timestamp of expiration. Should be a relative short timeframe compared to the session of the authority.
      * @param roles Roles of the user to enable authorization in clients and services.
      * @param payload Wrapped payload, for example additional user information to use on clients and services
-     * @return A certificate.
      */
-    Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Date expiresAt, final Set<Role> roles, final T payload) {
+    Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, @SuppressWarnings("UseOfObsoleteDateTimeApi") final Date expiresAt, final Set<? extends Role> roles, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
         _expiresAt = expiresAt;
-        _roles = roles;
+        _roles = Sets.newHashSet(roles);
         _payload = payload;
     }
 
@@ -111,6 +112,7 @@ public class Certificate<T extends Signable> implements Signable {
     /**
      * @return Timestamp of expiration. Should be a relative short timeframe compared to the session of the authority.
      */
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     public Date getExpiresAt() {
         return _expiresAt;
     }
@@ -118,7 +120,7 @@ public class Certificate<T extends Signable> implements Signable {
     /**
      * @return Roles of the user to enable authorization in clients and services.
      */
-    public Set<Role> getRoles() {
+    public Set<? extends Role> getRoles() {
         return _roles;
     }
 

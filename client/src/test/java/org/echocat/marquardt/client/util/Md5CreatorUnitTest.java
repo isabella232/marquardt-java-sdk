@@ -44,7 +44,7 @@ public class Md5CreatorUnitTest {
         assertThat(byteArrayToHex(_md5Hash), is("14206a65f912327ae47940979bc0e270"));
     }
 
-    private static String byteArrayToHex(byte[] a) {
+    private static String byteArrayToHex(final byte[] a) {
         StringBuilder sb = new StringBuilder(a.length * 2);
         for(byte b: a)
             sb.append(String.format("%02x", b & 0xff));

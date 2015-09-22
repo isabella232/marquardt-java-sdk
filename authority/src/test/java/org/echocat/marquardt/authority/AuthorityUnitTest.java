@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
 import org.echocat.marquardt.authority.testdomain.TestSession;
@@ -193,7 +192,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void givenSignableThrowingException() {
-        when(_userStore.createSignableFromUser(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
+        when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
     }
 
     private void whenSigningInWithWrongPassword() {
@@ -217,19 +216,19 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void thenUserIsStored() {
-        verify(_userStore).createUserFromCredentials(TEST_USER_CREDENTIALS);
+        verify(getUserStore()).createUserFromCredentials(TEST_USER_CREDENTIALS);
     }
 
     private void thenSessionIsCreated() {
-        verify(_sessionStore).save(any(Session.class));
+        verify(getSessionStore()).save(any(TestSession.class));
     }
 
     private void thenSessionIsUpdated() {
-        verify(_sessionStore).save(any(Session.class));
+        verify(getSessionStore()).save(any(TestSession.class));
     }
 
     private void thenSessionIsDeleted() {
-        verify(_sessionStore).delete(any(Session.class));
+        verify(getSessionStore()).delete(any(TestSession.class));
     }
 
     private void thenCertificateIsMade() {

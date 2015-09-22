@@ -16,6 +16,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -33,6 +34,7 @@ public class PersistentSession implements Session {
     @Column(length = 1000)
     private byte[] certificate;
 
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     @NotNull
     private Date expiresAt;
 
@@ -42,12 +44,12 @@ public class PersistentSession implements Session {
     @NotNull
     private String mechanism;
 
-    private Boolean valid;
-
+    @SuppressWarnings("unused")
     public Long getId() {
         return id;
     }
 
+    @SuppressWarnings("unused")
     public void setId(final Long id) {
         this.id = id;
     }
@@ -69,14 +71,16 @@ public class PersistentSession implements Session {
 
     @Override
     public void setCertificate(final byte[] certificate) {
-        this.certificate = certificate;
+        this.certificate = Arrays.copyOf(certificate, certificate.length);
     }
 
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     @Override
     public Date getExpiresAt() {
         return expiresAt;
     }
 
+    @SuppressWarnings("UseOfObsoleteDateTimeApi")
     @Override
     public void setExpiresAt(final Date expiresAt) {
         this.expiresAt = expiresAt;
@@ -89,7 +93,7 @@ public class PersistentSession implements Session {
 
     @Override
     public void setPublicKey(final byte[] publicKey) {
-        this.publicKey = publicKey;
+        this.publicKey = Arrays.copyOf(publicKey, publicKey.length);
     }
 
     @Override

@@ -9,25 +9,25 @@
 package org.echocat.marquardt.authority.testdomain;
 
 import org.echocat.marquardt.authority.domain.User;
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.TestRoles;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-public class TestUser implements User {
+public class TestUser implements User<TestRoles> {
     @Override
     public UUID getUserId() {
         return null;
     }
 
     @Override
-    public boolean passwordMatches(String password) {
+    public boolean passwordMatches(final String password) {
         return "right".equals(password);
     }
 
     @Override
-    public Set<Role> getRoles() {
+    public Set<TestRoles> getRoles() {
         return Collections.emptySet();
     }
 }

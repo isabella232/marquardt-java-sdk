@@ -33,16 +33,19 @@ public class TestUserCredentials implements Credentials {
         _publicKey = publicKey;
     }
 
+    @Override
     @JsonProperty("email")
     public String getIdentifier() {
         return _email;
     }
 
+    @Override
     @JsonProperty("password")
     public String getPassword() {
         return _password;
     }
 
+    @Override
     @JsonProperty("publicKey")
     @JsonSerialize(using = PublicKeySerializer.class)
     public PublicKey getPublicKey() {
