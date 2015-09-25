@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.common.domain;
+package org.echocat.marquardt.common.keyprovisioning;
 
 import java.security.PublicKey;
 import java.util.List;

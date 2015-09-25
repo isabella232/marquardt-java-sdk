@@ -15,12 +15,11 @@ import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.common.Signer;
-import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
-import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -81,13 +80,13 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
      * Implements signup. Creates a new User and a new Session.
      *
      * @param credentials Credentials of the user that should be signed up.
-     * @return Ready-to-send JSON wrapped certificate for the client.
+     * @return certificate for the client.
      * @throws UserExistsException If a user with the same identifier already exists.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public JsonWrappedCertificate signUp(final Credentials credentials) {
-        if (!_userStore.findUserByCredentials(credentials).isPresent()) {
-            final USER user = _userStore.createUserFromCredentials(credentials);
+    public byte[] signUp(final Credentials credentials) {
+        if (!_userStore.findByCredentials(credentials).isPresent()) {
+            final USER user = _userStore.createFromCredentials(credentials);
             return createCertificateAndSession(credentials, user);
         } else {
             throw new UserExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
@@ -97,17 +96,17 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
     /**
      * Implements signin. Creates a new Session for a known user.
      * @param credentials Credentials of the user with the client's public key.
-     * @return Ready-to-send JSON wrapped certificate for the client.
+     * @return certificate for the client.
      * @throws LoginFailedException If user does not exist or password does not match.
      * @throws AlreadyLoggedInException If the user already has an active session for this client's public key.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public JsonWrappedCertificate signIn(final Credentials credentials) {
-        final USER user = _userStore.findUserByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
+    public byte[] signIn(final Credentials credentials) {
+        final USER user = _userStore.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (user.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.activeSessionExists(user.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
+            if (_sessionStore.existsActiveSession(user.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
                 throw new AlreadyLoggedInException("User with id " + user.getUserId() + " is already logged in for current client.");
             } else {
                 return createCertificateAndSession(credentials, user);
@@ -122,22 +121,22 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
      * @param certificate Certificate to replace (may be an expired one - but must be the last one created for this session).
      * @param signedBytes byte sequence signed by the client.
      * @param signature signature of the byte sequence.
-     * @return Ready-to-send JSON wrapped certificate for the client.
+     * @return certificate for the client.
      * @throws NoSessionFoundException If no session exists for this certificate. You must sign in again to handle this.
      * @throws ExpiredSessionException When the session is already expired. You must sign in again to handle this.
      * @throws IllegalStateException When the user id of the session is not found. Caused by a data inconsistency or a wrong UserStore implementation.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public JsonWrappedCertificate refresh(final byte[] certificate, final byte[] signedBytes, final Signature signature) {
+    public byte[] refresh(final byte[] certificate, final byte[] signedBytes, final Signature signature) {
         final SESSION session = getValidSessionBasedOnCertificate(decodeBase64(certificate));
         verifySignature(signedBytes, signature, session);
-        final USER user = _userStore.findUserByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
+        final USER user = _userStore.findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
             session.setCertificate(newCertificate);
             session.setExpiresAt(nowPlus60Days());
             _sessionStore.save(session);
-            return createCertificateResponse(newCertificate);
+            return newCertificate;
         } catch (final IOException e) {
             throw new CertificateCreationException("failed to refresh certificate for certificate " + user.getUserId(), e);
         }
@@ -172,19 +171,15 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
         }
     }
 
-    private JsonWrappedCertificate createCertificateAndSession(final Credentials credentials, final USER user) {
+    private byte[] createCertificateAndSession(final Credentials credentials, final USER user) {
         final byte[] certificate;
         try {
             certificate = createCertificate(user, credentials.getPublicKey());
             createSession(credentials.getPublicKey(), user.getUserId(), certificate);
-            return createCertificateResponse(certificate);
+            return certificate;
         } catch (final IOException e) {
             throw new CertificateCreationException("failed to create certificate for user with id " + user.getUserId(), e);
         }
-    }
-
-    private JsonWrappedCertificate createCertificateResponse(final byte[] certificate) {
-        return new JsonWrappedCertificate(certificate);
     }
 
     private byte[] createCertificate(final USER user, final PublicKey clientPublicKey) throws IOException {
@@ -211,7 +206,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
 
     private void createSession(final PublicKey publicKey, final UUID userId, final byte[] certificate) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
-        final SESSION session = _sessionStore.create();
+        final SESSION session = _sessionStore.createTransient();
         session.setUserId(userId);
         session.setExpiresAt(nowPlus60Days());
         session.setPublicKey(publicKeyWithMechanism.getValue());

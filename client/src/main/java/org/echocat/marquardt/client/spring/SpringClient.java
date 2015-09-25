@@ -12,11 +12,11 @@ import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
 import org.echocat.marquardt.client.util.ResponseStatusTranslation;
 import org.echocat.marquardt.common.CertificateValidator;
-import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
-import org.echocat.marquardt.common.domain.KeyPairProvider;
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
@@ -108,8 +108,6 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
 
     /**
      * Used for internal (testing) purposes only.
-     *
-     * @param dateProvider
      */
     public void setDateProvider(DateProvider dateProvider) {
         _dateProvider = dateProvider;

@@ -20,7 +20,7 @@ import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
-import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
+import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.Signature;
 
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class TestHttpAuthorityServer {
         @Override
         String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
-            final JsonWrappedCertificate jsonWrappedCertificate = _authority.signUp(testUserCredentials);
+            final JsonWrappedCertificate jsonWrappedCertificate = createCertificateResponse(_authority.signUp(testUserCredentials));
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
         }
     }
@@ -84,7 +84,7 @@ public class TestHttpAuthorityServer {
         @Override
         String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
-            final JsonWrappedCertificate jsonWrappedCertificate = _authority.signIn(testUserCredentials);
+            final JsonWrappedCertificate jsonWrappedCertificate = createCertificateResponse(_authority.signIn(testUserCredentials));
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
         }
     }
@@ -110,7 +110,7 @@ public class TestHttpAuthorityServer {
         @Override
         String getResponse(final InputStream requestBody, final Headers headers) throws IOException {
             final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
-            final JsonWrappedCertificate refresh = _authority.refresh(certificate, certificate, _signature);
+            final JsonWrappedCertificate refresh = createCertificateResponse(_authority.refresh(certificate, certificate, _signature));
             return _objectMapper.writeValueAsString(refresh);
         }
     }
@@ -144,6 +144,10 @@ public class TestHttpAuthorityServer {
 
         abstract String getResponse(InputStream requestBody, Headers headers) throws IOException;
 
+    }
+
+    private JsonWrappedCertificate createCertificateResponse(final byte[] certificate) {
+        return new JsonWrappedCertificate(certificate);
     }
 
 }

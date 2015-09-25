@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.example.keys;
+package org.echocat.marquardt.example.keyprovisioning;
 
-import org.echocat.marquardt.common.domain.TrustedKeysProvider;
+import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

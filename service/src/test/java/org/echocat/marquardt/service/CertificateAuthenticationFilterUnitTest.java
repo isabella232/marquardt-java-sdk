@@ -12,7 +12,7 @@ package org.echocat.marquardt.service;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.TestRoles;
-import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.web.RequestValidator;
 import org.hamcrest.FeatureMatcher;

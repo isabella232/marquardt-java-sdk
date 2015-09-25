@@ -6,8 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.common.domain;
+package org.echocat.marquardt.common.domain.certificate;
 
+import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
+import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
 
 import javax.annotation.Nonnull;

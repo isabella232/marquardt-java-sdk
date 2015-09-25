@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.common.domain;
+package org.echocat.marquardt.common.keyprovisioning;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -21,7 +21,7 @@ import java.security.PublicKey;
  * The authority typically uses well-known public keys (all clients should trust this key)
  * and a corresponding secret private key only known to the authority.
  *
- *  @see org.echocat.marquardt.common.domain.TrustedKeysProvider
+ *  @see TrustedKeysProvider
  */
 public interface KeyPairProvider {
 

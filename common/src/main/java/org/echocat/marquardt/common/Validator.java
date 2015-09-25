@@ -10,7 +10,7 @@ package org.echocat.marquardt.common;
 
 import com.google.common.io.CountingInputStream;
 import org.apache.commons.io.IOUtils;
-import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;

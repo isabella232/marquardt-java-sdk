@@ -9,8 +9,8 @@
 package org.echocat.marquardt.service;
 
 import org.echocat.marquardt.common.CertificateValidator;
-import org.echocat.marquardt.common.domain.Certificate;
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;

@@ -14,18 +14,17 @@ import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
-import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
-import org.echocat.marquardt.common.domain.KeyPairProvider;
-import org.echocat.marquardt.common.domain.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
+import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.RequestValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,6 @@ public abstract class SpringAuthorityController<USER extends User<ROLE>,
     private UserStore<USER, SIGNABLE> _userStore;
     private Authority<USER, SESSION, SIGNABLE> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
-    private CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
 
     /**
      * Wire this with your stores.
@@ -72,11 +70,11 @@ public abstract class SpringAuthorityController<USER extends User<ROLE>,
      * @param sessionStore      Your session store implementation.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider, CertificateValidator<SIGNABLE, ROLE> certificateValidator) {
+    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
         _sessionStore = sessionStore;
         _issuerKeyProvider = issuerKeyProvider;
         _userStore = userStore;
-        _certificateValidator = certificateValidator;
+        //noinspection unchecked
         _authority = new Authority<>(_userStore, _sessionStore, _issuerKeyProvider);
     }
 
@@ -84,13 +82,13 @@ public abstract class SpringAuthorityController<USER extends User<ROLE>,
     @ResponseStatus(value = HttpStatus.CREATED)
     @ResponseBody
     public JsonWrappedCertificate signUp(@RequestBody final CREDENTIALS credentials) {
-        return _authority.signUp(credentials);
+        return createCertificateResponse(_authority.signUp(credentials));
     }
 
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
     @ResponseBody
     public JsonWrappedCertificate signIn(@RequestBody final CREDENTIALS credentials) {
-        return _authority.signIn(credentials);
+        return createCertificateResponse(_authority.signIn(credentials));
     }
 
     @RequestMapping(value = "/refresh", method = RequestMethod.POST)
@@ -98,7 +96,7 @@ public abstract class SpringAuthorityController<USER extends User<ROLE>,
     public JsonWrappedCertificate refresh(@RequestHeader("X-Certificate") final byte[] certificate, HttpServletRequest request) {
         byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
         Signature signature = _requestValidator.extractSignatureFromHeader(request);
-        return _authority.refresh(certificate, signedBytesFromRequest, signature);
+        return createCertificateResponse(_authority.refresh(certificate, signedBytesFromRequest, signature));
     }
 
     @RequestMapping(value = "/signout", method = RequestMethod.POST)
@@ -151,4 +149,7 @@ public abstract class SpringAuthorityController<USER extends User<ROLE>,
         LOGGER.error("Unhandled IOException catched.", ex);
     }
 
+    private JsonWrappedCertificate createCertificateResponse(final byte[] certificate) {
+        return new JsonWrappedCertificate(certificate);
+    }
 }

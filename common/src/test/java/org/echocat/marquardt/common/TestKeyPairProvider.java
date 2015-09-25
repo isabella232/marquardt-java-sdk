@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.common;
 
-import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;

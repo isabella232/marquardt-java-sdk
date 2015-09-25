@@ -11,6 +11,7 @@ package org.echocat.marquardt.common.domain;
 
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.Validator;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;

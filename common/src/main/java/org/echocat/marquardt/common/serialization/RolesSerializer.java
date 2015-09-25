@@ -9,7 +9,7 @@
 package org.echocat.marquardt.common.serialization;
 
 import com.google.common.base.Preconditions;
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Role;
 
 import java.util.Set;
 

@@ -14,14 +14,13 @@ import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
-import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
-import org.echocat.marquardt.common.domain.KeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +45,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     @InjectMocks
     private Authority<TestUser, TestSession, TestUserInfo> _authority;
 
-    private JsonWrappedCertificate _certificate;
+    private byte[] _certificate;
     @Mock
     private Signature _signature;
 
@@ -216,7 +215,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void thenUserIsStored() {
-        verify(getUserStore()).createUserFromCredentials(TEST_USER_CREDENTIALS);
+        verify(getUserStore()).createFromCredentials(TEST_USER_CREDENTIALS);
     }
 
     private void thenSessionIsCreated() {

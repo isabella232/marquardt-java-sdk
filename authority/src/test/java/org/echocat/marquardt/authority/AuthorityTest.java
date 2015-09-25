@@ -46,7 +46,7 @@ public abstract class AuthorityTest {
 
     @Before
     public void setup() throws Exception {
-        when(getSessionStore().create()).thenReturn(createTestSession());
+        when(getSessionStore().createTransient()).thenReturn(createTestSession());
         setValidSession(createTestSession());
     }
 
@@ -59,27 +59,27 @@ public abstract class AuthorityTest {
     }
 
     protected void givenUserExists() {
-        when(getUserStore().findUserByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
+        when(getUserStore().findByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
         when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
-        when(getUserStore().findUserByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
+        when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
     }
 
     protected void givenExistingSession() {
         //noinspection UseOfObsoleteDateTimeApi
-        when(getSessionStore().activeSessionExists(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
+        when(getSessionStore().existsActiveSession(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
         when(getSessionStore().findByCertificate(any(byte[].class))).thenReturn(Optional.of(getValidSession()));
     }
 
     protected void givenNoExistingSession() {
         //noinspection UseOfObsoleteDateTimeApi
-        when(getSessionStore().activeSessionExists(eq(USER_ID), any(byte[].class), any(Date.class))).thenReturn(false);
+        when(getSessionStore().existsActiveSession(eq(USER_ID), any(byte[].class), any(Date.class))).thenReturn(false);
         when(getSessionStore().findByCertificate(any(byte[].class))).thenReturn(Optional.empty());
     }
 
     protected void givenUserDoesNotExist() {
-        when(getUserStore().findUserByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
-        when(getUserStore().findUserByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
-        when(getUserStore().createUserFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
+        when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
+        when(getUserStore().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
+        when(getUserStore().createFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
         when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 

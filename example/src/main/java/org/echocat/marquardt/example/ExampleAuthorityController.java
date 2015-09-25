@@ -11,8 +11,7 @@ package org.echocat.marquardt.example;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.spring.SpringAuthorityController;
-import org.echocat.marquardt.common.CertificateValidator;
-import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentSession;
 import org.echocat.marquardt.example.domain.PersistentUser;
@@ -29,8 +28,7 @@ public class ExampleAuthorityController extends SpringAuthorityController<Persis
     @Autowired
     public ExampleAuthorityController(final SessionStore<PersistentSession> sessionStore,
                                       final KeyPairProvider issuerKeyProvider,
-                                      final UserStore<PersistentUser, UserInfo> userStore,
-                                      final CertificateValidator<UserInfo, ExampleRoles> certificateValidator) {
-        super(userStore, sessionStore, issuerKeyProvider, certificateValidator);
+                                      final UserStore<PersistentUser, UserInfo> userStore) {
+        super(userStore, sessionStore, issuerKeyProvider);
     }
 }

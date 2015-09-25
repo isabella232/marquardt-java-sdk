@@ -11,7 +11,7 @@ package org.echocat.marquardt.authority.persistence;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.domain.UserToSignableMapper;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
 
 import java.util.Optional;
@@ -19,9 +19,9 @@ import java.util.UUID;
 
 public interface UserStore<USER extends User<? extends Role>, SIGNABLE extends Signable> extends UserToSignableMapper<USER, SIGNABLE> {
 
-    Optional<USER> findUserByCredentials(Credentials credentials);
+    Optional<USER> findByCredentials(Credentials credentials);
 
-    Optional<USER> findUserByUuid(UUID userId);
+    Optional<USER> findByUuid(UUID userId);
 
-    USER createUserFromCredentials(Credentials credentials);
+    USER createFromCredentials(Credentials credentials);
 }

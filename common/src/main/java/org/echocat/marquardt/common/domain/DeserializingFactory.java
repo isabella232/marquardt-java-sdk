@@ -8,6 +8,8 @@
 
 package org.echocat.marquardt.common.domain;
 
+import org.echocat.marquardt.common.domain.Signable;
+
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
 import java.io.IOException;

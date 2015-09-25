@@ -9,10 +9,10 @@
 package org.echocat.marquardt.common;
 
 import com.google.common.collect.Sets;
-import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
-import org.echocat.marquardt.common.domain.KeyPairProvider;
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SecurityMechanismException;

@@ -10,6 +10,8 @@ package org.echocat.marquardt.common.util;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import org.echocat.marquardt.common.domain.certificate.CertificateFactory;
+import org.echocat.marquardt.common.domain.DeserializingFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillNotClose;
@@ -21,8 +23,8 @@ import java.io.InputStream;
  * Utils class for InputStream reading. You may want to use this when you implement your own Signable's
  * DeserializationFactory.
  *
- * @see org.echocat.marquardt.common.domain.DeserializingFactory
- * @see org.echocat.marquardt.common.domain.CertificateFactory
+ * @see DeserializingFactory
+ * @see CertificateFactory
  * @see org.echocat.marquardt.common.domain.PublicKeyWithMechanism
  *
  */

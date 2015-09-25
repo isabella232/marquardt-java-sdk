@@ -10,7 +10,7 @@ package org.echocat.marquardt.example;
 
 
 import com.google.common.collect.Sets;
-import org.echocat.marquardt.common.domain.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.junit.Test;

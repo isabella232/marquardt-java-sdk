@@ -8,10 +8,18 @@
 
 package org.echocat.marquardt.example.domain;
 
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Role;
+import org.echocat.marquardt.common.serialization.RolesDeserializer;
 
 public enum ExampleRoles implements Role {
     ROLE_USER(0), ROLE_ADMIN(1);
+
+    public static final RolesDeserializer<ExampleRoles> FACTORY = new RolesDeserializer<ExampleRoles>() {
+        @Override
+        public ExampleRoles createRoleFromId(final Number id) {
+            return ExampleRoles.fromId(id.intValue());
+        }
+    };
 
     private final int _id;
 
@@ -25,8 +33,8 @@ public enum ExampleRoles implements Role {
     }
 
     public static ExampleRoles fromId(final int id) {
-        for(final ExampleRoles role: ExampleRoles.values()) {
-            if(role.id() == id) {
+        for (final ExampleRoles role : ExampleRoles.values()) {
+            if (role.id() == id) {
                 return role;
             }
         }

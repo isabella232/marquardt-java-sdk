@@ -12,10 +12,9 @@ import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.spring.SpringClient;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.TestKeyPairProvider;
-import org.echocat.marquardt.common.domain.Certificate;
-import org.echocat.marquardt.common.domain.KeyPairProvider;
-import org.echocat.marquardt.common.domain.TrustedKeysProvider;
-import org.echocat.marquardt.common.serialization.RolesDeserializer;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
+import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserCredentials;
@@ -56,8 +55,6 @@ public abstract class AbstractSsoIntegrationTest {
     private UserRepository _userRepository;
     @Autowired
     private PersistentSessionStore _sessionStore;
-    @Autowired
-    private RolesDeserializer<ExampleRoles> _rolesDeserializer;
 
     @Value("${local.server.port}")
     private String _port;
@@ -91,7 +88,7 @@ public abstract class AbstractSsoIntegrationTest {
 
     @Before
     public void setup() {
-        setClient(new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, _rolesDeserializer, getClientKeyProvider(), _trustedKeysProvider.getPublicKeys()));
+        setClient(new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, ExampleRoles.FACTORY, getClientKeyProvider(), _trustedKeysProvider.getPublicKeys()));
     }
 
     @After

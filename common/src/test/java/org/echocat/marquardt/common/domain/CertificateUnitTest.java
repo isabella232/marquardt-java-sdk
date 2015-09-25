@@ -12,6 +12,9 @@ import com.google.common.collect.Sets;
 import org.echocat.marquardt.common.SignablePayload;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.TestRoles;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Role;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.junit.Before;
 import org.junit.Test;
 

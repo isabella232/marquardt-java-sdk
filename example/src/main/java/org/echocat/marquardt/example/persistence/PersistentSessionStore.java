@@ -34,7 +34,7 @@ public class PersistentSessionStore implements SessionStore<PersistentSession> {
     }
 
     @Override
-    public boolean activeSessionExists(final UUID userId, final byte[] clientPublicKey, @SuppressWarnings("UseOfObsoleteDateTimeApi") final Date dateToCheck) {
+    public boolean existsActiveSession(final UUID userId, final byte[] clientPublicKey, @SuppressWarnings("UseOfObsoleteDateTimeApi") final Date dateToCheck) {
         return _sessionRepository.countByUserIdAndPublicKeyAndExpiresAtGreaterThan(userId, clientPublicKey, dateToCheck) > 0;
     }
 
@@ -44,7 +44,7 @@ public class PersistentSessionStore implements SessionStore<PersistentSession> {
     }
 
     @Override
-    public PersistentSession create() {
+    public PersistentSession createTransient() {
         return new PersistentSession();
     }
 

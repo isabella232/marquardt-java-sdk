@@ -35,17 +35,17 @@ public class PersistentUserStore implements UserStore<PersistentUser, UserInfo> 
     }
 
     @Override
-    public Optional<PersistentUser> findUserByCredentials(final Credentials credentials) {
+    public Optional<PersistentUser> findByCredentials(final Credentials credentials) {
         return _userRepository.findByEmailIgnoreCase(credentials.getIdentifier());
     }
 
     @Override
-    public Optional<PersistentUser> findUserByUuid(final UUID userId) {
+    public Optional<PersistentUser> findByUuid(final UUID userId) {
         return _userRepository.findByUserId(userId);
     }
 
     @Override
-    public PersistentUser createUserFromCredentials(final Credentials credentials) {
+    public PersistentUser createFromCredentials(final Credentials credentials) {
         final PersistentUser persistentUserToCreate = new PersistentUser();
         persistentUserToCreate.setEmail(credentials.getIdentifier());
         persistentUserToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));

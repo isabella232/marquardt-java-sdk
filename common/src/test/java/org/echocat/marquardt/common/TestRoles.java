@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.common;
 
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Role;
 
 public enum  TestRoles implements Role {
     TEST_ROLE_1(0), TEST_ROLE_2(1), ROLE_WITH_NEGATIVE_ID(-2), ROLE_WITH_ID_GREATER_THAN_63(64);

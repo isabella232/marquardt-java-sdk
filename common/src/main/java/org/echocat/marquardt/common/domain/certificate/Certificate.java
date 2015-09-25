@@ -7,12 +7,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.common.domain;
+package org.echocat.marquardt.common.domain.certificate;
 
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
+import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.serialization.RolesSerializer;
 
 import javax.annotation.Nonnull;

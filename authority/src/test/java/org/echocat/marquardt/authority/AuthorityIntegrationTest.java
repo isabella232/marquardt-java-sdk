@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.Charsets;
-import org.echocat.marquardt.common.domain.JsonWrappedCertificate;
+import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

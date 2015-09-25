@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.authority.domain;
 
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Role;
 
 import java.util.Set;
 import java.util.UUID;

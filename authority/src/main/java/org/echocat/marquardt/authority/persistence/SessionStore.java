@@ -36,7 +36,7 @@ public interface SessionStore<T extends Session> {
      * @param dateToCheck Date to check - in most cases NOW.
      * @return True if user has an active session on the current client, false if not.
      */
-    boolean activeSessionExists(UUID userId, byte[] clientPublicKey, Date dateToCheck);
+    boolean existsActiveSession(UUID userId, byte[] clientPublicKey, Date dateToCheck);
 
     /**
      * Implement to persist a new or updated session.
@@ -50,7 +50,7 @@ public interface SessionStore<T extends Session> {
      * Implement this to create a new transient session.
      * @return Created session.
      */
-    T create();
+    T createTransient();
 
     /**
      * Implement this to delete a session. You may also implement a invalidation here.

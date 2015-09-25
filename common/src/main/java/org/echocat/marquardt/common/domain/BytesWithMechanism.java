@@ -19,7 +19,7 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
  * @see PublicKeyWithMechanism
  * @see Signature
  */
-public abstract class BytesWithMechanism<M extends BytesWithMechanism.Mechanism> {
+abstract class BytesWithMechanism<M extends BytesWithMechanism.Mechanism> {
 
     public interface Mechanism {
         @Nonnull

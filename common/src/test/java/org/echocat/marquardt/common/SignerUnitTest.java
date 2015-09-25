@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.common;
 
-import org.echocat.marquardt.common.domain.KeyPairProvider;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.domain.Signable;
 import org.junit.Before;
 import org.junit.Test;

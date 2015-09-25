@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.common.serialization;
 
-import org.echocat.marquardt.common.domain.Role;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.junit.Test;
 
 import java.util.HashSet;

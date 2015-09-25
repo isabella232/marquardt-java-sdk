@@ -10,7 +10,7 @@ package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
-import org.echocat.marquardt.common.domain.TrustedKeysProvider;
+import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
@@ -36,16 +36,6 @@ public class ExampleApplication {
     }
 
     @Bean
-    RolesDeserializer<ExampleRoles> rolesSerializer() {
-        return new RolesDeserializer<ExampleRoles>() {
-            @Override
-            public ExampleRoles createRoleFromId(final Number id) {
-                return ExampleRoles.fromId(id.intValue());
-            }
-        };
-    }
-
-    @Bean
     @Autowired
     public CertificateValidator<UserInfo, ExampleRoles> clientSignedContentValidator(final TrustedKeysProvider keysProvider) {
         return new CertificateValidator<UserInfo, ExampleRoles>(keysProvider.getPublicKeys()) {
@@ -56,7 +46,7 @@ public class ExampleApplication {
 
             @Override
             protected RolesDeserializer<ExampleRoles> roleCodeDeserializer() {
-                return rolesSerializer();
+                return ExampleRoles.FACTORY;
             }
         };
     }
