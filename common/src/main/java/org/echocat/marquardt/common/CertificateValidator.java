@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.common;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.CertificateFactory;
@@ -25,22 +26,19 @@ import java.security.PublicKey;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Implement this to validate certificates shipping your own wrapped user informations payload. You must provide
- * a DeserializationFactory that can deserialize your wrapped payload.
- *
- * @param <USERINFO> Your wrapped user information implementing Signable.
- * @see DeserializingFactory
- * @see Signable
- * @see Certificate
- */
 public abstract class CertificateValidator<USERINFO extends Signable, ROLE extends Role> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificateValidator.class);
 
+    private Function<Certificate<USERINFO>, PublicKey> _publicKeyForCertificateProvider = new Function<Certificate<USERINFO>, PublicKey>() {
+        @Override
+        public PublicKey apply(final Certificate<USERINFO> certificate) {
+            return certificate.getIssuerPublicKey();
+        }
+    };
     private final List<PublicKey> _trustedPublicKeys;
-    private DateProvider _dateProvider;
     private final Validator _validator = new Validator();
+    private DateProvider _dateProvider;
 
     /**
      * Create a certificate validator that trusts a given list of PublicKeys (most likely the keys used by your authority)
@@ -54,6 +52,10 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
         _dateProvider = new DateProvider();
     }
 
+    public void setDateProvider(final DateProvider dateProvider) {
+        _dateProvider = dateProvider;
+    }
+
     /**
      * Provide your DeserializingFactory for your wrapped signable user information here!
      */
@@ -63,7 +65,6 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
      * Provide your RoleCodeGenerator for your roles implementation here!
      */
     protected abstract RolesDeserializer<ROLE> roleCodeDeserializer();
-
 
     protected CertificateFactory<USERINFO, ROLE> getCertificateDeserializingFactory() {
         return new CertificateFactory<USERINFO, ROLE>() {
@@ -78,7 +79,6 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
             }
         };
     }
-
     /**
      * Validate the bytes of your certificate (including the signature part!!) using this method. You'll receive a
      * deserialized certificate if it is valid.
@@ -89,26 +89,20 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
      * @throws SignatureValidationFailedException if the signature cannot be read or used.
      */
     public Certificate<USERINFO> deserializeAndValidateCertificate(final byte[] encodedCertificate) {
-        final Certificate<USERINFO> certificate = _validator.deserialize(encodedCertificate, getCertificateDeserializingFactory());
+        final Certificate<USERINFO> certificate = _validator.deserializeAndValidate(encodedCertificate, getCertificateDeserializingFactory(), _publicKeyForCertificateProvider);
+        if (isExpired(certificate)) {
+            throw new InvalidCertificateException("Certificate of " + certificate.getPayload() + " is expired");
+        }
         final PublicKey issuerPublicKey = certificate.getIssuerPublicKey();
         if (!_trustedPublicKeys.contains(issuerPublicKey)) {
             LOGGER.warn("Attack!! ALERT!!! Duck and cover!!! Certificate '{}' could not be found as trusted certificate.", issuerPublicKey);
             throw new InvalidCertificateException("certificate key of " + certificate.getPayload() + " is not trusted");
         }
-        _validator.deserializeAndValidate(encodedCertificate, getCertificateDeserializingFactory(), issuerPublicKey);
-        if (isExpired(certificate)) {
-            throw new InvalidCertificateException("certificate of " + certificate.getPayload() + " is expired");
-        }
         return certificate;
     }
 
     private boolean isExpired(final Certificate<USERINFO> certificate) {
-        //noinspection UseOfObsoleteDateTimeApi
         final Date now = _dateProvider.now();
         return now.after(certificate.getExpiresAt());
-    }
-
-    public void setDateProvider(final DateProvider dateProvider) {
-        _dateProvider = dateProvider;
     }
 }

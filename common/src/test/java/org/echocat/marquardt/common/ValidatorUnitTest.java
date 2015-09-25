@@ -8,15 +8,20 @@
 
 package org.echocat.marquardt.common;
 
+import com.google.common.base.Function;
 import org.apache.commons.lang3.ArrayUtils;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.domain.Signable;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -53,8 +58,43 @@ public class ValidatorUnitTest {
     public void shouldCatchIoExceptionAndRethrowAsRuntimeException() throws IOException {
         givenSignedPayload();
         whenSigning();
-        whenManipulatingPayloadBytes();
+        whenRemovingPayloadBytes();
         thenAnWrappedIoExceptionIsThrown();
+    }
+
+    @Test(expected = SignatureValidationFailedException.class)
+    public void shouldThrowExceptionWhenPublicKeyIsNull() throws IOException {
+        givenSignedPayload();
+        whenSigning();
+        whenPublicKeyForCertificateReturnsNull();
+    }
+
+    @Test(expected = SignatureValidationFailedException.class)
+    public void shouldThrowExceptionWhenSignatureValidationFails() throws IOException {
+        givenSignedPayload();
+        whenSigning();
+        whenManipulatingLast2PayloadBytes();
+        thenExceptionIsThrownOnDeserializeAndValidation();
+    }
+
+    private void thenExceptionIsThrownOnDeserializeAndValidation() {
+        _validator.deserializeAndValidate(_signedPayload, SignablePayload.FACTORY, new Function<SignablePayload, PublicKey>() {
+            @Nullable
+            @Override
+            public PublicKey apply(final SignablePayload signablePayload) {
+                return _issuerKeys.getPublicKey();
+            }
+        });
+    }
+
+    private void whenPublicKeyForCertificateReturnsNull() {
+        _validator.deserializeAndValidate(_signedPayload, SignablePayload.FACTORY, new Function<SignablePayload, PublicKey>() {
+            @Nullable
+            @Override
+            public PublicKey apply(final SignablePayload signablePayload) {
+                return null;
+            }
+        });
     }
 
     private void thenAnWrappedIoExceptionIsThrown() {
@@ -66,9 +106,18 @@ public class ValidatorUnitTest {
         }
     }
 
-    private void whenManipulatingPayloadBytes() {
+    private void whenRemovingPayloadBytes() {
         final int length = _signedPayload.length;
         _signedPayload = ArrayUtils.subarray(_signedPayload, 0, length - 2);
+    }
+
+    private void whenManipulatingLast2PayloadBytes() {
+        final byte[] bytes = new byte[2];
+        final Random random = new Random();
+        random.nextBytes(bytes);
+        final int length = _signedPayload.length;
+        _signedPayload[length - 2]  = bytes[0];
+        _signedPayload[length - 1]  = bytes[1];
     }
 
     private void givenSignedPayload() throws IOException {
@@ -92,5 +141,4 @@ public class ValidatorUnitTest {
     private void thenDeserializedPayloadIsTheSameAsBeforeSigning() {
         assertThat(_deserializedPayload.getSomeContent(), is(SOME_PAYLOAD));
     }
-
 }
