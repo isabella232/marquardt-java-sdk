@@ -37,7 +37,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(certificateAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
-    @Autowired
     private SpringSecurityCertificateAuthenticationFilter<UserInfo,ExampleRoles> certificateAuthenticationFilter() {
         return new SpringSecurityCertificateAuthenticationFilter<UserInfo,ExampleRoles>(_certificateValidator) {
             @Override

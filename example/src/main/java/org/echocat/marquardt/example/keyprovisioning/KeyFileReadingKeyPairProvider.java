@@ -38,8 +38,8 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
     @Autowired
     public KeyFileReadingKeyPairProvider(@Value("${authentication.public.key.file}") final String publicKeyFile,
                                          @Value("${authentication.private.key.file}") final String privateKeyFile) {
-        this._publicKey = loadPublicKey(publicKeyFile);
-        this._privateKey = loadPrivateKey(privateKeyFile);
+        _publicKey = loadPublicKey(publicKeyFile);
+        _privateKey = loadPrivateKey(privateKeyFile);
     }
 
     @Override
@@ -55,8 +55,7 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
     private PublicKey loadPublicKey(final String publicKeyFileName) {
         LOGGER.debug("Reading public key file {}.", publicKeyFileName);
         final byte[] keyFilePayload = readKeyFile(publicKeyFileName);
-        final X509EncodedKeySpec spec =
-                new X509EncodedKeySpec(keyFilePayload);
+        final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyFilePayload);
         try {
             final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePublic(spec);
@@ -68,8 +67,7 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
     private PrivateKey loadPrivateKey(final String privateKeyFile) {
         LOGGER.debug("Reading private key file {}.", privateKeyFile);
         final byte[] keyFilePayload = readKeyFile(privateKeyFile);
-        final PKCS8EncodedKeySpec spec =
-                new PKCS8EncodedKeySpec(keyFilePayload);
+        final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyFilePayload);
         try {
             final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePrivate(spec);
@@ -80,12 +78,12 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
 
     private byte[] readKeyFile(final String keyFileName) {
         final URL resource = getClass().getClassLoader().getResource(keyFileName);
-        if(resource == null) {
+        if (resource == null) {
             throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
         }
         final File keyFile = new File(resource.getFile());
-        try (FileInputStream fileInputStream = new FileInputStream(keyFile)) {
-            try (DataInputStream dataInputStream = new DataInputStream(fileInputStream)) {
+        try (final FileInputStream fileInputStream = new FileInputStream(keyFile)) {
+            try (final DataInputStream dataInputStream = new DataInputStream(fileInputStream)) {
                 final byte[] keyBytes = new byte[(int) keyFile.length()];
                 dataInputStream.readFully(keyBytes);
                 return keyBytes;

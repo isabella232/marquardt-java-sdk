@@ -137,7 +137,7 @@ public class PublicKeyWithMechanism extends BytesWithMechanism<PublicKeyWithMech
      * @throws IOException That happened while writing to the stream.
      */
     public void writeTo(@Nonnull @WillNotClose final OutputStream out) throws IOException {
-        final byte[] content = this.getContent();
+        final byte[] content = getContent();
         out.write(Ints.toByteArray(content.length));
         out.write(content);
     }

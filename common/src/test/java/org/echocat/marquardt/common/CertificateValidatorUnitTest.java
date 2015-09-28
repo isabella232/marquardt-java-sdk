@@ -159,7 +159,7 @@ public class CertificateValidatorUnitTest {
 
         public TestCertificateValidator(final DateProvider dateProvider, final List<PublicKey> trustedPublicKeys) {
             super(trustedPublicKeys);
-            this.setDateProvider(dateProvider);
+            setDateProvider(dateProvider);
         }
 
         @Override

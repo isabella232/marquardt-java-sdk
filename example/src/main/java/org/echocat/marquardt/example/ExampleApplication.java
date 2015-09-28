@@ -14,7 +14,6 @@ import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
-@Import({SecurityConfiguration.class})
+@Import(SecurityConfiguration.class)
 public class ExampleApplication {
 
     public static void main(final String[] args) {
@@ -36,7 +35,6 @@ public class ExampleApplication {
     }
 
     @Bean
-    @Autowired
     public CertificateValidator<UserInfo, ExampleRoles> clientSignedContentValidator(final TrustedKeysProvider keysProvider) {
         return new CertificateValidator<UserInfo, ExampleRoles>(keysProvider.getPublicKeys()) {
             @Override
@@ -50,5 +48,4 @@ public class ExampleApplication {
             }
         };
     }
-
 }
