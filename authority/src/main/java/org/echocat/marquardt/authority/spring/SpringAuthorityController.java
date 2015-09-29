@@ -47,13 +47,12 @@ import java.io.IOException;
  * @param <USER>        Your authority's user implementation.
  * @param <SESSION>     Your authority's session implementation.
  * @param <SIGNABLE>    Your user information that is wrapped into the Certificate.
- * @param <CREDENTIALS> Your credentials implementation.
  */
-public abstract class SpringAuthorityController<USER extends User<ROLE>,
+public abstract class SpringAuthorityController<USER extends User<? extends Role>,
         SESSION extends Session,
         SIGNABLE extends Signable,
-        ROLE extends Role,
-        CREDENTIALS extends Credentials> {
+        SIGNUP_CREDENTIALS extends Credentials,
+        SIGNIN_CREDENTIALS extends Credentials> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
@@ -81,13 +80,13 @@ public abstract class SpringAuthorityController<USER extends User<ROLE>,
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.CREATED)
     @ResponseBody
-    public JsonWrappedCertificate signUp(@RequestBody final CREDENTIALS credentials) {
+    public JsonWrappedCertificate signUp(@RequestBody final SIGNUP_CREDENTIALS credentials) {
         return createCertificateResponse(_authority.signUp(credentials));
     }
 
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
     @ResponseBody
-    public JsonWrappedCertificate signIn(@RequestBody final CREDENTIALS credentials) {
+    public JsonWrappedCertificate signIn(@RequestBody final SIGNIN_CREDENTIALS credentials) {
         return createCertificateResponse(_authority.signIn(credentials));
     }
 
