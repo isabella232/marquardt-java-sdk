@@ -10,11 +10,11 @@ package org.echocat.marquardt.common;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.CertificateFactory;
-import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.certificate.Role;
-import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.PublicKey;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 public abstract class CertificateValidator<USERINFO extends Signable, ROLE extends Role> {
 
@@ -36,8 +36,9 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
             return certificate.getIssuerPublicKey();
         }
     };
-    private final List<PublicKey> _trustedPublicKeys;
+    private final Collection<PublicKey> _trustedPublicKeys;
     private final Validator _validator = new Validator();
+    private final CertificateFactory<USERINFO, ROLE> _certificateFactory;
     private DateProvider _dateProvider;
 
     /**
@@ -47,9 +48,20 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
      *
      * @see Validator
      */
-    public CertificateValidator(final List<PublicKey> trustedPublicKeys) {
+    public CertificateValidator(final Collection<PublicKey> trustedPublicKeys) {
         _trustedPublicKeys = Lists.newArrayList(trustedPublicKeys);
         _dateProvider = new DateProvider();
+        _certificateFactory = new CertificateFactory<USERINFO, ROLE>() {
+            @Override
+            protected DeserializingFactory<USERINFO> getFactoryOfWrapped() {
+                return deserializingFactory();
+            }
+
+            @Override
+            protected RolesDeserializer<ROLE> getRolesDeserializer() {
+                return roleCodeDeserializer();
+            }
+        };
     }
 
     public void setDateProvider(final DateProvider dateProvider) {
@@ -67,18 +79,9 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
     protected abstract RolesDeserializer<ROLE> roleCodeDeserializer();
 
     protected CertificateFactory<USERINFO, ROLE> getCertificateDeserializingFactory() {
-        return new CertificateFactory<USERINFO, ROLE>() {
-            @Override
-            protected DeserializingFactory<USERINFO> getFactoryOfWrapped() {
-                return deserializingFactory();
-            }
-
-            @Override
-            protected RolesDeserializer<ROLE> getRolesDeserializer() {
-                return roleCodeDeserializer();
-            }
-        };
+        return _certificateFactory;
     }
+
     /**
      * Validate the bytes of your certificate (including the signature part!!) using this method. You'll receive a
      * deserialized certificate if it is valid.

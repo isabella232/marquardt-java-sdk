@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.example.keyprovisioning;
 
+import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,45 +16,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Component
 public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyFileReadingKeyPairProvider.class);
 
-    private final List<PublicKey> _publicKeys = new ArrayList<>();
+    private final Collection<PublicKey> _publicKeys;
 
     @Autowired
     public KeyFileReadingTrustedKeysProvider(@Value("${authentication.trusted.public.keys.files}") final String publicKeyFiles) {
-        loadKeys(publicKeyFiles);
-    }
-
-    private void loadKeys(final String publicKeyFiles) {
-        Arrays.stream(publicKeyFiles.split(",")).forEach(p -> _publicKeys.add(loadPublicKey(p.trim())));
+        _publicKeys = loadKeys(publicKeyFiles);
     }
 
     @Override
-    public List<PublicKey> getPublicKeys() {
+    public Collection<PublicKey> getPublicKeys() {
         return _publicKeys;
+    }
+
+    private Collection<PublicKey> loadKeys(final String publicKeyFiles) {
+        return Arrays.stream(publicKeyFiles.split(",")).map(p -> loadPublicKey(p.trim())).collect(Collectors.toList());
     }
 
     private PublicKey loadPublicKey(final String publicKeyFileName) {
         LOGGER.debug("Reading public key file {}.", publicKeyFileName);
         final byte[] keyFilePayload = readKeyFile(publicKeyFileName);
-        final X509EncodedKeySpec spec =
-                new X509EncodedKeySpec(keyFilePayload);
+        final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyFilePayload);
         try {
             final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePublic(spec);
@@ -63,19 +60,13 @@ public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
     }
 
     private byte[] readKeyFile(final String keyFileName) {
-        final URL resource = getClass().getClassLoader().getResource(keyFileName);
-        if(resource == null) {
-            throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
-        }
-        final File keyFile = new File(resource.getFile());
-        try (FileInputStream fileInputStream = new FileInputStream(keyFile)) {
-            try (DataInputStream dataInputStream = new DataInputStream(fileInputStream)) {
-                final byte[] keyBytes = new byte[(int) keyFile.length()];
-                dataInputStream.readFully(keyBytes);
-                return keyBytes;
+        try (final InputStream inputStream = getClass().getClassLoader().getResourceAsStream(keyFileName)) {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
             }
+            return IOUtils.toByteArray(inputStream);
         } catch (final IOException e) {
-            throw new IllegalArgumentException("Failed to read key file " + keyFile + ".", e);
+            throw new IllegalArgumentException("Failed to read key file " + keyFileName + ".", e);
         }
     }
 }

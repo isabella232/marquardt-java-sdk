@@ -28,7 +28,9 @@ public class UserInfo implements Signable {
         if (versionFromInput != UserInfo.VERSION) {
             throw new IllegalArgumentException("Expected UserInfo with version '" + UserInfo.VERSION + "' but received '" + versionFromInput + "'");
         }
-        final UUID userId = new UUID(InputStreamUtils.readLong(in), InputStreamUtils.readLong(in));
+        final long mostSigBits = InputStreamUtils.readLong(in);
+        final long leastSigBits = InputStreamUtils.readLong(in);
+        final UUID userId = new UUID(mostSigBits, leastSigBits);
         return new UserInfo(userId);
     };
 

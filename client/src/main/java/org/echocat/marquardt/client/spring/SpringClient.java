@@ -12,13 +12,13 @@ import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
 import org.echocat.marquardt.client.util.ResponseStatusTranslation;
 import org.echocat.marquardt.common.CertificateValidator;
-import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
-import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
-import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
@@ -37,7 +37,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.List;
+import java.util.Collection;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64;
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
@@ -53,11 +53,8 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
     private final RestTemplate _authorizedRestTemplate = new RestTemplate();
     private final String _baseUri;
     private final DeserializingFactory<SIGNABLE> _deserializingFactory;
-
     private final CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
-
     private final RequestSigner _requestSigner = new RequestSigner();
-
     private final KeyPairProvider _clientKeyProvider;
     private DateProvider _dateProvider = new DateProvider();
     private byte[] _certificate;
@@ -69,13 +66,13 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
      * @param deserializingFactory factory used to deserialize the payload with type SIGNABLE.
      * @param roleRolesDeserializer RolesDeserializer for your roles implementation.
      * @param clientKeyProvider    key provider that returns the client's public/private key pair.
-     * @param trustedKeys          a list of pre-shared, trusted keys used by the authority to sign certificates. The client uses this list to verify the authenticity of certificates.
+     * @param trustedKeys          a collection of pre-shared, trusted keys used by the authority to sign certificates. The client uses this list to verify the authenticity of certificates.
      */
     public SpringClient(final String baseUri,
                         final DeserializingFactory<SIGNABLE> deserializingFactory,
                         final RolesDeserializer<ROLE> roleRolesDeserializer,
                         final KeyPairProvider clientKeyProvider,
-                        final List<PublicKey> trustedKeys) {
+                        final Collection<PublicKey> trustedKeys) {
         _baseUri = baseUri;
         _deserializingFactory = deserializingFactory;
         _clientKeyProvider = clientKeyProvider;
@@ -164,7 +161,6 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
      */
     @Override
     public Certificate<SIGNABLE> refresh() throws IOException {
-
         final ResponseEntity<JsonWrappedCertificate> response;
         try {
             response = _authorizedRestTemplate.postForEntity(_baseUri + "/auth/refresh/", null, JsonWrappedCertificate.class);
@@ -205,5 +201,4 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
             throw ResponseStatusTranslation.from(ignored.getStatusCode().value()).translateToException(ignored.getMessage());
         }
     }
-
 }

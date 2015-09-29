@@ -9,7 +9,7 @@
 package org.echocat.marquardt.common.keyprovisioning;
 
 import java.security.PublicKey;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Clients and services must trust the key(s) used by the authority. This enables services to trust a certificate
@@ -21,8 +21,8 @@ public interface TrustedKeysProvider {
 
     /**
      *
-     * @return A list of all keys a client or service trusts. Must contain the current authority's public key.
+     * @return A collection of all keys a client or service trusts. Must contain the current authority's public key.
      */
-    List<PublicKey> getPublicKeys();
+    Collection<PublicKey> getPublicKeys();
 
 }

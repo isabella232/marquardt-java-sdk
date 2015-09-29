@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.example.keyprovisioning;
 
+import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -72,24 +70,18 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
             final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePrivate(spec);
         } catch (final GeneralSecurityException e) {
-            throw new IllegalArgumentException("Failed to create public key from keyfile " + privateKeyFile + ".", e);
+            throw new IllegalArgumentException("Failed to create private key from keyfile " + privateKeyFile + ".", e);
         }
     }
 
     private byte[] readKeyFile(final String keyFileName) {
-        final URL resource = getClass().getClassLoader().getResource(keyFileName);
-        if (resource == null) {
-            throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
-        }
-        final File keyFile = new File(resource.getFile());
-        try (final FileInputStream fileInputStream = new FileInputStream(keyFile)) {
-            try (final DataInputStream dataInputStream = new DataInputStream(fileInputStream)) {
-                final byte[] keyBytes = new byte[(int) keyFile.length()];
-                dataInputStream.readFully(keyBytes);
-                return keyBytes;
+        try (final InputStream inputStream = getClass().getClassLoader().getResourceAsStream(keyFileName)) {
+            if (inputStream == null) {
+                throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
             }
+            return IOUtils.toByteArray(inputStream);
         } catch (final IOException e) {
-            throw new IllegalArgumentException("Failed to read key file " + keyFile + ".", e);
+            throw new IllegalArgumentException("Failed to read key file " + keyFileName + ".", e);
         }
     }
 }
