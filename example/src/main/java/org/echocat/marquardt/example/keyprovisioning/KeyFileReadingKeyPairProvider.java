@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -75,7 +78,7 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
     }
 
     private byte[] readKeyFile(final String keyFileName) {
-        try (final InputStream inputStream = getClass().getClassLoader().getResourceAsStream(keyFileName)) {
+        try (final InputStream inputStream = openStreamFromFileOrClasspathResource(keyFileName)) {
             if (inputStream == null) {
                 throw new IllegalArgumentException("Cannot find resource file " + keyFileName);
             }
@@ -83,5 +86,13 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
         } catch (final IOException e) {
             throw new IllegalArgumentException("Failed to read key file " + keyFileName + ".", e);
         }
+    }
+
+    private InputStream openStreamFromFileOrClasspathResource(final String keyFileName) throws IOException {
+        final Path path = Paths.get(keyFileName);
+        if (Files.exists(path)) {
+            return Files.newInputStream(path);
+        }
+        return getClass().getClassLoader().getResourceAsStream(keyFileName);
     }
 }
