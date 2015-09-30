@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
+import static org.echocat.marquardt.common.domain.PublicKeyWithMechanism.Mechanism.rsa;
+
 public class TestSession implements Session {
 
     private UUID _userId;
@@ -64,7 +66,7 @@ public class TestSession implements Session {
 
     @Override
     public String getMechanism() {
-        return "RSA";
+        return rsa.getJavaInternalName();
     }
 
     @Override

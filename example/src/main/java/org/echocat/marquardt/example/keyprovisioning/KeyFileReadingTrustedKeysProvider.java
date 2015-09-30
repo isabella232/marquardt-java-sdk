@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import static org.echocat.marquardt.common.domain.PublicKeyWithMechanism.Mechanism.rsa;
+
 @Component
 public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
 
@@ -55,7 +57,7 @@ public class KeyFileReadingTrustedKeysProvider implements TrustedKeysProvider {
         final byte[] keyFilePayload = readKeyFile(publicKeyFileName);
         final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyFilePayload);
         try {
-            final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            final KeyFactory keyFactory = KeyFactory.getInstance(rsa.getJavaInternalName());
             return keyFactory.generatePublic(spec);
         } catch (final GeneralSecurityException e) {
             throw new IllegalArgumentException("Failed to create public key from keyfile " + publicKeyFileName + ".", e);

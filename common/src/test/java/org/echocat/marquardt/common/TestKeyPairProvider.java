@@ -17,6 +17,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 
+import static org.echocat.marquardt.common.domain.PublicKeyWithMechanism.Mechanism.rsa;
+
 public final class TestKeyPairProvider implements KeyPairProvider {
 
     private PublicKey _publicKey;
@@ -26,7 +28,7 @@ public final class TestKeyPairProvider implements KeyPairProvider {
 
     public static KeyPairProvider create() {
         try {
-            final KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("RSA");
+            final KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(rsa.getJavaInternalName());
             final SecureRandom random = new SecureRandom();
             keyGenerator.initialize(1024, random);
             final KeyPair keyPair = keyGenerator.generateKeyPair();

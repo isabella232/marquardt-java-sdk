@@ -28,6 +28,8 @@ import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import static org.echocat.marquardt.common.domain.PublicKeyWithMechanism.Mechanism.rsa;
+
 @Component
 public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
 
@@ -58,7 +60,7 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
         final byte[] keyFilePayload = readKeyFile(publicKeyFileName);
         final X509EncodedKeySpec spec = new X509EncodedKeySpec(keyFilePayload);
         try {
-            final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            final KeyFactory keyFactory = KeyFactory.getInstance(rsa.getJavaInternalName());
             return keyFactory.generatePublic(spec);
         } catch (final GeneralSecurityException e) {
             throw new IllegalArgumentException("Failed to create public key from keyfile " + publicKeyFileName + ".", e);
@@ -70,7 +72,7 @@ public class KeyFileReadingKeyPairProvider implements KeyPairProvider {
         final byte[] keyFilePayload = readKeyFile(privateKeyFile);
         final PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyFilePayload);
         try {
-            final KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            final KeyFactory keyFactory = KeyFactory.getInstance(rsa.getJavaInternalName());
             return keyFactory.generatePrivate(spec);
         } catch (final GeneralSecurityException e) {
             throw new IllegalArgumentException("Failed to create private key from keyfile " + privateKeyFile + ".", e);
