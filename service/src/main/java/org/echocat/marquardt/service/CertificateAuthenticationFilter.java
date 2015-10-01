@@ -70,15 +70,15 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
             if (header != null) {
                 final byte[] decodedCertificate = decodeBase64(header);
                 final Certificate<SIGNABLE> certificate = _certificateValidator.deserializeAndValidateCertificate(decodedCertificate);
-                LOGGER.debug("Successful extracted user info from header {}", certificate.getPayload());
+                LOGGER.debug("Successful extracted user info from header {}.", certificate.getPayload());
                 if (_requestValidator.isValid(httpServletRequest, certificate.getClientPublicKey())) {
                     authenticateUser(certificate);
                 }
             }
         } catch (final InvalidCertificateException e) {
-            LOGGER.debug("invalid certificate provided: ", e);
+            LOGGER.debug("Invalid certificate provided.", e);
         }  catch (final SignatureValidationFailedException e) {
-            LOGGER.debug("request signature could not be validated: ", e);
+            LOGGER.debug("Signature validation failed.", e);
         } finally {
             filterChain.doFilter(servletRequest, servletResponse);
         }
