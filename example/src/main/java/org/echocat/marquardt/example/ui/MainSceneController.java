@@ -7,6 +7,7 @@
  */
 package org.echocat.marquardt.example.ui;
 
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import org.echocat.marquardt.client.spring.SpringClient;
@@ -19,15 +20,17 @@ import org.echocat.marquardt.example.keyprovisioning.KeyFileReadingTrustedKeysPr
 
 public class MainSceneController {
 
-    public static final String BASE_URI = "http://localhost:8080";
+    public static final String DEFAULT_BASE_URI = "http://localhost:8080";
+    public static final String DEFAULT_PUBLIC_KEY_FILES = "keys/auth-public-key.der";
 
     public static final String PUBLIC_KEY_FILE = "keys/auth-public-key.der";
     public static final String PRIVATE_KEY_FILE = "keys/auth-private-key.der";
 
+
     public static final String SUCCESS = "success";
     public static final String FAILED = "failed";
 
-    private final KeyFileReadingKeyPairProvider _clientKeyProvider;
+    private KeyFileReadingKeyPairProvider _clientKeyProvider;
 
     @FXML
     private TextField _signupEmailField;
@@ -66,18 +69,31 @@ public class MainSceneController {
     @FXML
     private TextField _payloadUuidField;
 
+    @FXML
+    private TextField _authorityBaseUrlField;
+
+    @FXML
+    private TextField _trustedKeyFileLocations;
+
     private SpringClient<UserInfo, ExampleRoles> _client;
 
     public MainSceneController() {
         _clientKeyProvider = new KeyFileReadingKeyPairProvider(PUBLIC_KEY_FILE, PRIVATE_KEY_FILE);
-        KeyFileReadingTrustedKeysProvider trustedKeysProvider = new KeyFileReadingTrustedKeysProvider(PUBLIC_KEY_FILE);
-        _client = new SpringClient<>(BASE_URI, UserInfo.FACTORY, ExampleRoles.FACTORY, _clientKeyProvider, trustedKeysProvider.getPublicKeys());
+        initializeMarquardtClient(DEFAULT_BASE_URI, DEFAULT_PUBLIC_KEY_FILES);
     }
 
     @FXML
     private void initialize() {
         _clientPublicKeyField.setText(_clientKeyProvider.getPublicKey().toString());
         _clientPrivateKeyField.setText(_clientKeyProvider.getPrivateKey().toString());
+        _authorityBaseUrlField.setText(DEFAULT_BASE_URI);
+        _trustedKeyFileLocations.setText(DEFAULT_PUBLIC_KEY_FILES);
+    }
+
+    private void initializeMarquardtClient(String baseUri, String publicKeyFiles) {
+        _clientKeyProvider = new KeyFileReadingKeyPairProvider(PUBLIC_KEY_FILE, PRIVATE_KEY_FILE);
+        KeyFileReadingTrustedKeysProvider trustedKeysProvider = new KeyFileReadingTrustedKeysProvider(publicKeyFiles);
+        _client = new SpringClient<>(baseUri, UserInfo.FACTORY, ExampleRoles.FACTORY, _clientKeyProvider, trustedKeysProvider.getPublicKeys());
     }
 
     @FXML
@@ -128,6 +144,13 @@ public class MainSceneController {
         } catch (Exception e) {
             _signoutResponseField.setText(e.getMessage());
         }
+    }
+
+    @FXML
+    public void settingsApplyButtonClicked() {
+        String baseUri = _authorityBaseUrlField.getText();
+        String publicKeyFiles = _trustedKeyFileLocations.getText();
+        initializeMarquardtClient(baseUri, publicKeyFiles);
     }
 
     private void renderCertificate(Certificate<UserInfo> certificate) {
