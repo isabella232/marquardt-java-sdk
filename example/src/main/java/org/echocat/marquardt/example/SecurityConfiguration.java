@@ -19,6 +19,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.servlet.http.HttpServletRequest;
+
+import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -39,6 +43,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private SpringSecurityCertificateAuthenticationFilter<UserInfo,ExampleRoles> certificateAuthenticationFilter() {
         return new SpringSecurityCertificateAuthenticationFilter<UserInfo,ExampleRoles>(_certificateValidator) {
+            @Override
+            protected String provideBase64EncodedCertificate(final HttpServletRequest httpServletRequest) {
+                return httpServletRequest.getHeader(X_CERTIFICATE.getHeaderName());
+            }
+
             @Override
             protected String getIdentifier(final UserInfo signable) {
                 return signable.getUserId().toString();

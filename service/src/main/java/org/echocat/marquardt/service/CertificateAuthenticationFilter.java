@@ -60,11 +60,13 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
         _requestValidator = requestValidator;
     }
 
+    protected abstract String provideBase64EncodedCertificate(final HttpServletRequest httpServletRequest);
+
     @Override
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
         final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         try {
-            final String header = httpServletRequest.getHeader("X-Certificate");
+            final String header = provideBase64EncodedCertificate(httpServletRequest);
             if (header != null) {
                 final byte[] decodedCertificate = decodeBase64(header);
                 final Certificate<SIGNABLE> certificate = _certificateValidator.deserializeAndValidateCertificate(decodedCertificate);

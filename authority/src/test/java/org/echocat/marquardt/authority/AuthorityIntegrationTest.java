@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -119,7 +120,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
         _connection = (HttpURLConnection) urlToPost.openConnection();
         _connection.setRequestMethod("POST");
         _connection.setRequestProperty("Content-Type", "application/json");
-        _connection.setRequestProperty("X-Certificate", Base64.encodeBase64URLSafeString(CERTIFICATE));
+        _connection.setRequestProperty(X_CERTIFICATE.getHeaderName(), Base64.encodeBase64URLSafeString(CERTIFICATE));
         _connection.setDoOutput(true);
         _objectMapper.writeValue(_connection.getOutputStream(), content);
     }

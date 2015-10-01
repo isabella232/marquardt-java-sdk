@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64;
+import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
 
 public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
@@ -117,7 +118,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
     private void whenAccessingProtectedResourceWithSelfSignedCertificate(final byte[] attackersCertificate) {
         final RestTemplate restTemplate = new RestTemplate();
         final HttpHeaders headers = new HttpHeaders();
-        headers.add("X-Certificate", new String(attackersCertificate));
+        headers.add(X_CERTIFICATE.getHeaderName(), new String(attackersCertificate));
         final HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
         restTemplate.exchange(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST, requestEntity, Void.class);

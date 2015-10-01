@@ -20,8 +20,8 @@ import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
-import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.domain.Signature;
+import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
+import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -96,7 +97,7 @@ public class TestHttpAuthorityServer {
 
         @Override
         String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
-            final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
+            final byte[] certificate = decodeBase64(headers.get(X_CERTIFICATE.getHeaderName()).get(0));
             _authority.signOut(certificate, certificate, _signature);
             return null;
         }
@@ -109,7 +110,7 @@ public class TestHttpAuthorityServer {
         }
         @Override
         String getResponse(final InputStream requestBody, final Headers headers) throws IOException {
-            final byte[] certificate = decodeBase64(headers.get("X-Certificate").get(0));
+            final byte[] certificate = decodeBase64(headers.get(X_CERTIFICATE.getHeaderName()).get(0));
             final JsonWrappedCertificate refresh = createCertificateResponse(_authority.refresh(certificate, certificate, _signature));
             return _objectMapper.writeValueAsString(refresh);
         }

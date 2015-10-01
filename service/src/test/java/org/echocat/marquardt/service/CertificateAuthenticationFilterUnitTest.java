@@ -29,13 +29,18 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
+import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CertificateAuthenticationFilterUnitTest {
@@ -119,7 +124,7 @@ public class CertificateAuthenticationFilterUnitTest {
 
     private void givenValidRequest() {
         final String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
-        _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
+        _httpServletRequest.addHeader(X_CERTIFICATE.getHeaderName(), encodedCertificate);
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenReturn(_certificate);
         when(_requestValidator.isValid(_httpServletRequest, null)).thenReturn(true);
     }
@@ -130,14 +135,14 @@ public class CertificateAuthenticationFilterUnitTest {
 
     private void givenRequestWithInvalidCertificate() {
         final String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
-        _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
+        _httpServletRequest.addHeader(X_CERTIFICATE.getHeaderName(), encodedCertificate);
         //noinspection unchecked
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenThrow(InvalidCertificateException.class);
     }
 
     private void givenRequestWithInvalidSignature() {
         final String encodedCertificate = encodeBase64URLSafeString("CERTIFICATE".getBytes());
-        _httpServletRequest.addHeader("X-Certificate", encodedCertificate);
+        _httpServletRequest.addHeader(X_CERTIFICATE.getHeaderName(), encodedCertificate);
         when(_certificateValidator.deserializeAndValidateCertificate(argThat(byteArrayEqualTo("CERTIFICATE")))).thenReturn(_certificate);
         when(_requestValidator.isValid(_httpServletRequest, null)).thenReturn(false);
     }
@@ -167,6 +172,10 @@ public class CertificateAuthenticationFilterUnitTest {
             super(certificateValidator, requestValidator);
         }
 
+        @Override
+        protected String provideBase64EncodedCertificate(final HttpServletRequest httpServletRequest) {
+            return httpServletRequest.getHeader(X_CERTIFICATE.getHeaderName());
+        }
 
         @Override
         protected void authenticateUser(final Certificate<TestUserInfo> certificate) {
