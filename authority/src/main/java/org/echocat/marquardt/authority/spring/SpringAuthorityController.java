@@ -22,7 +22,7 @@ import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.RequestValidator;
@@ -56,9 +56,6 @@ public abstract class SpringAuthorityController<USER extends User<? extends Role
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
-    private final SessionStore _sessionStore;
-    private final KeyPairProvider _issuerKeyProvider;
-    private UserStore<USER, SIGNABLE> _userStore;
     private Authority<USER, SESSION, SIGNABLE> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
 
@@ -70,11 +67,7 @@ public abstract class SpringAuthorityController<USER extends User<? extends Role
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
     public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
-        _sessionStore = sessionStore;
-        _issuerKeyProvider = issuerKeyProvider;
-        _userStore = userStore;
-        //noinspection unchecked
-        _authority = new Authority<>(_userStore, _sessionStore, _issuerKeyProvider);
+        _authority = new Authority<>(userStore, sessionStore, issuerKeyProvider);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
@@ -106,9 +99,9 @@ public abstract class SpringAuthorityController<USER extends User<? extends Role
         _authority.signOut(certificate, signedBytesFromRequest, signature);
     }
 
-    @ExceptionHandler(UserExistsException.class)
+    @ExceptionHandler(UserAlreadyExistsException.class)
     @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User already exists.")
-    public void handleUserExistsException(final UserExistsException ex) {
+    public void handleUserExistsException(final UserAlreadyExistsException ex) {
         LOGGER.info(ex.getMessage());
     }
 

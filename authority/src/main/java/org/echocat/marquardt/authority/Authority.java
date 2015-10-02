@@ -26,7 +26,7 @@ import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
-import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +81,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
      *
      * @param credentials Credentials of the user that should be signed up.
      * @return certificate for the client.
-     * @throws UserExistsException If a user with the same identifier already exists.
+     * @throws UserAlreadyExistsException If a user with the same identifier already exists.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public byte[] signUp(final Credentials credentials) {
@@ -89,7 +89,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
             final USER user = _userStore.createFromCredentials(credentials);
             return createCertificateAndSession(credentials, user);
         } else {
-            throw new UserExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
+            throw new UserAlreadyExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
     }
 

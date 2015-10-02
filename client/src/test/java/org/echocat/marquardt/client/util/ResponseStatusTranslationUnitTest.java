@@ -11,7 +11,7 @@ package org.echocat.marquardt.client.util;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.junit.Test;
 
 import static org.echocat.marquardt.client.util.ResponseStatusTranslation.*;
@@ -53,7 +53,7 @@ public class ResponseStatusTranslationUnitTest {
         givenConflict();
         whenTranslating();
         thenTranslationIs(CONFLICT);
-        thenTranslatedExceptionIs(UserExistsException.class);
+        thenTranslatedExceptionIs(UserAlreadyExistsException.class);
     }
 
     @Test

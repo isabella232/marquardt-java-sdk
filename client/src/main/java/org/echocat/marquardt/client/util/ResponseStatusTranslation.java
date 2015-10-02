@@ -11,7 +11,7 @@ package org.echocat.marquardt.client.util;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 
 /**
  * Provides a mapping from HTTP status codes to Java Exceptions to be use in implementations of
@@ -43,7 +43,7 @@ public enum ResponseStatusTranslation {
     CONFLICT(409) {
         @Override
         public RuntimeException translateToException(final String message) {
-            return new UserExistsException(message);
+            return new UserAlreadyExistsException(message);
         }
     },
     PRECONDITION_FAILED(412) {

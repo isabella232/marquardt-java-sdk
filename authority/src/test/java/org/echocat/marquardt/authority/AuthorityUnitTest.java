@@ -19,7 +19,7 @@ import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
-import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +74,7 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenSigningUp();
     }
 
-    @Test(expected = UserExistsException.class)
+    @Test(expected = UserAlreadyExistsException.class)
     public void shouldThrowExceptionWhenUserAlreadyExistsWhenSignUp() throws Exception {
         givenUserExists();
         whenSigningUp();
