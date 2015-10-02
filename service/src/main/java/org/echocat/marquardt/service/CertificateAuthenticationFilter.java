@@ -9,9 +9,9 @@
 package org.echocat.marquardt.service;
 
 import org.echocat.marquardt.common.CertificateValidator;
+import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.Role;
-import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.web.RequestValidator;
@@ -60,8 +60,6 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
         _requestValidator = requestValidator;
     }
 
-    protected abstract String provideBase64EncodedCertificate(final HttpServletRequest httpServletRequest);
-
     @Override
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
         final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -75,13 +73,19 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
                     authenticateUser(certificate);
                 }
             }
-        } catch (final InvalidCertificateException e) {
-            LOGGER.debug("Invalid certificate provided.", e);
-        }  catch (final SignatureValidationFailedException e) {
-            LOGGER.debug("Signature validation failed.", e);
+        } catch (final InvalidCertificateException | SignatureValidationFailedException e) {
+            LOGGER.debug("Certificate validation failed.", e);
+            handleCertificateException(e);
         } finally {
             filterChain.doFilter(servletRequest, servletResponse);
         }
+    }
+
+    protected abstract String provideBase64EncodedCertificate(final HttpServletRequest httpServletRequest);
+
+    @SuppressWarnings("UnusedParameters")
+    protected void handleCertificateException(final RuntimeException e) {
+        // Default empty implementation
     }
 
     /**

@@ -130,11 +130,12 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
     }
 
     private Certificate<SIGNABLE> extractCertificateFrom(ResponseEntity<JsonWrappedCertificate> response) {
-        Certificate<SIGNABLE> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(response.getBody().getCertificate());
+        final byte[] certificate = response.getBody().getCertificate();
+        final Certificate<SIGNABLE> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(certificate);
         if (!deserializedCertificate.getClientPublicKey().equals(_clientKeyProvider.getPublicKey())) {
             throw new InvalidCertificateException("certificate key does not match my public key");
         }
-        _certificate = response.getBody().getCertificate();
+        _certificate = certificate;
         return deserializedCertificate;
     }
 
