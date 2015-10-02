@@ -54,18 +54,18 @@ public class Validator {
             final CountingInputStream bufferedInputStream = new CountingInputStream(inputStream);
             try {
                 bufferedInputStream.mark(0);
-                final T certificate = signableDeserializingFactory.consume(bufferedInputStream);
+                final T signable = signableDeserializingFactory.consume(bufferedInputStream);
 
-                final byte[] certificateBytes = readCertificateBytesAgainForLaterValidation(bufferedInputStream);
+                final byte[] signableBytes = readCertificateBytesAgainForLaterValidation(bufferedInputStream);
 
-                final PublicKey publicKey = publicKeyProvider.apply(certificate);
+                final PublicKey publicKey = publicKeyProvider.apply(signable);
                 if (publicKey == null) {
                     throw new SignatureValidationFailedException("no public key provided");
                 }
                 final int signatureLength = InputStreamUtils.readInt(bufferedInputStream);
                 final Signature signature = new Signature(InputStreamUtils.readBytes(bufferedInputStream, signatureLength));
-                if (signature.isValidFor(certificateBytes, publicKey)) {
-                    return certificate;
+                if (signature.isValidFor(signableBytes, publicKey)) {
+                    return signable;
                 }
                 throw new SignatureValidationFailedException("signature is invalid for provided public key");
             } finally {
