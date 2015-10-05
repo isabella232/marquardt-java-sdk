@@ -29,7 +29,6 @@ import java.security.PublicKey;
  * @see Signature
  * @see Signable
  * @see Signer
- * @see Certificate
  */
 public class Validator {
 
@@ -55,7 +54,7 @@ public class Validator {
                 bufferedInputStream.mark(0);
                 final T signable = signableDeserializingFactory.consume(bufferedInputStream);
 
-                final byte[] signableBytes = readCertificateBytesAgainForLaterValidation(bufferedInputStream);
+                final byte[] signableBytes = readSignableBytesAgainForLaterValidation(bufferedInputStream);
 
                 final PublicKey publicKey = publicKeyProvider.apply(signable);
                 if (publicKey == null) {
@@ -101,7 +100,7 @@ public class Validator {
         });
     }
 
-    private byte[] readCertificateBytesAgainForLaterValidation(final CountingInputStream bufferedInputStream) throws IOException {
+    private byte[] readSignableBytesAgainForLaterValidation(final CountingInputStream bufferedInputStream) throws IOException {
         final int position = (int)bufferedInputStream.getCount();
         bufferedInputStream.reset();
         final byte[] bytes = new byte[position];
