@@ -9,8 +9,10 @@
 package org.echocat.marquardt.common;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.exceptions.CertificateExpiredException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
@@ -22,6 +24,7 @@ import org.echocat.marquardt.common.util.DateProvider;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -35,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -100,6 +104,13 @@ public class CertificateValidatorUnitTest {
         whenTheCertificateIsDeserializedAndVerified();
     }
 
+    @Test
+    public void whenCertificateIsExpiredItsCertificateContainsSignedBytes() throws IOException {
+        givenSignedCertificate();
+        givenTheTimeIs16MinutesInTheFuture();
+        whenExpiredCertificateTheExceptionContainsTheCertificateAndItsSignedSerializedRepresentation();
+    }
+
     private void givenSignedCertificateWithDefectUserInfo() throws IOException {
         _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
         whenSigningWithIssuerKey();
@@ -134,6 +145,26 @@ public class CertificateValidatorUnitTest {
     private void whenTheCertificateIsDeserializedAndVerified() {
         final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
         _validationResult = validator.deserializeAndValidateCertificate(_signedPayload);
+    }
+
+    private void whenExpiredCertificateTheExceptionContainsTheCertificateAndItsSignedSerializedRepresentation() {
+        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
+        try {
+            validator.deserializeAndValidateCertificate(_signedPayload);
+            fail(CertificateExpiredException.class + " exception should have been thrown!");
+        } catch (final CertificateExpiredException e) {
+            final Certificate<?> certificate = e.getCertificate();
+            assertThat(certificate, notNullValue());
+            final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(_signedPayload.length);
+            try {
+                certificate.writeTo(byteArrayOutputStream);
+                assertThat(byteArrayOutputStream.toByteArray(), is(_signedPayload));
+            } catch (IOException e1) {
+                throw new RuntimeException(e1);
+            } finally {
+                IOUtils.closeQuietly(byteArrayOutputStream);
+            }
+        }
     }
 
     private void whenTheCertificateIsDeserializedAndVerifiedWithoutIssuerPublicKeys() {
