@@ -30,7 +30,7 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificateValidator.class);
 
-    private Function<Certificate<USERINFO>, PublicKey> _publicKeyForCertificateProvider = new Function<Certificate<USERINFO>, PublicKey>() {
+    private final Function<Certificate<USERINFO>, PublicKey> _publicKeyForCertificateProvider = new Function<Certificate<USERINFO>, PublicKey>() {
         @Override
         public PublicKey apply(final Certificate<USERINFO> certificate) {
             return certificate.getIssuerPublicKey();
@@ -101,10 +101,12 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
             LOGGER.warn("Attack!! ALERT!!! Duck and cover!!! Certificate '{}' could not be found as trusted certificate.", issuerPublicKey);
             throw new InvalidCertificateException("certificate key of " + certificate.getPayload() + " is not trusted");
         }
+        certificate.setSignedCertificateBytes(encodedCertificate);
         return certificate;
     }
 
     private boolean isExpired(final Certificate<USERINFO> certificate) {
+        //noinspection UseOfObsoleteDateTimeApi
         final Date now = _dateProvider.now();
         return now.after(certificate.getExpiresAt());
     }

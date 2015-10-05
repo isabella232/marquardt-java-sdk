@@ -44,7 +44,7 @@ import java.util.UUID;
 @ActiveProfiles("tests")
 public abstract class AbstractSsoIntegrationTest {
 
-    private Certificate<UserInfo> _certificate;
+    protected Certificate<UserInfo> _certificate;
 
     private final KeyPairProvider _clientKeyProvider = TestKeyPairProvider.create();
     private final Signer _clientSigner = new Signer();
@@ -67,7 +67,7 @@ public abstract class AbstractSsoIntegrationTest {
     }
 
     void whenLoggingOut() throws IOException {
-        getClient().signout();
+        getClient().signout(_certificate);
     }
 
     void whenSigningUp() throws IOException {
@@ -97,7 +97,7 @@ public abstract class AbstractSsoIntegrationTest {
         _sessionStore.deleteAll();
     }
 
-    void givenExistingUser(Set<ExampleRoles> roles) {
+    void givenExistingUser(final Set<ExampleRoles> roles) {
         final PersistentUser persistentUser = new PersistentUser();
         persistentUser.setUserId(UUID.randomUUID());
         persistentUser.setEmail("testuser@example.com");

@@ -11,7 +11,7 @@ package org.echocat.marquardt.example;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.UserExistsException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
         thenCertificateIsProvided();
     }
 
-    @Test(expected = UserExistsException.class)
+    @Test(expected = UserAlreadyExistsException.class)
     public void shouldNotSignupExistingUser() throws IOException {
         givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
@@ -89,7 +89,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     }
 
     private void whenRefreshingCertificate() throws IOException {
-        setCertificate(getClient().refresh());
+        setCertificate(getClient().refresh(_certificate));
     }
 
 
