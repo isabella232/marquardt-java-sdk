@@ -15,6 +15,7 @@ import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.CertificateFactory;
 import org.echocat.marquardt.common.domain.certificate.Role;
+import org.echocat.marquardt.common.exceptions.CertificateExpiredException;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
@@ -93,15 +94,15 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
      */
     public Certificate<USERINFO> deserializeAndValidateCertificate(final byte[] encodedCertificate) {
         final Certificate<USERINFO> certificate = _validator.deserializeAndValidate(encodedCertificate, getCertificateDeserializingFactory(), _publicKeyForCertificateProvider);
-        if (isExpired(certificate)) {
-            throw new InvalidCertificateException("Certificate of " + certificate.getPayload() + " is expired");
-        }
         final PublicKey issuerPublicKey = certificate.getIssuerPublicKey();
         if (!_trustedPublicKeys.contains(issuerPublicKey)) {
             LOGGER.warn("Attack!! ALERT!!! Duck and cover!!! Certificate '{}' could not be found as trusted certificate.", issuerPublicKey);
             throw new InvalidCertificateException("certificate key of " + certificate.getPayload() + " is not trusted");
         }
         certificate.setSignedCertificateBytes(encodedCertificate);
+        if (isExpired(certificate)) {
+            throw new CertificateExpiredException(certificate);
+        }
         return certificate;
     }
 
