@@ -52,6 +52,7 @@ public class CertificateValidatorUnitTest {
     private byte[] _signedPayload;
 
     private final DateProvider _mockedDateProvider = mock(DateProvider.class);
+    private Certificate<SignablePayload> _validationResult;
 
     @Before
     public void setUp() {
@@ -64,71 +65,54 @@ public class CertificateValidatorUnitTest {
     @Test(expected = InvalidCertificateException.class)
     public void whenIssuerPublicKeyIsNotInTrustedListAnExceptionIsThrown() throws IOException {
         givenSignedCertificate();
-        thenCertificateCannotBeVerifiedDueToMissingIssuerPublicKey();
+        whenTheCertificateIsDeserializedAndVerifiedWithoutIssuerPublicKeys();
     }
 
     @Test(expected = InvalidCertificateException.class)
     public void whenCertificateIsExpiredAnExceptionIsThrown() throws IOException {
         givenSignedCertificate();
-        thenCertificateExpiredAsNowIsInTheFuture();
+        givenTheTimeIs16MinutesInTheFuture();
+        whenTheCertificateIsDeserializedAndVerified();
     }
 
     @Test
     public void validCertificateCanBeDeserializedFrom() throws IOException {
         givenSignedCertificate();
-        thenCertificateCanBeDeserializedAndVerified();
+        whenTheCertificateIsDeserializedAndVerified();
+        thenTheDeserializedCertificateIsObtained();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldCheckVersion() throws Exception {
-        givenSignedPayloadWithWrongVersion();
-        whenValidatedPayloadIsDeserialized();
+        givenSignedCertificateWithPayloadWithWrongVersion();
+        whenTheCertificateIsDeserializedAndVerified();
     }
 
     @Test(expected = SignatureValidationFailedException.class)
     public void shouldNotValidateCertificateFromUnknownIssuer() throws Exception {
         givenSignedCertificateFromUnknownIssuer();
-        whenValidatedPayloadIsDeserialized();
+        whenTheCertificateIsDeserializedAndVerified();
     }
 
     @Test(expected = SecurityMechanismException.class)
     public void shouldThrowExceptionWhenCertificateContainsInvalidKey() throws Exception {
-        givenDefectUserInfoCertificate();
-        whenValidatedPayloadIsDeserialized();
+        givenSignedCertificateWithDefectUserInfo();
+        whenTheCertificateIsDeserializedAndVerified();
     }
 
-
-    private void givenDefectUserInfoCertificate() throws IOException {
+    private void givenSignedCertificateWithDefectUserInfo() throws IOException {
         _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
         whenSigningWithIssuerKey();
         _signedPayload[30] = Byte.MAX_VALUE;
     }
 
-    private void whenValidatedPayloadIsDeserialized() {
-        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
-        validator.deserializeAndValidateCertificate(_signedPayload);
-    }
-
-    private void thenCertificateExpiredAsNowIsInTheFuture() {
+    private void givenTheTimeIs16MinutesInTheFuture() {
         //noinspection UseOfObsoleteDateTimeApi
         final Date dateIn16MinutesFuture = new Date(new Date().getTime() + TimeUnit.MINUTES.toMillis(16));
         doReturn(dateIn16MinutesFuture).when(_mockedDateProvider).now();
-        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
-        validator.deserializeAndValidateCertificate(_signedPayload);
     }
 
-    private void thenCertificateCannotBeVerifiedDueToMissingIssuerPublicKey() {
-        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, new ArrayList<PublicKey>());
-        validator.deserializeAndValidateCertificate(_signedPayload);
-    }
-
-    private void thenCertificateCanBeDeserializedAndVerified() {
-        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
-        final Certificate<SignablePayload> result = validator.deserializeAndValidateCertificate(_signedPayload);
-        assertThat(result, is(notNullValue()));
-    }
-
-    private void givenSignedPayloadWithWrongVersion() throws IOException {
+    private void givenSignedCertificateWithPayloadWithWrongVersion() throws IOException {
         givenSignedCertificate();
         _signedPayload[0] = Byte.MAX_VALUE;
     }
@@ -144,7 +128,17 @@ public class CertificateValidatorUnitTest {
     }
 
     private void givenUserInfoCertificate() {
-        _signable =  Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
+        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
+    }
+
+    private void whenTheCertificateIsDeserializedAndVerified() {
+        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
+        _validationResult = validator.deserializeAndValidateCertificate(_signedPayload);
+    }
+
+    private void whenTheCertificateIsDeserializedAndVerifiedWithoutIssuerPublicKeys() {
+        final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, new ArrayList<PublicKey>());
+        validator.deserializeAndValidateCertificate(_signedPayload);
     }
 
     private void whenSigningWithIssuerKey() throws IOException {
@@ -153,6 +147,10 @@ public class CertificateValidatorUnitTest {
 
     private void whenSigningWith(final PrivateKey privateKey) throws IOException {
         _signedPayload = _signer.sign(_signable, privateKey);
+    }
+
+    private void thenTheDeserializedCertificateIsObtained() {
+        assertThat(_validationResult, is(notNullValue()));
     }
 
     private static class TestCertificateValidator extends CertificateValidator<SignablePayload, TestRoles> {
