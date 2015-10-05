@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +49,7 @@ public class Certificate<T extends Signable> implements Signable {
     private final Date _expiresAt;
     private final Set<? extends Role> _roles;
     private final T _payload;
+    private byte[] _signedCertificateBytes;
 
     /**
      * Factory method to create Certificate (used by the authority)
@@ -128,12 +130,11 @@ public class Certificate<T extends Signable> implements Signable {
 
     @Override
     public void writeTo(@Nonnull @WillNotClose final OutputStream out) throws IOException {
-        out.write(VERSION);
-        new PublicKeyWithMechanism(_issuerPublicKey).writeTo(out);
-        new PublicKeyWithMechanism(_clientPublicKey).writeTo(out);
-        out.write(Longs.toByteArray(_expiresAt.getTime()));
-        out.write(Longs.toByteArray(RolesSerializer.from(_roles)));
-        _payload.writeTo(out);
+        if(isSignedCertificate()) {
+            out.write(_signedCertificateBytes);
+        } else {
+            serializeTo(out);
+        }
     }
 
     @Override
@@ -156,5 +157,28 @@ public class Certificate<T extends Signable> implements Signable {
                 .append("_roles", _roles)
                 .append("_payload", _payload)
                 .toString();
+    }
+
+    /**
+     * If the certificate was received from an authority, we can use the already signed bytes when
+     * sending the certificate another service.
+     *
+     * @param signedCertificateBytes
+     */
+    public void setSignedCertificateBytes(final byte[] signedCertificateBytes) {
+        _signedCertificateBytes = Arrays.copyOf(signedCertificateBytes, signedCertificateBytes.length);
+    }
+
+    private void serializeTo(@Nonnull @WillNotClose final OutputStream out) throws IOException {
+        out.write(VERSION);
+        new PublicKeyWithMechanism(_issuerPublicKey).writeTo(out);
+        new PublicKeyWithMechanism(_clientPublicKey).writeTo(out);
+        out.write(Longs.toByteArray(_expiresAt.getTime()));
+        out.write(Longs.toByteArray(RolesSerializer.from(_roles)));
+        _payload.writeTo(out);
+    }
+
+    private boolean isSignedCertificate() {
+        return _signedCertificateBytes != null;
     }
 }

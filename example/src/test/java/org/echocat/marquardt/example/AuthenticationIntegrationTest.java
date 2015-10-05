@@ -89,7 +89,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     }
 
     private void whenRefreshingCertificate() throws IOException {
-        setCertificate(getClient().refresh());
+        setCertificate(getClient().refresh(_certificate));
     }
 
 

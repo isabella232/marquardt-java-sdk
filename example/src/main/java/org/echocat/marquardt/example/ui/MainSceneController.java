@@ -7,7 +7,6 @@
  */
 package org.echocat.marquardt.example.ui;
 
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import org.echocat.marquardt.client.spring.SpringClient;
@@ -76,6 +75,7 @@ public class MainSceneController {
     private TextField _trustedKeyFileLocations;
 
     private SpringClient<UserInfo, ExampleRoles> _client;
+    private Certificate<UserInfo> _certificate;
 
     public MainSceneController() {
         _clientKeyProvider = new KeyFileReadingKeyPairProvider(PUBLIC_KEY_FILE, PRIVATE_KEY_FILE);
@@ -100,9 +100,9 @@ public class MainSceneController {
     public void signupButtonClicked() {
         UserCredentials credentials = new UserCredentials(_signupEmailField.getText(), _signupPasswordField.getText(), _clientKeyProvider.getPublicKey());
         try {
-            Certificate<UserInfo> certificate = _client.signup(credentials);
+            _certificate = _client.signup(credentials);
             _signupResponseField.setText(SUCCESS);
-            renderCertificate(certificate);
+            renderCertificate(_certificate);
         } catch (Exception e) {
             _signupResponseField.setText(e.getMessage());
         }
@@ -112,9 +112,9 @@ public class MainSceneController {
     public void signinButtonClicked() {
         UserCredentials credentials = new UserCredentials(_signinEmailField.getText(), _signinPasswordField.getText(), _clientKeyProvider.getPublicKey());
         try {
-            Certificate<UserInfo> certificate = _client.signin(credentials);
+            _certificate = _client.signin(credentials);
             _signinResponseField.setText(SUCCESS);
-            renderCertificate(certificate);
+            renderCertificate(_certificate);
         } catch (Exception e) {
             _signinResponseField.setText(e.getMessage());
         }
@@ -123,9 +123,9 @@ public class MainSceneController {
     @FXML
     public void refreshButtonClicked() {
         try {
-            Certificate<UserInfo> certificate = _client.refresh();
+            _certificate = _client.refresh(_certificate);
             _refreshResponseField.setText(SUCCESS);
-            renderCertificate(certificate);
+            renderCertificate(_certificate);
         } catch (Exception e) {
             _refreshResponseField.setText(e.getMessage());
         }
@@ -134,7 +134,7 @@ public class MainSceneController {
     @FXML
     public void signoutButtonClicked() {
         try {
-            boolean success = _client.signout();
+            boolean success = _client.signout(_certificate);
             if (success) {
                 _signoutResponseField.setText(SUCCESS);
             } else {

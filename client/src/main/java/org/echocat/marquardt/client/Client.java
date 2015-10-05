@@ -8,9 +8,9 @@
 
 package org.echocat.marquardt.client;
 
-import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.Signable;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 
 import java.io.IOException;
 
@@ -43,14 +43,14 @@ public interface Client<T extends Signable> {
      *
      * @throws IOException
      */
-    Certificate<T> refresh() throws IOException;
+    Certificate<T> refresh(final Certificate<T> certificateToRefresh) throws IOException;
 
     /**
      * Sign out the user by deleting the current session. This will return true if sign out was successful.
      *
      * @throws IOException
      */
-    boolean signout() throws IOException;
+    boolean signout(final Certificate<T> certificate) throws IOException;
 
     /**
      * Call a protected service API endpoint by using the certificate obtained earlier (either by signing in or signing up).
@@ -58,5 +58,6 @@ public interface Client<T extends Signable> {
     <REQUEST, RESPONSE> RESPONSE sendSignedPayloadTo(final String url,
                                                      final String httpMethod,
                                                      final REQUEST payload,
-                                                     final Class<RESPONSE> responseType);
+                                                     final Class<RESPONSE> responseType,
+                                                     final Certificate<T> certificate) throws IOException;
 }

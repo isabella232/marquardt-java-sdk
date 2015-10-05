@@ -11,10 +11,10 @@ package org.echocat.marquardt.common;
 import com.google.common.base.Function;
 import com.google.common.io.CountingInputStream;
 import org.apache.commons.io.IOUtils;
-import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.util.InputStreamUtils;
 
@@ -54,18 +54,18 @@ public class Validator {
             final CountingInputStream bufferedInputStream = new CountingInputStream(inputStream);
             try {
                 bufferedInputStream.mark(0);
-                final T certificate = signableDeserializingFactory.consume(bufferedInputStream);
+                final T signable = signableDeserializingFactory.consume(bufferedInputStream);
 
                 final byte[] certificateBytes = readCertificateBytesAgainForLaterValidation(bufferedInputStream);
 
-                final PublicKey publicKey = publicKeyProvider.apply(certificate);
+                final PublicKey publicKey = publicKeyProvider.apply(signable);
                 if (publicKey == null) {
                     throw new SignatureValidationFailedException("no public key provided");
                 }
                 final int signatureLength = InputStreamUtils.readInt(bufferedInputStream);
                 final Signature signature = new Signature(InputStreamUtils.readBytes(bufferedInputStream, signatureLength));
                 if (signature.isValidFor(certificateBytes, publicKey)) {
-                    return certificate;
+                    return signable;
                 }
                 throw new SignatureValidationFailedException("signature is invalid for provided public key");
             } finally {

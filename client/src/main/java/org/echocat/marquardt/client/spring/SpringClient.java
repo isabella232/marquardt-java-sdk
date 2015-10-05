@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Collection;
 
-import static org.apache.commons.codec.binary.Base64.encodeBase64;
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 
 /**
@@ -50,7 +49,7 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implements Client<SIGNABLE> {
 
     private final RestTemplate _restTemplate = new RestTemplate();
-    private final RestTemplate _authorizedRestTemplate = new RestTemplate();
+    private final RestTemplate _headerSignedRestTemplate = new RestTemplate();
     private final String _baseUri;
     private final DeserializingFactory<SIGNABLE> _deserializingFactory;
     private final CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
@@ -76,7 +75,7 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
         _baseUri = baseUri;
         _deserializingFactory = deserializingFactory;
         _clientKeyProvider = clientKeyProvider;
-        _authorizedRestTemplate.getInterceptors().add(
+        _headerSignedRestTemplate.getInterceptors().add(
                 new ClientHttpRequestInterceptor() {
                     @Override
                     public ClientHttpResponse intercept(final HttpRequest httpRequest,
@@ -84,7 +83,6 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
                                                         final ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
                         HttpHeaders headers = httpRequest.getHeaders();
                         headers.add(SignatureHeaders.CONTENT.getHeaderName(), encodeBase64URLSafeString(Md5Creator.create(bytes)));
-                        headers.add(SignatureHeaders.X_CERTIFICATE.getHeaderName(), new String(encodeBase64(_certificate)));
                         headers.add("X-Signature", new String(_requestSigner.getSignature(httpRequest, _clientKeyProvider.getPrivateKey())));
                         return clientHttpRequestExecution.execute(httpRequest, bytes);
                     }
@@ -135,7 +133,6 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
         if (!deserializedCertificate.getClientPublicKey().equals(_clientKeyProvider.getPublicKey())) {
             throw new InvalidCertificateException("certificate key does not match my public key");
         }
-        _certificate = certificate;
         return deserializedCertificate;
     }
 
@@ -161,10 +158,10 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
      * {@inheritDoc}
      */
     @Override
-    public Certificate<SIGNABLE> refresh() throws IOException {
+    public Certificate<SIGNABLE> refresh(Certificate<SIGNABLE> certificateToRefesh) throws IOException {
         final ResponseEntity<JsonWrappedCertificate> response;
         try {
-            response = _authorizedRestTemplate.postForEntity(_baseUri + "/auth/refresh/", null, JsonWrappedCertificate.class);
+            response = _headerSignedRestTemplate.exchange(_baseUri + "/auth/refresh/", HttpMethod.POST, httpEntityWithCertificateHeader(certificateToRefesh), JsonWrappedCertificate.class);
         } catch (HttpClientErrorException e) {
             throw ResponseStatusTranslation.from(e.getStatusCode().value()).translateToException(e.getMessage());
         }
@@ -175,10 +172,10 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
      * {@inheritDoc}
      */
     @Override
-    public boolean signout() throws IOException {
+    public boolean signout(Certificate<SIGNABLE> certificate) throws IOException {
         final ResponseEntity<Void> response;
         try {
-            response = _authorizedRestTemplate.postForEntity(_baseUri + "/auth/signout/", null, Void.class);
+            response = _headerSignedRestTemplate.exchange(_baseUri + "/auth/signout/", HttpMethod.POST, httpEntityWithCertificateHeader(certificate), Void.class);
         } catch (HttpClientErrorException e) {
             throw ResponseStatusTranslation.from(e.getStatusCode().value()).translateToException(e.getMessage());
         }
@@ -192,14 +189,27 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
     public <REQUEST, RESPONSE> RESPONSE sendSignedPayloadTo(final String url,
                                                             final String httpMethod,
                                                             final REQUEST payload,
-                                                            final Class<RESPONSE> responseType) {
+                                                            final Class<RESPONSE> responseType,
+                                                            final Certificate<SIGNABLE> certificate) throws IOException {
         try {
             final ResponseEntity<RESPONSE> exchange =
-                    _authorizedRestTemplate.exchange(
-                            url, HttpMethod.valueOf(httpMethod.toUpperCase()), new HttpEntity<REQUEST>(payload), responseType);
+                    _headerSignedRestTemplate.exchange(
+                            url, HttpMethod.valueOf(httpMethod.toUpperCase()), httpEntityWithCertificateHeader(payload, certificate), responseType);
             return exchange.getBody();
         } catch (HttpClientErrorException ignored) {
             throw ResponseStatusTranslation.from(ignored.getStatusCode().value()).translateToException(ignored.getMessage());
         }
+    }
+
+    private HttpEntity<Object> httpEntityWithCertificateHeader(Certificate<SIGNABLE> certificateToRefesh) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(SignatureHeaders.X_CERTIFICATE.getHeaderName(), encodeBase64URLSafeString(certificateToRefesh.getContent()));
+        return new HttpEntity<Object>(headers);
+    }
+
+    private HttpEntity<Object> httpEntityWithCertificateHeader(Object object, Certificate<SIGNABLE> certificateToRefesh) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(SignatureHeaders.X_CERTIFICATE.getHeaderName(), encodeBase64URLSafeString(certificateToRefesh.getContent()));
+        return new HttpEntity<Object>(object, headers);
     }
 }

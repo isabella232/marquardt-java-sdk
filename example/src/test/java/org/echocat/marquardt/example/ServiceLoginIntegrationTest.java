@@ -102,8 +102,8 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
         _payloadToSign = "";
     }
 
-    private void whenAccessingProtectedResourceOnService() {
-        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST.name(), null, Void.class);
+    private void whenAccessingProtectedResourceOnService() throws IOException {
+        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST.name(), null, Void.class, _certificate);
     }
 
     private void whenAccessingUnprotectedResourceOnService() {
@@ -111,8 +111,8 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
         restTemplate.exchange(baseUriOfApp() + "/exampleservice/someUnprotectedResource", HttpMethod.POST, null, Void.class);
     }
 
-    private void whenAccessingAdminResourceOnService() {
-        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/adminResource", HttpMethod.POST.name(), null, Void.class);
+    private void whenAccessingAdminResourceOnService() throws IOException {
+        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/adminResource", HttpMethod.POST.name(), null, Void.class, _certificate);
     }
 
     private void whenAccessingProtectedResourceWithSelfSignedCertificate(final byte[] attackersCertificate) {
@@ -124,7 +124,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
         restTemplate.exchange(baseUriOfApp() + "/exampleservice/someProtectedResource", HttpMethod.POST, requestEntity, Void.class);
     }
 
-    private void whenSignedContentIsSent() {
-        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResourceWithPayload", HttpMethod.POST.name(), _payloadToSign, String.class);
+    private void whenSignedContentIsSent() throws IOException {
+        getClient().sendSignedPayloadTo(baseUriOfApp() + "/exampleservice/someProtectedResourceWithPayload", HttpMethod.POST.name(), _payloadToSign, String.class, _certificate);
     }
 }
