@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
+import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
 
 /**
  * Implement this filter to enable login at a marquardt service (not authority!).
@@ -64,7 +65,7 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
         final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         try {
-            final String header = provideBase64EncodedCertificate(httpServletRequest);
+            final String header = httpServletRequest.getHeader(X_CERTIFICATE.getHeaderName());
             if (header != null) {
                 final byte[] decodedCertificate = decodeBase64(header);
                 final Certificate<SIGNABLE> certificate = _certificateValidator.deserializeAndValidateCertificate(decodedCertificate);
@@ -80,8 +81,6 @@ public abstract class CertificateAuthenticationFilter<SIGNABLE extends Signable,
             filterChain.doFilter(servletRequest, servletResponse);
         }
     }
-
-    protected abstract String provideBase64EncodedCertificate(final HttpServletRequest httpServletRequest);
 
     @SuppressWarnings("UnusedParameters")
     protected void handleCertificateException(final RuntimeException e) {

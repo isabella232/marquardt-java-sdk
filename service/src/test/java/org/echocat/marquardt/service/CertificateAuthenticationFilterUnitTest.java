@@ -29,7 +29,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
@@ -170,11 +169,6 @@ public class CertificateAuthenticationFilterUnitTest {
 
         public TestCertificateAuthenticationFilter(final CertificateValidator<TestUserInfo, TestRoles> certificateValidator, final RequestValidator requestValidator) {
             super(certificateValidator, requestValidator);
-        }
-
-        @Override
-        protected String provideBase64EncodedCertificate(final HttpServletRequest httpServletRequest) {
-            return httpServletRequest.getHeader(X_CERTIFICATE.getHeaderName());
         }
 
         @Override
