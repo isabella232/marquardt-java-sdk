@@ -14,7 +14,6 @@ import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
-import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.util.InputStreamUtils;
 
@@ -56,7 +55,7 @@ public class Validator {
                 bufferedInputStream.mark(0);
                 final T signable = signableDeserializingFactory.consume(bufferedInputStream);
 
-                final byte[] certificateBytes = readCertificateBytesAgainForLaterValidation(bufferedInputStream);
+                final byte[] signableBytes = readCertificateBytesAgainForLaterValidation(bufferedInputStream);
 
                 final PublicKey publicKey = publicKeyProvider.apply(signable);
                 if (publicKey == null) {
@@ -64,7 +63,7 @@ public class Validator {
                 }
                 final int signatureLength = InputStreamUtils.readInt(bufferedInputStream);
                 final Signature signature = new Signature(InputStreamUtils.readBytes(bufferedInputStream, signatureLength));
-                if (signature.isValidFor(certificateBytes, publicKey)) {
+                if (signature.isValidFor(signableBytes, publicKey)) {
                     return signable;
                 }
                 throw new SignatureValidationFailedException("signature is invalid for provided public key");
