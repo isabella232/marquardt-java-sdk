@@ -12,7 +12,7 @@ import com.google.common.collect.Sets;
 import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
-import org.echocat.marquardt.common.exceptions.CertificateExpiredException;
+import org.echocat.marquardt.common.exceptions.ExpiredCertificateException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
@@ -151,8 +151,8 @@ public class CertificateValidatorUnitTest {
         final TestCertificateValidator validator = new TestCertificateValidator(_mockedDateProvider, Collections.singletonList(_issuerKeys.getPublicKey()));
         try {
             validator.deserializeAndValidateCertificate(_signedPayload);
-            fail(CertificateExpiredException.class + " exception should have been thrown!");
-        } catch (final CertificateExpiredException e) {
+            fail(ExpiredCertificateException.class + " exception should have been thrown!");
+        } catch (final ExpiredCertificateException e) {
             final Certificate<?> certificate = e.getCertificate();
             assertThat(certificate, notNullValue());
             final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(_signedPayload.length);

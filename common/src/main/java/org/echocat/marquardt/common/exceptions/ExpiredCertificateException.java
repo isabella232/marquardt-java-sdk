@@ -14,11 +14,11 @@ import org.echocat.marquardt.common.domain.certificate.Certificate;
  * Exception intended to be thrown when a certificate is expired. Through the exception you may access the expired
  * certificate e. g. to refresh it.
  */
-public class CertificateExpiredException extends InvalidCertificateException {
+public class ExpiredCertificateException extends InvalidCertificateException {
 
     private Certificate<?> _certificate;
 
-    public CertificateExpiredException(final Certificate<?> certificate) {
+    public ExpiredCertificateException(final Certificate<?> certificate) {
         super("Certificate of " + certificate.getPayload() + " is expired");
         _certificate = certificate;
     }

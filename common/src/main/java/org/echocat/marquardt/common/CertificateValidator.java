@@ -15,7 +15,7 @@ import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.CertificateFactory;
 import org.echocat.marquardt.common.domain.certificate.Role;
-import org.echocat.marquardt.common.exceptions.CertificateExpiredException;
+import org.echocat.marquardt.common.exceptions.ExpiredCertificateException;
 import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
@@ -101,7 +101,7 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
         }
         certificate.setSignedCertificateBytes(encodedCertificate);
         if (isExpired(certificate)) {
-            throw new CertificateExpiredException(certificate);
+            throw new ExpiredCertificateException(certificate);
         }
         return certificate;
     }
