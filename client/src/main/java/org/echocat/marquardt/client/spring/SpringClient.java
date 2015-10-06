@@ -56,7 +56,6 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
     private final RequestSigner _requestSigner = new RequestSigner();
     private final KeyPairProvider _clientKeyProvider;
     private DateProvider _dateProvider = new DateProvider();
-    private byte[] _certificate;
 
     /**
      * Create a client instance.
