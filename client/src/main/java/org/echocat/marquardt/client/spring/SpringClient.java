@@ -119,10 +119,11 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
         } catch (HttpClientErrorException e) {
             throw ResponseStatusTranslation.from(e.getStatusCode().value()).translateToException(e.getMessage());
         }
-        if (response.getStatusCode() == HttpStatus.CREATED) {
+        final HttpStatus expectedStatus = HttpStatus.CREATED;
+        if (response.getStatusCode() == expectedStatus) {
             return extractCertificateFrom(response);
         } else {
-            return null;
+            throw new IllegalStateException("Got HTTP status '" + response.getStatusCode() + "'. Expected was: " + expectedStatus.value() + ". Cannot handle unexpected status code");
         }
     }
 
@@ -146,10 +147,11 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
         } catch (HttpClientErrorException e) {
             throw ResponseStatusTranslation.from(e.getStatusCode().value()).translateToException(e.getMessage());
         }
-        if (response.getStatusCode() == HttpStatus.OK) {
+        final HttpStatus expectedStatus = HttpStatus.OK;
+        if (response.getStatusCode() == expectedStatus) {
             return extractCertificateFrom(response);
         } else {
-            return null;
+            throw new IllegalStateException("Got HTTP status '" + response.getStatusCode() + "'. Expected was: " + expectedStatus.value() + ". Cannot handle unexpected status code");
         }
     }
 
