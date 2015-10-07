@@ -29,7 +29,7 @@ public class RolesDeserializerUnitTest {
         }
     };
 
-    private Set<Role> _roles = new HashSet<Role>();
+    private Set<Role> _roles = new HashSet<>();
     private Long _roleCode;
 
     @Test

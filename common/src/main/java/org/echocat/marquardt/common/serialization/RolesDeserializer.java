@@ -19,7 +19,7 @@ public abstract class RolesDeserializer<T extends Role> {
         if(roleCodes == null) {
             throw new IllegalArgumentException("roleCodes must not be null.");
         }
-        final Set<Role> roles = new HashSet<Role>();
+        final Set<Role> roles = new HashSet<>();
         for (int i = 0; i < Role.MAX_ROLE_ID; i++) {
             final long roleCodeOfCurrentRole = new Double(Math.pow(2, i)).longValue();
             if (roleCodes < roleCodeOfCurrentRole) {

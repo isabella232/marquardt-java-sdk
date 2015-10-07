@@ -16,7 +16,7 @@ import org.echocat.marquardt.common.domain.certificate.Certificate;
  */
 public class ExpiredCertificateException extends InvalidCertificateException {
 
-    private Certificate<?> _certificate;
+    private final Certificate<?> _certificate;
 
     public ExpiredCertificateException(final Certificate<?> certificate) {
         super("Certificate of " + certificate.getPayload() + " is expired");

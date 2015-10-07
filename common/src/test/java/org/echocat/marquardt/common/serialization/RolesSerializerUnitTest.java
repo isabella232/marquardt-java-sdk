@@ -20,7 +20,7 @@ import static org.hamcrest.core.Is.is;
 
 public class RolesSerializerUnitTest {
 
-    private Set<Role> _roles = new HashSet<Role>();
+    private Set<Role> _roles = new HashSet<>();
     private long _roleCode;
 
     @Test

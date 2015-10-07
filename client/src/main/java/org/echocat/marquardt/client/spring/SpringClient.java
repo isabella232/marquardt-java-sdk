@@ -205,12 +205,12 @@ public class SpringClient<SIGNABLE extends Signable, ROLE extends Role> implemen
     private HttpEntity<Object> httpEntityWithCertificateHeader(Certificate<SIGNABLE> certificateToRefesh) throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.set(SignatureHeaders.X_CERTIFICATE.getHeaderName(), encodeBase64URLSafeString(certificateToRefesh.getContent()));
-        return new HttpEntity<Object>(headers);
+        return new HttpEntity<>(headers);
     }
 
     private HttpEntity<Object> httpEntityWithCertificateHeader(Object object, Certificate<SIGNABLE> certificateToRefesh) throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.set(SignatureHeaders.X_CERTIFICATE.getHeaderName(), encodeBase64URLSafeString(certificateToRefesh.getContent()));
-        return new HttpEntity<Object>(object, headers);
+        return new HttpEntity<>(object, headers);
     }
 }

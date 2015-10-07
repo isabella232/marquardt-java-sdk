@@ -62,7 +62,7 @@ public class Certificate<T extends Signable> implements Signable {
      * @return A certificate.
      */
     public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<? extends Role> roles, final T payload) {
-        return new Certificate<T>(issuerPublicKey, clientPublicKey, roles, payload);
+        return new Certificate<>(issuerPublicKey, clientPublicKey, roles, payload);
     }
 
     private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<? extends Role> roles, final T payload) {

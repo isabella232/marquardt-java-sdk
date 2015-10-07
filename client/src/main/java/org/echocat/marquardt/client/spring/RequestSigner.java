@@ -37,12 +37,9 @@ public class RequestSigner {
      * @throws IOException
      */
     public byte[] getSignature(final HttpRequest request, final PrivateKey keyToSignWith) throws IOException {
-        final ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream();
-        try {
+        try (final ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream()) {
             writeRequestTo(request, bytesToSign);
             return encodeBase64(getSigner().signatureOf(bytesToSign.toByteArray(), keyToSignWith));
-        } finally {
-            IOUtils.closeQuietly(bytesToSign);
         }
     }
 
