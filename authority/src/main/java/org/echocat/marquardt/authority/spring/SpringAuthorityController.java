@@ -12,6 +12,7 @@ import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
+import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.common.domain.Credentials;
@@ -61,13 +62,13 @@ public abstract class SpringAuthorityController<USER extends User<? extends Role
 
     /**
      * Wire this with your stores.
-     *
-     * @param userStore         Your user store implementation.
+     *  @param userStore         Your user store implementation.
      * @param sessionStore      Your session store implementation.
+     * @param sessionAccess
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
-        _authority = new Authority<>(userStore, sessionStore, issuerKeyProvider);
+    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, SessionCreationPolicy sessionAccess, final KeyPairProvider issuerKeyProvider) {
+        _authority = new Authority<>(userStore, sessionStore, sessionAccess, issuerKeyProvider);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)

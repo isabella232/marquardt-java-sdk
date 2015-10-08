@@ -12,21 +12,22 @@ import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
+import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.common.Signer;
-import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
-import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
+import org.echocat.marquardt.common.domain.certificate.Certificate;
+import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
 
     private final UserStore<USER, SIGNABLE> _userStore;
     private final SessionStore<SESSION> _sessionStore;
+    private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
     private final KeyPairProvider _issuerKeyProvider;
 
@@ -65,14 +67,15 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
 
     /**
      * Sets up a new Authority singleton.
-     *
-     * @param userStore Your user store.
+     *  @param userStore Your user store.
      * @param sessionStore Your session store.
+     * @param sessionCreationPolicy How the authority decides wether to allow clients to create more than one session / or to black- or whitelist clients
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      */
-    public Authority(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
+        _sessionCreationPolicy = sessionCreationPolicy;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
@@ -98,7 +101,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
      * @param credentials Credentials of the user with the client's public key.
      * @return certificate for the client.
      * @throws LoginFailedException If user does not exist or password does not match.
-     * @throws AlreadyLoggedInException If the user already has an active session for this client's public key.
+     * @throws AlreadyLoggedInException If the user is not allowed to obtain (another) session.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public byte[] signIn(final Credentials credentials) {
@@ -106,7 +109,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
         if (user.passwordMatches(credentials.getPassword())) {
             // create new session
             final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (_sessionStore.existsActiveSession(user.getUserId(), publicKeyWithMechanism.getValue(), _dateProvider.now())) {
+            if (!_sessionCreationPolicy.mayCreateSession(user.getUserId(), publicKeyWithMechanism.getValue())) {
                 throw new AlreadyLoggedInException("User with id " + user.getUserId() + " is already logged in for current client.");
             } else {
                 return createCertificateAndSession(credentials, user);

@@ -44,16 +44,17 @@ public class AuthorityIntegrationTest extends AuthorityTest {
 
     @Override
     @Before
-    public void setup() throws Exception{
-        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore());
+    public void setup() throws Exception {
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore(), getSessionCreationPolicy());
         _testHttpAuthorityServer.start();
         super.setup();
     }
 
     @Test
     public void shouldSignupUserWithCorrectCredentials() throws Exception {
-        givenSignupCall();
         givenUserDoesNotExist();
+        givenSessionCreationPolicyAllowsAnotherSession();
+        givenSignupCall();
         whenCallingAuthority();
         thenSignedCertificateIsProduced();
     }
@@ -61,6 +62,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     @Test
     public void shouldSigninUserWithCorrectCredentials() throws Exception {
         givenUserExists();
+        givenSessionCreationPolicyAllowsAnotherSession();
         givenSigninCall();
         whenCallingAuthority();
         thenSignedCertificateIsProduced();

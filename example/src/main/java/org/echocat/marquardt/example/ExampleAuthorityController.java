@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.example;
 
+import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.spring.SpringAuthorityController;
@@ -25,9 +26,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ExampleAuthorityController extends SpringAuthorityController<PersistentUser, PersistentSession, UserInfo, UserCredentials, UserCredentials> {
 
     @Autowired
-    public ExampleAuthorityController(final SessionStore<PersistentSession> sessionStore,
-                                      final KeyPairProvider issuerKeyProvider,
-                                      final UserStore<PersistentUser, UserInfo> userStore) {
-        super(userStore, sessionStore, issuerKeyProvider);
+    public ExampleAuthorityController(final UserStore<PersistentUser, UserInfo> userStore, final SessionStore<PersistentSession> sessionStore, SessionCreationPolicy sessionCreationPolicy,
+                                      final KeyPairProvider issuerKeyProvider) {
+        super(userStore, sessionStore, sessionCreationPolicy, issuerKeyProvider);
     }
 }

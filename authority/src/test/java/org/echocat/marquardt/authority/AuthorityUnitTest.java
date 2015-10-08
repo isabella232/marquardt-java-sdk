@@ -84,6 +84,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     public void shouldSigninUser() throws Exception {
         givenUserExists();
         givenNoExistingSession();
+        givenSessionCreationPolicyAllowsAnotherSession();
         whenSigningIn();
         thenSessionIsCreated();
         thenCertificateIsMade();
@@ -93,6 +94,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     public void shouldThrowCerificateCreationFailedExceptionWhenSigningInButPayloadCannotBeSigned() throws Exception {
         givenUserExists();
         givenNoExistingSession();
+        givenSessionCreationPolicyAllowsAnotherSession();
         givenSignableThrowingException();
         whenSigningIn();
     }

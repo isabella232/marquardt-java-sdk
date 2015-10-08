@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.authority;
 
+import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.testdomain.TestSession;
@@ -25,7 +26,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("AbstractClassWithoutAbstractMethods")
@@ -43,6 +43,9 @@ public abstract class AuthorityTest {
 
     @Mock
     private SessionStore<TestSession> _sessionStore;
+
+    @Mock
+    private SessionCreationPolicy _sessionCreationPolicy;
 
     @Before
     public void setup() throws Exception {
@@ -65,14 +68,10 @@ public abstract class AuthorityTest {
     }
 
     protected void givenExistingSession() {
-        //noinspection UseOfObsoleteDateTimeApi
-        when(getSessionStore().existsActiveSession(any(UUID.class), any(byte[].class), any(Date.class))).thenReturn(true);
         when(getSessionStore().findByCertificate(any(byte[].class))).thenReturn(Optional.of(getValidSession()));
     }
 
     protected void givenNoExistingSession() {
-        //noinspection UseOfObsoleteDateTimeApi
-        when(getSessionStore().existsActiveSession(eq(USER_ID), any(byte[].class), any(Date.class))).thenReturn(false);
         when(getSessionStore().findByCertificate(any(byte[].class))).thenReturn(Optional.empty());
     }
 
@@ -81,6 +80,10 @@ public abstract class AuthorityTest {
         when(getUserStore().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
         when(getUserStore().createFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
         when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+    }
+
+    protected void givenSessionCreationPolicyAllowsAnotherSession() {
+        when(getSessionCreationPolicy().mayCreateSession(any(UUID.class), any(byte[].class))).thenReturn(true);
     }
 
     protected TestSession getValidSession() {
@@ -97,5 +100,9 @@ public abstract class AuthorityTest {
 
     protected SessionStore<TestSession> getSessionStore() {
         return _sessionStore;
+    }
+
+    public SessionCreationPolicy getSessionCreationPolicy() {
+        return _sessionCreationPolicy;
     }
 }
