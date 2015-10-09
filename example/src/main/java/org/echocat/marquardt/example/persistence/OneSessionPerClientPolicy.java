@@ -21,12 +21,11 @@ import java.util.UUID;
 public class OneSessionPerClientPolicy implements SessionCreationPolicy {
 
     private final SessionStore<PersistentSession> _sessionStore;
-    private DateProvider _dateProvider;
+    private DateProvider _dateProvider = new DateProvider();
 
     @Autowired
     public OneSessionPerClientPolicy(SessionStore<PersistentSession> sessionStore) {
         _sessionStore = sessionStore;
-        _dateProvider = new DateProvider();
     }
 
     @Override

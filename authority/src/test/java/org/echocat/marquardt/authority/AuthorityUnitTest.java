@@ -21,6 +21,9 @@ import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
+import org.echocat.marquardt.common.util.DateProvider;
+import org.hamcrest.FeatureMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,16 +31,28 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthorityUnitTest extends AuthorityTest {
+
+    private static final DateProvider CUSTOM_DATE_PROVIDER = new DateProvider() {
+        @Override
+        public Date now() {
+            return new Date(0L);
+        }
+    };
 
     @Mock
     private KeyPairProvider _issuerKeyProvider;
@@ -136,10 +151,6 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenRefreshingCertificate();
     }
 
-    private void givenInvalidSignature() {
-        when(_signature.isValidFor(any(), any())).thenReturn(false);
-    }
-
     @Test(expected = CertificateCreationException.class)
     public void shouldThrowCertificateCreationFailedExceptionWhenRefreshingInButPayloadCannotBeSigned() throws Exception {
         givenUserExists();
@@ -192,6 +203,24 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenSigningOut();
     }
 
+    @Test
+    public void shouldAllowToSetDateProvider() throws Exception {
+        givenCustomDateProvider();
+        givenUserExists();
+        givenNoExistingSession();
+        givenSessionCreationPolicyAllowsAnotherSession();
+        whenSigningIn();
+        thenSessionExpiringIn1970IsCreated();
+    }
+
+    private void givenCustomDateProvider() {
+        _authority.setDateProvider(CUSTOM_DATE_PROVIDER);
+    }
+
+    private void givenInvalidSignature() {
+        when(_signature.isValidFor(any(), any())).thenReturn(false);
+    }
+
     private void givenSignableThrowingException() {
         when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
     }
@@ -234,5 +263,19 @@ public class AuthorityUnitTest extends AuthorityTest {
 
     private void thenCertificateIsMade() {
         assertThat(_certificate, is(not(nullValue())));
+    }
+
+    private void thenSessionExpiringIn1970IsCreated() {
+        verify(getSessionStore()).save(argThat(sessionExpiring1970()));
+    }
+
+    private Matcher<TestSession> sessionExpiring1970() {
+        return new FeatureMatcher<TestSession, Date>(equalTo(new Date(new Date(0).getTime() + TimeUnit.DAYS.toMillis(60))), "session expiring 1970", "session expiring") {
+
+            @Override
+            protected Date featureValueOf(TestSession session) {
+                return session.getExpiresAt();
+            }
+        };
     }
 }
