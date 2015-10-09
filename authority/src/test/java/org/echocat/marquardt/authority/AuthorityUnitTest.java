@@ -9,6 +9,7 @@
 package org.echocat.marquardt.authority;
 
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
+import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
@@ -47,10 +48,14 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class AuthorityUnitTest extends AuthorityTest {
 
+    private static final long NEXT_YEAR = new Date().getTime() + TimeUnit.DAYS.toMillis(365);
+
     private static final DateProvider CUSTOM_DATE_PROVIDER = new DateProvider() {
+
+        @SuppressWarnings("UseOfObsoleteDateTimeApi")
         @Override
         public Date now() {
-            return new Date(0L);
+            return new Date(NEXT_YEAR);
         }
     };
 
@@ -210,7 +215,15 @@ public class AuthorityUnitTest extends AuthorityTest {
         givenNoExistingSession();
         givenSessionCreationPolicyAllowsAnotherSession();
         whenSigningIn();
-        thenSessionExpiringIn1970IsCreated();
+        thenSessionExpiringNextYearIsCreated();
+    }
+
+    @Test(expected = ExpiredSessionException.class)
+    public void shouldThrowExpiredSessionExceptionWhenCertificateIsOutdated() throws Exception {
+        givenUserExists();
+        givenExistingSession();
+        givenCustomDateProvider();
+        whenRefreshingCertificate();
     }
 
     private void givenCustomDateProvider() {
@@ -265,15 +278,16 @@ public class AuthorityUnitTest extends AuthorityTest {
         assertThat(_certificate, is(not(nullValue())));
     }
 
-    private void thenSessionExpiringIn1970IsCreated() {
-        verify(getSessionStore()).save(argThat(sessionExpiring1970()));
+    private void thenSessionExpiringNextYearIsCreated() {
+        verify(getSessionStore()).save(argThat(sessionExpiringNextYear()));
     }
 
-    private Matcher<TestSession> sessionExpiring1970() {
-        return new FeatureMatcher<TestSession, Date>(equalTo(new Date(new Date(0).getTime() + TimeUnit.DAYS.toMillis(60))), "session expiring 1970", "session expiring") {
+    private Matcher<TestSession> sessionExpiringNextYear() {
+        //noinspection UseOfObsoleteDateTimeApi
+        return new FeatureMatcher<TestSession, Date>(equalTo(new Date(NEXT_YEAR + TimeUnit.DAYS.toMillis(60))), "session expiring next year", "session expiring") {
 
             @Override
-            protected Date featureValueOf(TestSession session) {
+            protected Date featureValueOf(final TestSession session) {
                 return session.getExpiresAt();
             }
         };

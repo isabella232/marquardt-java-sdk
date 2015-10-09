@@ -72,7 +72,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
      * @param sessionCreationPolicy How the authority decides wether to allow clients to create more than one session / or to black- or whitelist clients
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      */
-    public Authority(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _sessionCreationPolicy = sessionCreationPolicy;
@@ -162,7 +162,6 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
         }
     }
 
-    @SuppressWarnings("unused")
     public void setDateProvider(final DateProvider dateProvider) {
         _dateProvider = dateProvider;
     }
