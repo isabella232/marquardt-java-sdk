@@ -49,7 +49,7 @@ import java.io.IOException;
  * @param <SESSION>     Your authority's session implementation.
  * @param <SIGNABLE>    Your user information that is wrapped into the Certificate.
  */
-public abstract class SpringAuthorityController<USER extends User<? extends Role>,
+public class SpringAuthorityController<USER extends User<? extends Role>,
         SESSION extends Session,
         SIGNABLE extends Signable,
         SIGNUP_CREDENTIALS extends Credentials,
@@ -57,18 +57,18 @@ public abstract class SpringAuthorityController<USER extends User<? extends Role
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
-    private Authority<USER, SESSION, SIGNABLE> _authority;
+    private final Authority<USER, SESSION, SIGNABLE> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
 
     /**
      * Wire this with your stores.
      *  @param userStore         Your user store implementation.
      * @param sessionStore      Your session store implementation.
-     * @param sessionAccess
+     * @param sessionCreationPolicy Your session creation policy. See examples for use case.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, SessionCreationPolicy sessionAccess, final KeyPairProvider issuerKeyProvider) {
-        _authority = new Authority<>(userStore, sessionStore, sessionAccess, issuerKeyProvider);
+    public SpringAuthorityController(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
+        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, issuerKeyProvider);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
@@ -86,17 +86,17 @@ public abstract class SpringAuthorityController<USER extends User<? extends Role
 
     @RequestMapping(value = "/refresh", method = RequestMethod.POST)
     @ResponseBody
-    public JsonWrappedCertificate refresh(@RequestHeader("X-Certificate") final byte[] certificate, HttpServletRequest request) {
-        byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
-        Signature signature = _requestValidator.extractSignatureFromHeader(request);
+    public JsonWrappedCertificate refresh(@RequestHeader("X-Certificate") final byte[] certificate, final HttpServletRequest request) {
+        final byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
+        final Signature signature = _requestValidator.extractSignatureFromHeader(request);
         return createCertificateResponse(_authority.refresh(certificate, signedBytesFromRequest, signature));
     }
 
     @RequestMapping(value = "/signout", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void signOut(@RequestHeader("X-Certificate") final byte[] certificate, HttpServletRequest request) {
-        byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
-        Signature signature = _requestValidator.extractSignatureFromHeader(request);
+    public void signOut(@RequestHeader("X-Certificate") final byte[] certificate, final HttpServletRequest request) {
+        final byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
+        final Signature signature = _requestValidator.extractSignatureFromHeader(request);
         _authority.signOut(certificate, signedBytesFromRequest, signature);
     }
 

@@ -194,6 +194,14 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenSigningOut();
     }
 
+    @Test(expected = ExpiredSessionException.class)
+    public void shouldThrowExpiredSessionExceptionWhenCertificateIsOutdated() throws Exception {
+        givenUserExists();
+        givenExistingSession();
+        givenCustomDateProvider();
+        whenRefreshingCertificate();
+    }
+
     @Test
     public void shouldQuietlyHandleNoSessionFoundExceptionWhenSigningOutButNoUserExists() throws Exception {
         givenUserDoesNotExist();
@@ -216,14 +224,6 @@ public class AuthorityUnitTest extends AuthorityTest {
         givenSessionCreationPolicyAllowsAnotherSession();
         whenSigningIn();
         thenSessionExpiringNextYearIsCreated();
-    }
-
-    @Test(expected = ExpiredSessionException.class)
-    public void shouldThrowExpiredSessionExceptionWhenCertificateIsOutdated() throws Exception {
-        givenUserExists();
-        givenExistingSession();
-        givenCustomDateProvider();
-        whenRefreshingCertificate();
     }
 
     private void givenCustomDateProvider() {
