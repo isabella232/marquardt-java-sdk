@@ -14,6 +14,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.squareup.okhttp.*;
 import okio.Buffer;
+import org.apache.commons.codec.binary.Base64;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
 import org.echocat.marquardt.client.util.ResponseStatusTranslation;
@@ -31,9 +32,9 @@ import org.echocat.marquardt.common.web.SignatureHeaders;
 
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.Base64;
 import java.util.Collection;
 
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 
 /**
@@ -193,7 +194,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
 
     private Certificate<SIGNABLE> extractCertificateFrom(Response response) throws IOException {
         JsonElement certificateJsonElement = GSON.fromJson(response.body().string(), JsonObject.class).get("certificate");
-        final byte[] certificate = Base64.getDecoder().decode(certificateJsonElement.getAsString());
+        final byte[] certificate = decodeBase64(certificateJsonElement.getAsString());
         final Certificate<SIGNABLE> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(certificate);
         if (!deserializedCertificate.getClientPublicKey().equals(_clientKeyProvider.getPublicKey())) {
             throw new InvalidCertificateException("certificate key does not match my public key");
