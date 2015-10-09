@@ -9,7 +9,8 @@
 package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.client.Client;
-import org.echocat.marquardt.client.spring.SpringClient;
+import org.echocat.marquardt.client.okhttp.GsonUserCredentials;
+import org.echocat.marquardt.client.okhttp.MarquardtClient;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
@@ -17,7 +18,6 @@ import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
-import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.echocat.marquardt.example.persistence.PersistentSessionStore;
 import org.echocat.marquardt.example.persistence.jpa.UserRepository;
@@ -58,12 +58,12 @@ public abstract class AbstractSsoIntegrationTest {
 
     @Value("${local.server.port}")
     private String _port;
-    private UserCredentials _userCredentials;
+    private GsonUserCredentials _userCredentials;
 
     private Client<UserInfo> _client;
 
     protected String baseUriOfApp() {
-        return "http://127.0.0.1:" + _port;
+        return "http://c16:" + _port;
     }
 
     void whenLoggingOut() throws IOException {
@@ -79,16 +79,16 @@ public abstract class AbstractSsoIntegrationTest {
     }
 
     void givenCorrectCredentials() {
-        _userCredentials = new UserCredentials("testuser@example.com", "Mutti123", getClientKeyProvider().getPublicKey());
+        _userCredentials = new GsonUserCredentials("testuser@example.com", "Mutti123", getClientKeyProvider().getPublicKey());
     }
 
     void givenIncorrectCredentials() {
-        _userCredentials = new UserCredentials("testuser@example.com", "Vati123", TestKeyPairProvider.create().getPublicKey());
+        _userCredentials = new GsonUserCredentials("testuser@example.com", "Vati123", TestKeyPairProvider.create().getPublicKey());
     }
 
     @Before
     public void setup() {
-        setClient(new SpringClient<>(baseUriOfApp(), UserInfo.FACTORY, ExampleRoles.FACTORY, getClientKeyProvider(), _trustedKeysProvider.getPublicKeys()));
+        setClient(new MarquardtClient<>(baseUriOfApp(), UserInfo.FACTORY, ExampleRoles.FACTORY, getClientKeyProvider(), _trustedKeysProvider.getPublicKeys()));
     }
 
     @After
@@ -128,6 +128,10 @@ public abstract class AbstractSsoIntegrationTest {
 
     protected void setClient(final Client<UserInfo> client) {
         _client = client;
+    }
+
+    public TrustedKeysProvider getTrustedKeysProvider() {
+        return _trustedKeysProvider;
     }
 
 }

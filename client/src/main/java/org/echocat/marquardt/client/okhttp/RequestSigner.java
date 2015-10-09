@@ -6,13 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.client.spring;
+package org.echocat.marquardt.client.okhttp;
 
 import com.google.common.primitives.Ints;
-import org.apache.commons.io.IOUtils;
+import com.squareup.okhttp.Request;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.web.SignatureHeaders;
-import org.springframework.http.HttpRequest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,21 +35,21 @@ public class RequestSigner {
      * @return signature as byte stream
      * @throws IOException
      */
-    public byte[] getSignature(final HttpRequest request, final PrivateKey keyToSignWith) throws IOException {
+    public byte[] getSignature(final Request request, final PrivateKey keyToSignWith) throws IOException {
         try (final ByteArrayOutputStream bytesToSign = new ByteArrayOutputStream()) {
             writeRequestTo(request, bytesToSign);
             return encodeBase64(getSigner().signatureOf(bytesToSign.toByteArray(), keyToSignWith));
         }
     }
 
-    private void writeRequestTo(final HttpRequest request, final ByteArrayOutputStream bytesToSign) throws IOException {
-        final byte[] requestBytes = (request.getMethod().name() + " " + request.getURI().getPath()).getBytes();
+    private void writeRequestTo(final Request request, final ByteArrayOutputStream bytesToSign) throws IOException {
+        final byte[] requestBytes = (request.method() + " " + request.uri().getPath()).getBytes();
         bytesToSign.write(Ints.toByteArray(requestBytes.length));
         bytesToSign.write(requestBytes);
         for (final SignatureHeaders headerToInclude : SignatureHeaders.values()) {
-            final List<String> headerValues = request.getHeaders().get(headerToInclude.getHeaderName());
-            if (headerValues != null) {
-                final byte[] headerBytes = (headerToInclude.getHeaderName() + ":" + getFirstHeaderValue(headerValues)).getBytes();
+            final String headerValue = request.header(headerToInclude.getHeaderName());
+            if (headerValue != null) {
+                final byte[] headerBytes = (headerToInclude.getHeaderName() + ":" + headerValue).getBytes();
                 bytesToSign.write(Ints.toByteArray(headerBytes.length));
                 bytesToSign.write(headerBytes);
             }

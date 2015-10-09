@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.common.domain;
 
+import com.google.gson.annotations.SerializedName;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 
 import java.security.PublicKey;

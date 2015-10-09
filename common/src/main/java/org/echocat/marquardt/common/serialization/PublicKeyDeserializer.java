@@ -25,6 +25,6 @@ public class PublicKeyDeserializer extends JsonDeserializer<PublicKey> {
     public PublicKey deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {
         final ObjectCodec oc = jsonParser.getCodec();
         final JsonNode node = oc.readTree(jsonParser);
-        return new PublicKeyWithMechanism(decodeBase64(node.get(PublicKeySerializer.KEY).binaryValue())).toJavaKey();
+        return new PublicKeyWithMechanism(node.get(PublicKeySerializer.KEY).binaryValue()).toJavaKey();
     }
 }

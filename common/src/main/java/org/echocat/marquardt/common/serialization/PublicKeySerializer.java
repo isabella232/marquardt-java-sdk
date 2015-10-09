@@ -24,7 +24,7 @@ public class PublicKeySerializer extends com.fasterxml.jackson.databind.JsonSeri
     public void serialize(final PublicKey publicKey, final JsonGenerator jsonGenerator, final com.fasterxml.jackson.databind.SerializerProvider serializerProvider) throws IOException {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
         jsonGenerator.writeStartObject();
-        jsonGenerator.writeBinaryField(KEY, encodeBase64(publicKeyWithMechanism.getContent()));
+        jsonGenerator.writeBinaryField(KEY, publicKeyWithMechanism.getContent());
         jsonGenerator.writeEndObject();
     }
 }
