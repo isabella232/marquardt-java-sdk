@@ -63,7 +63,7 @@ public abstract class AbstractSsoIntegrationTest {
     private Client<UserInfo> _client;
 
     protected String baseUriOfApp() {
-        return "http://c16:" + _port;
+        return "http://127.0.0.1:" + _port;
     }
 
     void whenLoggingOut() throws IOException {
