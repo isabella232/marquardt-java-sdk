@@ -46,18 +46,21 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
  * @param <USER> Your authority's user implementation.
  * @param <SESSION> Your authority's session implementation.
  * @param <SIGNABLE> Your user information object to wrap into Certificate.
- *
  * @see User
  * @see Session
  * @see Signable
  * @see Certificate
  * @see org.echocat.marquardt.authority.spring.SpringAuthorityController
  */
-public class Authority<USER extends User<? extends Role>, SESSION extends Session, SIGNABLE extends Signable> {
+public class Authority<USER extends User<? extends Role>,
+                       SESSION extends Session,
+                       SIGNABLE extends Signable,
+                       SIGNUP_CREDENTIALS extends Credentials,
+                       SIGNIN_CREDENTIALS extends Credentials> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
-    private final UserStore<USER, SIGNABLE> _userStore;
+    private final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> _userStore;
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
@@ -67,12 +70,13 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
 
     /**
      * Sets up a new Authority singleton.
-     *  @param userStore Your user store.
+     *
+     * @param userStore Your user store.
      * @param sessionStore Your session store.
      * @param sessionCreationPolicy How the authority decides wether to allow clients to create more than one session / or to black- or whitelist clients
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      */
-    public Authority(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _sessionCreationPolicy = sessionCreationPolicy;
@@ -87,7 +91,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
      * @throws UserAlreadyExistsException If a user with the same identifier already exists.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public byte[] signUp(final Credentials credentials) {
+    public byte[] signUp(final SIGNUP_CREDENTIALS credentials) {
         if (!_userStore.findByCredentials(credentials).isPresent()) {
             final USER user = _userStore.createFromCredentials(credentials);
             return createCertificateAndSession(credentials, user);
@@ -98,13 +102,14 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
 
     /**
      * Implements signin. Creates a new Session for a known user.
+     *
      * @param credentials Credentials of the user with the client's public key.
      * @return certificate for the client.
      * @throws LoginFailedException If user does not exist or password does not match.
      * @throws AlreadyLoggedInException If the user is not allowed to obtain (another) session.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public byte[] signIn(final Credentials credentials) {
+    public byte[] signIn(final SIGNIN_CREDENTIALS credentials) {
         final USER user = _userStore.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (user.passwordMatches(credentials.getPassword())) {
             // create new session
@@ -146,7 +151,6 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
     }
 
     /**
-     *
      * @param certificate Certificate to sign out with (may be an expired one - but must be the last one created for this session).
      * @param signedBytes byte sequence signed by the client.
      * @param signature signature of the byte sequence.
@@ -168,7 +172,7 @@ public class Authority<USER extends User<? extends Role>, SESSION extends Sessio
 
     private void verifySignature(final byte[] signedBytes, final Signature signature, final SESSION session) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(session.getMechanism(), session.getPublicKey());
-        if (!signature.isValidFor(signedBytes, publicKeyWithMechanism.toJavaKey())){
+        if (!signature.isValidFor(signedBytes, publicKeyWithMechanism.toJavaKey())) {
             throw new SignatureValidationFailedException("failed to verify signature with client's public key");
         }
     }

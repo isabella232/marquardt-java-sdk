@@ -57,7 +57,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
-    private final Authority<USER, SESSION, SIGNABLE> _authority;
+    private final Authority<USER, SESSION, SIGNABLE, SIGNUP_CREDENTIALS, SIGNIN_CREDENTIALS> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
 
     /**
@@ -67,7 +67,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
      * @param sessionCreationPolicy Your session creation policy. See examples for use case.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(final UserStore<USER, SIGNABLE> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
+    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
         _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, issuerKeyProvider);
     }
 

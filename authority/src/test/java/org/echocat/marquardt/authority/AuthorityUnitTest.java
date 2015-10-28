@@ -10,10 +10,7 @@ package org.echocat.marquardt.authority;
 
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
-import org.echocat.marquardt.authority.testdomain.TestSession;
-import org.echocat.marquardt.authority.testdomain.TestUser;
-import org.echocat.marquardt.authority.testdomain.TestUserInfo;
+import org.echocat.marquardt.authority.testdomain.*;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -63,7 +60,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     private KeyPairProvider _issuerKeyProvider;
 
     @InjectMocks
-    private Authority<TestUser, TestSession, TestUserInfo> _authority;
+    private Authority<TestUser, TestSession, TestUserInfo, TestUserCredentials, TestUserCredentials> _authority;
 
     private byte[] _certificate;
     @Mock

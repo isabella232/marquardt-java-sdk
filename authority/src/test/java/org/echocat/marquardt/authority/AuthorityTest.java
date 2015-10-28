@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class AuthorityTest {
     protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TestKeyPairProvider.create().getPublicKey());
-    protected static final Credentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey());
+    protected static final TestUserCredentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey());
     protected static final byte[] CERTIFICATE = new byte[0];
     private static final TestUser TEST_USER = new TestUser();
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
@@ -39,7 +39,7 @@ public abstract class AuthorityTest {
     private TestSession _validSession;
 
     @Mock
-    private UserStore<TestUser, TestUserInfo> _userStore;
+    private UserStore<TestUser, TestUserInfo, TestUserCredentials> _userStore;
 
     @Mock
     private SessionStore<TestSession> _sessionStore;
@@ -78,7 +78,7 @@ public abstract class AuthorityTest {
     protected void givenUserDoesNotExist() {
         when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
         when(getUserStore().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
-        when(getUserStore().createFromCredentials(any(Credentials.class))).thenReturn(TEST_USER);
+        when(getUserStore().createFromCredentials(any(TestUserCredentials.class))).thenReturn(TEST_USER);
         when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 
@@ -94,7 +94,7 @@ public abstract class AuthorityTest {
         _validSession = validSession;
     }
 
-    protected UserStore<TestUser, TestUserInfo> getUserStore() {
+    protected UserStore<TestUser, TestUserInfo, TestUserCredentials> getUserStore() {
         return _userStore;
     }
 

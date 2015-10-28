@@ -39,10 +39,10 @@ public class TestHttpAuthorityServer {
 
     private final HttpServer _server;
     private final ObjectMapper _objectMapper;
-    private final Authority<TestUser, TestSession, TestUserInfo> _authority;
+    private final Authority<TestUser, TestSession, TestUserInfo, TestUserCredentials, TestUserCredentials> _authority;
     private final Signature _signature = mock(Signature.class);
 
-    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo> userStore, final SessionStore<TestSession> sessionStore, SessionCreationPolicy sessionAccess) throws IOException {
+    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo, TestUserCredentials> userStore, final SessionStore<TestSession> sessionStore, SessionCreationPolicy sessionAccess) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
         _authority = new Authority<>(userStore, sessionStore, sessionAccess, TestKeyPairProvider.create());

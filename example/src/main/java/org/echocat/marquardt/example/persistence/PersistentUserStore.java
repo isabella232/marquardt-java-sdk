@@ -12,6 +12,7 @@ import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
+import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.echocat.marquardt.example.persistence.jpa.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class PersistentUserStore implements UserStore<PersistentUser, UserInfo> {
+public class PersistentUserStore implements UserStore<PersistentUser, UserInfo, UserCredentials> {
 
     private final UserRepository _userRepository;
     private final PasswordEncoder _passwordEncoder;
@@ -45,7 +46,7 @@ public class PersistentUserStore implements UserStore<PersistentUser, UserInfo> 
     }
 
     @Override
-    public PersistentUser createFromCredentials(final Credentials credentials) {
+    public PersistentUser createFromCredentials(final UserCredentials credentials) {
         final PersistentUser persistentUserToCreate = new PersistentUser();
         persistentUserToCreate.setEmail(credentials.getIdentifier());
         persistentUserToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
