@@ -83,6 +83,10 @@ public class Authority<USER extends User<? extends Role>,
         _issuerKeyProvider = issuerKeyProvider;
     }
 
+    public void setDateProvider(final DateProvider dateProvider) {
+        _dateProvider = dateProvider;
+    }
+
     /**
      * Implements signup. Creates a new User and a new Session.
      *
@@ -156,18 +160,13 @@ public class Authority<USER extends User<? extends Role>,
      * @param signature signature of the byte sequence.
      */
     public void signOut(final byte[] certificate, final byte[] signedBytes, final Signature signature) {
-        final SESSION session;
         try {
-            session = getSessionBasedOnCertificate(decodeBase64(certificate));
+            final SESSION session = getSessionBasedOnCertificate(decodeBase64(certificate));
             verifySignature(signedBytes, signature, session);
             _sessionStore.delete(session);
         } catch (final NoSessionFoundException ignored) {
             LOGGER.info("Received sign out, but session was not found for provided certificate.");
         }
-    }
-
-    public void setDateProvider(final DateProvider dateProvider) {
-        _dateProvider = dateProvider;
     }
 
     private void verifySignature(final byte[] signedBytes, final Signature signature, final SESSION session) {
@@ -178,9 +177,8 @@ public class Authority<USER extends User<? extends Role>,
     }
 
     private byte[] createCertificateAndSession(final Credentials credentials, final USER user) {
-        final byte[] certificate;
         try {
-            certificate = createCertificate(user, credentials.getPublicKey());
+            final byte[] certificate = createCertificate(user, credentials.getPublicKey());
             createSession(credentials.getPublicKey(), user.getUserId(), certificate);
             return certificate;
         } catch (final IOException e) {
