@@ -65,7 +65,6 @@ public class Authority<USER extends User<? extends Role>,
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
     private final KeyPairProvider _issuerKeyProvider;
-
     private DateProvider _dateProvider = new DateProvider();
 
     /**
@@ -96,12 +95,11 @@ public class Authority<USER extends User<? extends Role>,
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public byte[] signUp(final SIGNUP_CREDENTIALS credentials) {
-        if (!_userStore.findByCredentials(credentials).isPresent()) {
-            final USER user = _userStore.createFromCredentials(credentials);
-            return createCertificateAndSession(credentials, user);
-        } else {
+        if (_userStore.findByCredentials(credentials).isPresent()) {
             throw new UserAlreadyExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
+        final USER user = _userStore.createFromCredentials(credentials);
+        return createCertificateAndSession(credentials, user);
     }
 
     /**
@@ -115,16 +113,14 @@ public class Authority<USER extends User<? extends Role>,
      */
     public byte[] signIn(final SIGNIN_CREDENTIALS credentials) {
         final USER user = _userStore.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
-        if (user.passwordMatches(credentials.getPassword())) {
-            // create new session
-            final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
-            if (!_sessionCreationPolicy.mayCreateSession(user.getUserId(), publicKeyWithMechanism.getValue())) {
-                throw new AlreadyLoggedInException("User with id " + user.getUserId() + " is already logged in for current client.");
-            } else {
-                return createCertificateAndSession(credentials, user);
-            }
+        if (!user.passwordMatches(credentials.getPassword())) {
+            throw new LoginFailedException("Login failed");
         }
-        throw new LoginFailedException("Login failed");
+        final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
+        if (_sessionCreationPolicy.mayCreateSession(user.getUserId(), publicKeyWithMechanism.getValue())) {
+            return createCertificateAndSession(credentials, user);
+        }
+        throw new AlreadyLoggedInException("User with id " + user.getUserId() + " is already logged in for current client.");
     }
 
     /**
