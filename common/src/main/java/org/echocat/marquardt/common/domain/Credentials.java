@@ -26,6 +26,14 @@ public interface Credentials {
      */
     String getIdentifier();
 
+
+    /**
+     * Client id  of the User.
+     *
+     * @return client id
+     */
+    String getClientId();
+
     /**
      * Password of User. Make sure this is encrypted or sent via a secure channel.
      *

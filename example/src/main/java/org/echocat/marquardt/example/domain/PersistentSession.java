@@ -43,6 +43,7 @@ public class PersistentSession implements Session {
 
     @NotNull
     private String mechanism;
+    private String clientId;
 
     @SuppressWarnings("unused")
     public Long getId() {
@@ -106,4 +107,13 @@ public class PersistentSession implements Session {
         this.mechanism = mechanism;
     }
 
+    @Override
+    public String getClientId() {
+        return clientId;
+    }
+
+    @Override
+    public void setClientId(String clientId) {
+        this.clientId =  clientId;
+    }
 }

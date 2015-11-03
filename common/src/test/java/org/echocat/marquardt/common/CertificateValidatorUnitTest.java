@@ -46,6 +46,7 @@ import static org.mockito.Mockito.mock;
 public class CertificateValidatorUnitTest {
 
     private static final Set<Role> ROLES = Sets.<Role>newHashSet(TestRoles.TEST_ROLE_1);
+    private static final String TEST_CLIENT_ID = "asdf";
     private static final String SOME_PAYLOAD = "Some payload";
 
     private KeyPairProvider _issuerKeys;
@@ -112,7 +113,7 @@ public class CertificateValidatorUnitTest {
     }
 
     private void givenSignedCertificateWithDefectUserInfo() throws IOException {
-        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
+        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), TEST_CLIENT_ID, ROLES, new SignablePayload(SOME_PAYLOAD));
         whenSigningWithIssuerKey();
         _signedPayload[30] = Byte.MAX_VALUE;
     }
@@ -139,7 +140,7 @@ public class CertificateValidatorUnitTest {
     }
 
     private void givenUserInfoCertificate() {
-        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
+        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), TEST_CLIENT_ID, ROLES, new SignablePayload(SOME_PAYLOAD));
     }
 
     private void whenTheCertificateIsDeserializedAndVerified() {

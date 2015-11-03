@@ -21,13 +21,17 @@ public class GsonUserCredentials implements Credentials {
     private final String _password;
     @SerializedName("publicKey")
     private final PublicKey _publicKey;
+    @SerializedName("clientId")
+    private final String _clientId;
 
     public GsonUserCredentials(final String email,
                                final String password,
-                               final PublicKey publicKey) {
+                               final PublicKey publicKey,
+                               final String clientId) {
         _email = email;
         _password = password;
         _publicKey = publicKey;
+        _clientId = clientId;
     }
 
     @Override
@@ -36,14 +40,17 @@ public class GsonUserCredentials implements Credentials {
     }
 
     @Override
-
     public String getPassword() {
         return _password;
     }
 
     @Override
-
     public PublicKey getPublicKey() {
         return _publicKey;
+    }
+
+    @Override
+    public String getClientId() {
+        return _clientId;
     }
 }

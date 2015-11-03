@@ -8,10 +8,12 @@
 
 package org.echocat.marquardt.authority;
 
+import org.echocat.marquardt.authority.domain.ClientWhiteListEntry;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
+import org.echocat.marquardt.authority.persistence.ClientWhiteList;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -22,11 +24,7 @@ import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.Role;
-import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
-import org.echocat.marquardt.common.exceptions.LoginFailedException;
-import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
-import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
+import org.echocat.marquardt.common.exceptions.*;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.slf4j.Logger;
@@ -53,10 +51,10 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
  * @see org.echocat.marquardt.authority.spring.SpringAuthorityController
  */
 public class Authority<USER extends User<? extends Role>,
-                       SESSION extends Session,
-                       SIGNABLE extends Signable,
-                       SIGNUP_CREDENTIALS extends Credentials,
-                       SIGNIN_CREDENTIALS extends Credentials> {
+    SESSION extends Session,
+    SIGNABLE extends Signable,
+    SIGNUP_CREDENTIALS extends Credentials,
+    SIGNIN_CREDENTIALS extends Credentials> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
@@ -64,6 +62,7 @@ public class Authority<USER extends User<? extends Role>,
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
+    private final ClientWhiteList _clientWhiteList;
     private final KeyPairProvider _issuerKeyProvider;
     private DateProvider _dateProvider = new DateProvider();
 
@@ -75,10 +74,11 @@ public class Authority<USER extends User<? extends Role>,
      * @param sessionCreationPolicy How the authority decides wether to allow clients to create more than one session / or to black- or whitelist clients
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      */
-    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, ClientWhiteList clientWhiteList, KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _sessionCreationPolicy = sessionCreationPolicy;
+        _clientWhiteList = clientWhiteList;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
@@ -95,6 +95,7 @@ public class Authority<USER extends User<? extends Role>,
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public byte[] signUp(final SIGNUP_CREDENTIALS credentials) {
+        ensureClientIdIsWhitelisted(credentials.getClientId());
         if (_userStore.findByCredentials(credentials).isPresent()) {
             throw new UserAlreadyExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
@@ -112,6 +113,7 @@ public class Authority<USER extends User<? extends Role>,
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public byte[] signIn(final SIGNIN_CREDENTIALS credentials) {
+        ensureClientIdIsWhitelisted(credentials.getClientId());
         final USER user = _userStore.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (!user.passwordMatches(credentials.getPassword())) {
             throw new LoginFailedException("Login failed");
@@ -138,9 +140,10 @@ public class Authority<USER extends User<? extends Role>,
     public byte[] refresh(final byte[] certificate, final byte[] signedBytes, final Signature signature) {
         final SESSION session = getValidSessionBasedOnCertificate(decodeBase64(certificate));
         verifySignature(signedBytes, signature, session);
+        ensureClientIdIsWhitelisted(session.getClientId());
         final USER user = _userStore.findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
-            final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
+            final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session), session.getClientId());
             session.setCertificate(newCertificate);
             session.setExpiresAt(nowPlus60Days());
             _sessionStore.save(session);
@@ -165,6 +168,13 @@ public class Authority<USER extends User<? extends Role>,
         }
     }
 
+    private void ensureClientIdIsWhitelisted(String clientId) {
+        final ClientWhiteListEntry clientWhiteListEntry = _clientWhiteList.findByClientId(clientId);
+        if (clientWhiteListEntry == null || !clientWhiteListEntry.isWhitelisted()) {
+            throw new ClientNotAuthorizedException("Client not authorized");
+        }
+    }
+
     private void verifySignature(final byte[] signedBytes, final Signature signature, final SESSION session) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(session.getMechanism(), session.getPublicKey());
         if (!signature.isValidFor(signedBytes, publicKeyWithMechanism.toJavaKey())) {
@@ -174,17 +184,17 @@ public class Authority<USER extends User<? extends Role>,
 
     private byte[] createCertificateAndSession(final Credentials credentials, final USER user) {
         try {
-            final byte[] certificate = createCertificate(user, credentials.getPublicKey());
-            createSession(credentials.getPublicKey(), user.getUserId(), certificate);
+            final byte[] certificate = createCertificate(user, credentials.getPublicKey(), credentials.getClientId());
+            createSession(credentials.getPublicKey(), credentials.getClientId(), user.getUserId(), certificate);
             return certificate;
         } catch (final IOException e) {
             throw new CertificateCreationException("failed to create certificate for user with id " + user.getUserId(), e);
         }
     }
 
-    private byte[] createCertificate(final USER user, final PublicKey clientPublicKey) throws IOException {
+    private byte[] createCertificate(final USER user, final PublicKey clientPublicKey, String clientId) throws IOException {
         final SIGNABLE signable = _userStore.createSignableFromUser(user);
-        final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, user.getRoles(), signable);
+        final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, clientId, user.getRoles(), signable);
         return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }
 
@@ -204,13 +214,14 @@ public class Authority<USER extends User<? extends Role>,
         return _sessionStore.findByCertificate(certificateBytes).orElseThrow(() -> new NoSessionFoundException("No session found."));
     }
 
-    private void createSession(final PublicKey publicKey, final UUID userId, final byte[] certificate) {
+    private void createSession(final PublicKey publicKey, String clientId, final UUID userId, final byte[] certificate) {
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
         final SESSION session = _sessionStore.createTransient();
         session.setUserId(userId);
         session.setExpiresAt(nowPlus60Days());
         session.setPublicKey(publicKeyWithMechanism.getValue());
         session.setMechanism(publicKeyWithMechanism.getMechanism().getName());
+        session.setClientId(clientId);
         session.setCertificate(certificate);
         _sessionStore.save(session);
     }

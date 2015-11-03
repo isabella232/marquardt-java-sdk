@@ -22,6 +22,7 @@ public class TestSession implements Session {
     @SuppressWarnings("UseOfObsoleteDateTimeApi")
     private Date _expiredAt;
     private byte[] _publicKey;
+    private String _clientId;
 
     @Override
     public UUID getUserId() {
@@ -72,5 +73,15 @@ public class TestSession implements Session {
     @Override
     public void setMechanism(final String mechanism) {
 
+    }
+
+    @Override
+    public String getClientId() {
+        return _clientId;
+    }
+
+    @Override
+    public void setClientId(String clientId) {
+        _clientId = clientId;
     }
 }

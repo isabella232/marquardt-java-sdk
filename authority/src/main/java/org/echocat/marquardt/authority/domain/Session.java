@@ -106,4 +106,8 @@ public interface Session {
      * @param expiresAt Expiry date of this session.
      */
     void setExpiresAt(final Date expiresAt);
+
+    String getClientId();
+
+    void setClientId(String clientId);
 }

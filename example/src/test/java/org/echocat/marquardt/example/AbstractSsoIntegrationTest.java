@@ -8,6 +8,8 @@
 
 package org.echocat.marquardt.example;
 
+import org.echocat.marquardt.authority.domain.ClientWhiteListEntry;
+import org.echocat.marquardt.authority.persistence.ClientWhiteList;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.okhttp.GsonUserCredentials;
 import org.echocat.marquardt.client.okhttp.MarquardtClient;
@@ -16,10 +18,10 @@ import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
-import org.echocat.marquardt.example.domain.ExampleRoles;
-import org.echocat.marquardt.example.domain.PersistentUser;
-import org.echocat.marquardt.example.domain.UserInfo;
+import org.echocat.marquardt.example.domain.*;
+import org.echocat.marquardt.example.persistence.PersistentClientWhitelist;
 import org.echocat.marquardt.example.persistence.PersistentSessionStore;
+import org.echocat.marquardt.example.persistence.jpa.ClientWhiteListEntryRepository;
 import org.echocat.marquardt.example.persistence.jpa.UserRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -44,6 +46,8 @@ import java.util.UUID;
 @ActiveProfiles("tests")
 public abstract class AbstractSsoIntegrationTest {
 
+    protected static final String TEST_CLIENT_ID = "asdf";
+
     protected Certificate<UserInfo> _certificate;
 
     private final KeyPairProvider _clientKeyProvider = TestKeyPairProvider.create();
@@ -55,6 +59,8 @@ public abstract class AbstractSsoIntegrationTest {
     private UserRepository _userRepository;
     @Autowired
     private PersistentSessionStore _sessionStore;
+    @Autowired
+    private ClientWhiteListEntryRepository _clientWhiteListEntryRepository;
 
     @Value("${local.server.port}")
     private String _port;
@@ -79,11 +85,11 @@ public abstract class AbstractSsoIntegrationTest {
     }
 
     void givenCorrectCredentials() {
-        _userCredentials = new GsonUserCredentials("testuser@example.com", "Mutti123", getClientKeyProvider().getPublicKey());
+        _userCredentials = new GsonUserCredentials("testuser@example.com", "Mutti123", getClientKeyProvider().getPublicKey(), TEST_CLIENT_ID);
     }
 
     void givenIncorrectCredentials() {
-        _userCredentials = new GsonUserCredentials("testuser@example.com", "Vati123", TestKeyPairProvider.create().getPublicKey());
+        _userCredentials = new GsonUserCredentials("testuser@example.com", "Vati123", TestKeyPairProvider.create().getPublicKey(), TEST_CLIENT_ID);
     }
 
     @Before
@@ -95,6 +101,14 @@ public abstract class AbstractSsoIntegrationTest {
     public void cleanup() {
         _userRepository.deleteAll();
         _sessionStore.deleteAll();
+        _clientWhiteListEntryRepository.deleteAll();
+    }
+
+    void givenTestClientIdIsWhiteListed() {
+        final PersistentClientWhitelistEntry whiteListEntry = new PersistentClientWhitelistEntry();
+        whiteListEntry.setClientId(TEST_CLIENT_ID);
+        whiteListEntry.setIsWhitelisted(true);
+        _clientWhiteListEntryRepository.save(whiteListEntry);
     }
 
     void givenExistingUser(final Set<ExampleRoles> roles) {

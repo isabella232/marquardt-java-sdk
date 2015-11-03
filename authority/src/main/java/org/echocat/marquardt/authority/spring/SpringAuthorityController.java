@@ -12,6 +12,7 @@ import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
+import org.echocat.marquardt.authority.persistence.ClientWhiteList;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -19,11 +20,7 @@ import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.domain.certificate.Role;
-import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
-import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
-import org.echocat.marquardt.common.exceptions.LoginFailedException;
-import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
+import org.echocat.marquardt.common.exceptions.*;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.RequestValidator;
@@ -67,8 +64,8 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
      * @param sessionCreationPolicy Your session creation policy. See examples for use case.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final KeyPairProvider issuerKeyProvider) {
-        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, issuerKeyProvider);
+    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final ClientWhiteList clientWhiteList, final KeyPairProvider issuerKeyProvider) {
+        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientWhiteList, issuerKeyProvider);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
@@ -133,6 +130,12 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
     @ExceptionHandler(NoSessionFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No session exists.")
     public void handleNoSessionFoundException(final NoSessionFoundException ex) {
+        LOGGER.info(ex.getMessage());
+    }
+
+    @ExceptionHandler(ClientNotAuthorizedException.class)
+    @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Client is not authorized.")
+    public void handleClientNotAuthorizedException(final ClientNotAuthorizedException ex) {
         LOGGER.info(ex.getMessage());
     }
 

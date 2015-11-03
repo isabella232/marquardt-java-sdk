@@ -8,13 +8,11 @@
 
 package org.echocat.marquardt.authority;
 
+import org.echocat.marquardt.authority.persistence.ClientWhiteList;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
-import org.echocat.marquardt.authority.testdomain.TestSession;
-import org.echocat.marquardt.authority.testdomain.TestUser;
-import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
-import org.echocat.marquardt.authority.testdomain.TestUserInfo;
+import org.echocat.marquardt.authority.testdomain.*;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.junit.Before;
@@ -30,8 +28,9 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class AuthorityTest {
-    protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TestKeyPairProvider.create().getPublicKey());
-    protected static final TestUserCredentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey());
+    private static final String TEST_CLIENT_ID = "asdf";
+    protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TestKeyPairProvider.create().getPublicKey(), TEST_CLIENT_ID);
+    protected static final TestUserCredentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey(), TEST_CLIENT_ID);
     protected static final byte[] CERTIFICATE = new byte[0];
     private static final TestUser TEST_USER = new TestUser();
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
@@ -45,11 +44,15 @@ public abstract class AuthorityTest {
     private SessionStore<TestSession> _sessionStore;
 
     @Mock
+    private ClientWhiteList _clientWhiteList;
+
+    @Mock
     private SessionCreationPolicy _sessionCreationPolicy;
 
     @Before
     public void setup() throws Exception {
         when(getSessionStore().createTransient()).thenReturn(createTestSession());
+        when(_clientWhiteList.findByClientId(TEST_CLIENT_ID)).thenReturn(new TestClientWhiteListEntry(TEST_CLIENT_ID, true));
         setValidSession(createTestSession());
     }
 
@@ -58,6 +61,7 @@ public abstract class AuthorityTest {
         testSession.setExpiresAt(new Date(new Date().getTime() + TimeUnit.DAYS.toMillis(60)));
         testSession.setUserId(USER_ID);
         testSession.setPublicKey(TestKeyPairProvider.create().getPublicKey().getEncoded());
+        testSession.setClientId(TEST_CLIENT_ID);
         return testSession;
     }
 
@@ -102,7 +106,11 @@ public abstract class AuthorityTest {
         return _sessionStore;
     }
 
-    public SessionCreationPolicy getSessionCreationPolicy() {
+    protected SessionCreationPolicy getSessionCreationPolicy() {
         return _sessionCreationPolicy;
+    }
+
+    protected ClientWhiteList getClientWhiteList() {
+        return _clientWhiteList;
     }
 }

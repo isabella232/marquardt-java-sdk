@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.example;
 
+import org.echocat.marquardt.authority.persistence.ClientWhiteList;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -27,7 +28,7 @@ public class ExampleAuthorityController extends SpringAuthorityController<Persis
 
     @Autowired
     public ExampleAuthorityController(final UserStore<PersistentUser, UserInfo, UserCredentials> userStore, final SessionStore<PersistentSession> sessionStore, SessionCreationPolicy sessionCreationPolicy,
-                                      final KeyPairProvider issuerKeyProvider) {
-        super(userStore, sessionStore, sessionCreationPolicy, issuerKeyProvider);
+                                      final ClientWhiteList clientWhiteList, final KeyPairProvider issuerKeyProvider) {
+        super(userStore, sessionStore, sessionCreationPolicy, clientWhiteList, issuerKeyProvider);
     }
 }

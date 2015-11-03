@@ -17,6 +17,8 @@ import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Set;
 
@@ -25,6 +27,7 @@ import static org.hamcrest.core.StringContains.containsString;
 
 public class CertificateUnitTest {
 
+    private static final String TEST_CLIENT_ID = "test-client-id";
     private Certificate<SignablePayload> _certificate;
     private SignablePayload _payload;
     private static final Set<Role> ROLES = Sets.<Role>newHashSet(TestRoles.TEST_ROLE_1);
@@ -47,7 +50,7 @@ public class CertificateUnitTest {
 
     private void whenCertificateIsCreated() {
         _payload = new SignablePayload(SOME_PAYLOAD);
-        _certificate = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, _payload);
+        _certificate = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), TEST_CLIENT_ID, ROLES, _payload);
     }
 
     private void thenCerificateCanBeWrittenAsString() {

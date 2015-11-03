@@ -13,6 +13,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import org.echocat.marquardt.authority.persistence.ClientWhiteList;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -42,10 +43,10 @@ public class TestHttpAuthorityServer {
     private final Authority<TestUser, TestSession, TestUserInfo, TestUserCredentials, TestUserCredentials> _authority;
     private final Signature _signature = mock(Signature.class);
 
-    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo, TestUserCredentials> userStore, final SessionStore<TestSession> sessionStore, SessionCreationPolicy sessionAccess) throws IOException {
+    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo, TestUserCredentials> userStore, final SessionStore<TestSession> sessionStore, final SessionCreationPolicy sessionAccess, final ClientWhiteList clientWhiteList) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
-        _authority = new Authority<>(userStore, sessionStore, sessionAccess, TestKeyPairProvider.create());
+        _authority = new Authority<>(userStore, sessionStore, sessionAccess, clientWhiteList, TestKeyPairProvider.create());
         when(_signature.isValidFor(any(), any())).thenReturn(true);
     }
 

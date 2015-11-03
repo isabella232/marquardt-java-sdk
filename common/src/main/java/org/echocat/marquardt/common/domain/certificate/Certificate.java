@@ -13,6 +13,7 @@ import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.echocat.marquardt.common.domain.ClientId;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.serialization.RolesSerializer;
@@ -49,6 +50,7 @@ public class Certificate<T extends Signable> implements Signable {
     private final Date _expiresAt;
     private final Set<? extends Role> _roles;
     private final T _payload;
+    private final String _clientId;
     private byte[] _signedCertificateBytes;
 
     /**
@@ -61,15 +63,16 @@ public class Certificate<T extends Signable> implements Signable {
      * @param <T> Class of wrapped payload, for example additional user information to use on clients and services.
      * @return A certificate.
      */
-    public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<? extends Role> roles, final T payload) {
-        return new Certificate<>(issuerPublicKey, clientPublicKey, roles, payload);
+    public static <T extends Signable> Certificate<T> create(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, String clientId, final Set<? extends Role> roles, final T payload) {
+        return new Certificate<>(issuerPublicKey, clientPublicKey, clientId, roles, payload);
     }
 
-    private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, final Set<? extends Role> roles, final T payload) {
+    private Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, String clientId, final Set<? extends Role> roles, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
-        _roles = roles;
+        _clientId = clientId;
         _expiresAt = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15));
+        _roles = roles;
         _payload = payload;
     }
 
@@ -82,16 +85,16 @@ public class Certificate<T extends Signable> implements Signable {
      * @param roles Roles of the user to enable authorization in clients and services.
      * @param payload Wrapped payload, for example additional user information to use on clients and services
      */
-    Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, @SuppressWarnings("UseOfObsoleteDateTimeApi") final Date expiresAt, final Set<? extends Role> roles, final T payload) {
+    Certificate(final PublicKey issuerPublicKey, final PublicKey clientPublicKey, String clientId, @SuppressWarnings("UseOfObsoleteDateTimeApi") final Date expiresAt, final Set<? extends Role> roles, final T payload) {
         _issuerPublicKey = issuerPublicKey;
         _clientPublicKey = clientPublicKey;
+        _clientId = clientId;
         _expiresAt = expiresAt;
         _roles = Sets.newHashSet(roles);
         _payload = payload;
     }
 
     /**
-     *
      * @return Authority's public key. Must be trusted by clients and services.
      */
     public PublicKey getIssuerPublicKey() {
@@ -99,7 +102,6 @@ public class Certificate<T extends Signable> implements Signable {
     }
 
     /**
-     *
      * @return Client's public key. Enabled login of the same user on different clients.
      */
     public PublicKey getClientPublicKey() {
@@ -121,6 +123,10 @@ public class Certificate<T extends Signable> implements Signable {
         return _expiresAt;
     }
 
+    public String getClientId() {
+        return _clientId;
+    }
+
     /**
      * @return Roles of the user to enable authorization in clients and services.
      */
@@ -130,7 +136,7 @@ public class Certificate<T extends Signable> implements Signable {
 
     @Override
     public void writeTo(@Nonnull @WillNotClose final OutputStream out) throws IOException {
-        if(isSignedCertificate()) {
+        if (isSignedCertificate()) {
             out.write(_signedCertificateBytes);
         } else {
             serializeTo(out);
@@ -151,19 +157,17 @@ public class Certificate<T extends Signable> implements Signable {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("_issuerPublicKey", _issuerPublicKey)
-                .append("_clientPublicKey", _clientPublicKey)
-                .append("_expiresAt", _expiresAt)
-                .append("_roles", _roles)
-                .append("_payload", _payload)
-                .toString();
+            .append("_issuerPublicKey", _issuerPublicKey)
+            .append("_clientPublicKey", _clientPublicKey)
+            .append("_expiresAt", _expiresAt)
+            .append("_roles", _roles)
+            .append("_payload", _payload)
+            .toString();
     }
 
     /**
      * If the certificate was received from an authority, we can use the already signed bytes when
      * sending the certificate another service.
-     *
-     * @param signedCertificateBytes
      */
     public void setSignedCertificateBytes(final byte[] signedCertificateBytes) {
         _signedCertificateBytes = Arrays.copyOf(signedCertificateBytes, signedCertificateBytes.length);
@@ -173,6 +177,7 @@ public class Certificate<T extends Signable> implements Signable {
         out.write(VERSION);
         new PublicKeyWithMechanism(_issuerPublicKey).writeTo(out);
         new PublicKeyWithMechanism(_clientPublicKey).writeTo(out);
+        new ClientId(_clientId).writeTo(out);
         out.write(Longs.toByteArray(_expiresAt.getTime()));
         out.write(Longs.toByteArray(RolesSerializer.from(_roles)));
         _payload.writeTo(out);

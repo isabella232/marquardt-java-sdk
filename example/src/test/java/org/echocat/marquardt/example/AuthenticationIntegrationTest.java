@@ -8,10 +8,7 @@
 
 package org.echocat.marquardt.example;
 
-import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
-import org.echocat.marquardt.common.exceptions.LoginFailedException;
-import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
-import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
+import org.echocat.marquardt.common.exceptions.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -27,6 +24,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test
     public void shouldSignInWithCorrectCredentials() throws IOException {
         givenExistingUser(Collections.emptySet());
+        givenTestClientIdIsWhiteListed();
         givenCorrectCredentials();
         whenSigningIn();
         thenCertificateIsProvided();
@@ -35,6 +33,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test(expected = LoginFailedException.class)
     public void shouldRejectLoginWithIncorrectCredentials() throws IOException {
         givenExistingUser(Collections.emptySet());
+        givenTestClientIdIsWhiteListed();
         givenIncorrectCredentials();
         whenSigningIn();
     }
@@ -42,14 +41,23 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test(expected = AlreadyLoggedInException.class)
     public void shouldRejectLoginWhenUserIsLoggedIn() throws IOException {
         givenExistingUser(Collections.emptySet());
+        givenTestClientIdIsWhiteListed();
         givenCorrectCredentials();
         whenSigningIn();
+        whenSigningIn();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotSignInWithCorrectCredentialsWhenUserIsNotWhitelisted() throws IOException {
+        givenExistingUser(Collections.emptySet());
+        givenCorrectCredentials();
         whenSigningIn();
     }
 
     @Test
     public void shouldSignUpUser() throws IOException {
         givenCorrectCredentials();
+        givenTestClientIdIsWhiteListed();
         whenSigningUp();
         thenCertificateIsProvided();
     }
@@ -57,6 +65,13 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test(expected = UserAlreadyExistsException.class)
     public void shouldNotSignupExistingUser() throws IOException {
         givenExistingUser(Collections.emptySet());
+        givenTestClientIdIsWhiteListed();
+        givenCorrectCredentials();
+        whenSigningUp();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotSignUpUserWhenUserIsNotWhitelisted() throws IOException {
         givenCorrectCredentials();
         whenSigningUp();
     }
@@ -64,6 +79,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test
     public void shouldLogoutALoggedInUser() throws IOException {
         givenExistingUser(Collections.emptySet());
+        givenTestClientIdIsWhiteListed();
         givenCorrectCredentials();
         whenSigningIn();
         whenLoggingOut();
@@ -73,6 +89,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test
     public void shouldRefreshCertificateOfSignedInUsers() throws IOException {
         givenExistingUser(Collections.emptySet());
+        givenTestClientIdIsWhiteListed();
         givenCorrectCredentials();
         whenSigningIn();
         whenRefreshingCertificate();
@@ -82,6 +99,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test(expected = NoSessionFoundException.class)
     public void shouldNotRefreshCertificatesOfUsersThatAreSignedOut() throws Exception {
         givenExistingUser(Collections.emptySet());
+        givenTestClientIdIsWhiteListed();
         givenCorrectCredentials();
         whenSigningIn();
         whenLoggingOut();
