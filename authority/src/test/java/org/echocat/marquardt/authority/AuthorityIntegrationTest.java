@@ -45,7 +45,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     @Override
     @Before
     public void setup() throws Exception {
-        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore(), getSessionCreationPolicy(), getClientWhiteList());
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore(), getSessionCreationPolicy(), getClientIdPolicy());
         _testHttpAuthorityServer.start();
         super.setup();
     }
@@ -73,7 +73,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
         givenExistingSession();
         givenSignoutCall();
         whenCallingAuthority();
-        thenSignoutIsPerformed();
+        thenSignOutIsPerformed();
     }
 
     @Test
@@ -113,7 +113,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
         assertThat(jsonWrappedCertificate.getCertificate(), is(not(nullValue())));
     }
 
-    private void thenSignoutIsPerformed() {
+    private void thenSignOutIsPerformed() {
         assertThat(_status, is(204));
     }
 
@@ -128,8 +128,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     }
 
     @After
-    public void teardown() throws InterruptedException {
+    public void tearDown() throws InterruptedException {
         _testHttpAuthorityServer.stop();
     }
-
 }

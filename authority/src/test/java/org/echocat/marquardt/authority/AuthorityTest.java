@@ -8,11 +8,14 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.persistence.ClientWhiteList;
+import org.echocat.marquardt.authority.persistence.ClientIdPolicy;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
-import org.echocat.marquardt.authority.testdomain.*;
+import org.echocat.marquardt.authority.testdomain.TestSession;
+import org.echocat.marquardt.authority.testdomain.TestUser;
+import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
+import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.junit.Before;
@@ -44,7 +47,7 @@ public abstract class AuthorityTest {
     private SessionStore<TestSession> _sessionStore;
 
     @Mock
-    private ClientWhiteList _clientWhiteList;
+    private ClientIdPolicy _clientIdPolicy;
 
     @Mock
     private SessionCreationPolicy _sessionCreationPolicy;
@@ -52,7 +55,7 @@ public abstract class AuthorityTest {
     @Before
     public void setup() throws Exception {
         when(getSessionStore().createTransient()).thenReturn(createTestSession());
-        when(_clientWhiteList.findByClientId(TEST_CLIENT_ID)).thenReturn(new TestClientWhiteListEntry(TEST_CLIENT_ID, true));
+        when(_clientIdPolicy.isAllowed(TEST_CLIENT_ID)).thenReturn(true);
         setValidSession(createTestSession());
     }
 
@@ -110,7 +113,7 @@ public abstract class AuthorityTest {
         return _sessionCreationPolicy;
     }
 
-    protected ClientWhiteList getClientWhiteList() {
-        return _clientWhiteList;
+    protected ClientIdPolicy getClientIdPolicy() {
+        return _clientIdPolicy;
     }
 }

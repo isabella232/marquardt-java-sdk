@@ -6,17 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package org.echocat.marquardt.authority.domain;
+package org.echocat.marquardt.authority.persistence;
 
-public interface ClientWhiteListEntry {
+public interface ClientIdPolicy {
 
-
-
-    String getClientId();
-
-    void setClientId(String clientId);
-
-    boolean isWhitelisted();
-
-    void setIsWhitelisted(boolean isWhitelisted);
+    boolean isAllowed(final String clientId);
 }

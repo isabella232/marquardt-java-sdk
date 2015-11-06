@@ -8,12 +8,11 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.domain.ClientWhiteListEntry;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.persistence.ClientWhiteList;
+import org.echocat.marquardt.authority.persistence.ClientIdPolicy;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -62,7 +61,7 @@ public class Authority<USER extends User<? extends Role>,
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
-    private final ClientWhiteList _clientWhiteList;
+    private final ClientIdPolicy _clientIdPolicy;
     private final KeyPairProvider _issuerKeyProvider;
     private DateProvider _dateProvider = new DateProvider();
 
@@ -71,14 +70,14 @@ public class Authority<USER extends User<? extends Role>,
      *
      * @param userStore Your user store.
      * @param sessionStore Your session store.
-     * @param sessionCreationPolicy How the authority decides wether to allow clients to create more than one session / or to black- or whitelist clients
+     * @param sessionCreationPolicy to enable the authority to decide, if the client is allowed to create more than one session.
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      */
-    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, ClientWhiteList clientWhiteList, KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, ClientIdPolicy clientIdPolicy, KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _sessionCreationPolicy = sessionCreationPolicy;
-        _clientWhiteList = clientWhiteList;
+        _clientIdPolicy = clientIdPolicy;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
@@ -95,7 +94,7 @@ public class Authority<USER extends User<? extends Role>,
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public byte[] signUp(final SIGNUP_CREDENTIALS credentials) {
-        ensureClientIdIsWhitelisted(credentials.getClientId());
+        throwExceptionWhenClientIdIsProhibited(credentials.getClientId());
         if (_userStore.findByCredentials(credentials).isPresent()) {
             throw new UserAlreadyExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
@@ -113,7 +112,7 @@ public class Authority<USER extends User<? extends Role>,
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
     public byte[] signIn(final SIGNIN_CREDENTIALS credentials) {
-        ensureClientIdIsWhitelisted(credentials.getClientId());
+        throwExceptionWhenClientIdIsProhibited(credentials.getClientId());
         final USER user = _userStore.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (!user.passwordMatches(credentials.getPassword())) {
             throw new LoginFailedException("Login failed");
@@ -140,7 +139,7 @@ public class Authority<USER extends User<? extends Role>,
     public byte[] refresh(final byte[] certificate, final byte[] signedBytes, final Signature signature) {
         final SESSION session = getValidSessionBasedOnCertificate(decodeBase64(certificate));
         verifySignature(signedBytes, signature, session);
-        ensureClientIdIsWhitelisted(session.getClientId());
+        throwExceptionWhenClientIdIsProhibited(session.getClientId());
         final USER user = _userStore.findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session), session.getClientId());
@@ -168,9 +167,8 @@ public class Authority<USER extends User<? extends Role>,
         }
     }
 
-    private void ensureClientIdIsWhitelisted(String clientId) {
-        final ClientWhiteListEntry clientWhiteListEntry = _clientWhiteList.findByClientId(clientId);
-        if (clientWhiteListEntry == null || !clientWhiteListEntry.isWhitelisted()) {
+    private void throwExceptionWhenClientIdIsProhibited(final String clientId) {
+        if (!_clientIdPolicy.isAllowed(clientId)) {
             throw new ClientNotAuthorizedException("Client not authorized");
         }
     }

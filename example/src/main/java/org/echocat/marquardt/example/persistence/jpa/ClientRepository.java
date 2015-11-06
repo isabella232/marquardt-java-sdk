@@ -8,13 +8,15 @@
 
 package org.echocat.marquardt.example.persistence.jpa;
 
-import org.echocat.marquardt.authority.domain.ClientWhiteListEntry;
-import org.echocat.marquardt.example.domain.PersistentClientWhitelistEntry;
+import org.echocat.marquardt.authority.domain.Client;
+import org.echocat.marquardt.example.domain.PersistentClient;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
-@Component
-public interface ClientWhiteListEntryRepository extends CrudRepository<PersistentClientWhitelistEntry, Long> {
+import java.util.Optional;
 
-    ClientWhiteListEntry findByClientId(String clientId);
+@Component
+public interface ClientRepository extends CrudRepository<PersistentClient, Long> {
+
+    Optional<Client> findById(final String id);
 }

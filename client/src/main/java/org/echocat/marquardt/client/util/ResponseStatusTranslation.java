@@ -9,6 +9,7 @@
 package org.echocat.marquardt.client.util;
 
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
@@ -34,7 +35,7 @@ public enum ResponseStatusTranslation {
     },
     FORBIDDEN(403) {
         @Override
-        public RuntimeException translateToException(final String message) { return new IllegalArgumentException(message); }
+        public RuntimeException translateToException(final String message) { return new ClientNotAuthorizedException(message); }
     },
     NOT_FOUND(404) {
         @Override
@@ -84,5 +85,5 @@ public enum ResponseStatusTranslation {
      * Implementations of this method should return the corresponding RuntimeException for the status code and
      * reuse the provided message for the exception.
      */
-    public abstract RuntimeException translateToException(String message);
+    public abstract RuntimeException translateToException(final String message);
 }

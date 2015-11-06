@@ -18,13 +18,14 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     @Test
     public void shouldSignInWithCorrectCredentials() throws IOException {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningIn();
         thenCertificateIsProvided();
@@ -33,22 +34,36 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test(expected = LoginFailedException.class)
     public void shouldRejectLoginWithIncorrectCredentials() throws IOException {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenIncorrectCredentials();
         whenSigningIn();
     }
 
-    @Test(expected = AlreadyLoggedInException.class)
+    @Test
     public void shouldRejectLoginWhenUserIsLoggedIn() throws IOException {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningIn();
+        try { // Do not use @Test(expected = ) as the 1st sign-in invocation might as well throw this exception!
+            whenSigningIn();
+            fail("Expected " + AlreadyLoggedInException.class + " was not thrown!");
+        } catch (final AlreadyLoggedInException ignored) {}
+    }
+
+    /**
+     * No client id at all is defined for the test
+     */
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldNotSignInWithCorrectCredentialsWhenClientIdIsUnknown() throws IOException {
+        givenExistingUser(Collections.emptySet());
+        givenCorrectCredentials();
         whenSigningIn();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotSignInWithCorrectCredentialsWhenUserIsNotWhitelisted() throws IOException {
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldNotSignInWithCorrectCredentialsWhenClientIdProhibited() throws IOException {
+        givenProhibitedClientId();
         givenExistingUser(Collections.emptySet());
         givenCorrectCredentials();
         whenSigningIn();
@@ -57,21 +72,28 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test
     public void shouldSignUpUser() throws IOException {
         givenCorrectCredentials();
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         whenSigningUp();
         thenCertificateIsProvided();
     }
 
     @Test(expected = UserAlreadyExistsException.class)
-    public void shouldNotSignupExistingUser() throws IOException {
+    public void shouldNotSignUpExistingUser() throws IOException {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningUp();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotSignUpUserWhenUserIsNotWhitelisted() throws IOException {
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldNotSignUpUserWhenClientIdIsUnknown() throws IOException {
+        givenCorrectCredentials();
+        whenSigningUp();
+    }
+
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldNotSignUpUserWhenClientIdProhibited() throws IOException {
+        givenProhibitedClientId();
         givenCorrectCredentials();
         whenSigningUp();
     }
@@ -79,7 +101,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test
     public void shouldLogoutALoggedInUser() throws IOException {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningIn();
         whenLoggingOut();
@@ -89,7 +111,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test
     public void shouldRefreshCertificateOfSignedInUsers() throws IOException {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningIn();
         whenRefreshingCertificate();
@@ -99,20 +121,31 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     @Test(expected = NoSessionFoundException.class)
     public void shouldNotRefreshCertificatesOfUsersThatAreSignedOut() throws Exception {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningIn();
         whenLoggingOut();
         whenRefreshingCertificate();
     }
 
+    @Test
+    public void shouldNotRefreshWhenClientIdIsProhibited() throws Exception {
+        givenExistingUser(Collections.emptySet());
+        givenClientIdIsAllowed();
+        givenCorrectCredentials();
+        whenSigningIn();
+        givenProhibitedClientId();
+        try { // Do not use @Test(expected = ) as sign-in might as well throw this exception!
+            whenRefreshingCertificate();
+            fail("Expected " + ClientNotAuthorizedException.class + " was not thrown!");
+        } catch (final ClientNotAuthorizedException ignored) {}
+    }
+
     private void whenRefreshingCertificate() throws IOException {
         setCertificate(getClient().refresh(_certificate));
     }
 
-
     private void thenCertificateIsProvided() {
         assertThat(getCertificate(), is(not(nullValue())));
     }
-
 }

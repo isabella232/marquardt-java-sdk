@@ -84,14 +84,14 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
     private void givenSignedInAdmin() throws IOException {
         givenExistingUser(Sets.newHashSet(ExampleRoles.ROLE_ADMIN));
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningIn();
     }
 
     private void givenSignedInUser() throws IOException {
         givenExistingUser(Collections.emptySet());
-        givenTestClientIdIsWhiteListed();
+        givenClientIdIsAllowed();
         givenCorrectCredentials();
         whenSigningIn();
     }

@@ -8,8 +8,6 @@
 
 package org.echocat.marquardt.example;
 
-import org.echocat.marquardt.authority.domain.ClientWhiteListEntry;
-import org.echocat.marquardt.authority.persistence.ClientWhiteList;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.okhttp.GsonUserCredentials;
 import org.echocat.marquardt.client.okhttp.MarquardtClient;
@@ -19,9 +17,8 @@ import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.echocat.marquardt.example.domain.*;
-import org.echocat.marquardt.example.persistence.PersistentClientWhitelist;
 import org.echocat.marquardt.example.persistence.PersistentSessionStore;
-import org.echocat.marquardt.example.persistence.jpa.ClientWhiteListEntryRepository;
+import org.echocat.marquardt.example.persistence.jpa.ClientRepository;
 import org.echocat.marquardt.example.persistence.jpa.UserRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -60,7 +57,7 @@ public abstract class AbstractSsoIntegrationTest {
     @Autowired
     private PersistentSessionStore _sessionStore;
     @Autowired
-    private ClientWhiteListEntryRepository _clientWhiteListEntryRepository;
+    private ClientRepository _clientRepository;
 
     @Value("${local.server.port}")
     private String _port;
@@ -101,23 +98,30 @@ public abstract class AbstractSsoIntegrationTest {
     public void cleanup() {
         _userRepository.deleteAll();
         _sessionStore.deleteAll();
-        _clientWhiteListEntryRepository.deleteAll();
+        _clientRepository.deleteAll();
     }
 
-    void givenTestClientIdIsWhiteListed() {
-        final PersistentClientWhitelistEntry whiteListEntry = new PersistentClientWhitelistEntry();
-        whiteListEntry.setClientId(TEST_CLIENT_ID);
-        whiteListEntry.setIsWhitelisted(true);
-        _clientWhiteListEntryRepository.save(whiteListEntry);
+    void givenClientIdIsAllowed() {
+        final PersistentClient entry = new PersistentClient();
+        entry.setId(TEST_CLIENT_ID);
+        entry.setAllowed(true);
+        _clientRepository.save(entry);
+    }
+
+    void givenProhibitedClientId() {
+        final PersistentClient entry = new PersistentClient();
+        entry.setId(TEST_CLIENT_ID);
+        entry.setAllowed(false);
+        _clientRepository.save(entry);
     }
 
     void givenExistingUser(final Set<ExampleRoles> roles) {
-        final PersistentUser persistentUser = new PersistentUser();
-        persistentUser.setUserId(UUID.randomUUID());
-        persistentUser.setEmail("testuser@example.com");
-        persistentUser.setEncodedPassword("$2a$10$NPdMDuROCDzrzourXzI1eONBa21Xglg9IzuLc1kecWeG3w/DnQjT.");
-        persistentUser.setRoles(roles);
-        _userRepository.save(persistentUser);
+        final PersistentUser user = new PersistentUser();
+        user.setUserId(UUID.randomUUID());
+        user.setEmail("testuser@example.com");
+        user.setEncodedPassword("$2a$10$NPdMDuROCDzrzourXzI1eONBa21Xglg9IzuLc1kecWeG3w/DnQjT.");
+        user.setRoles(roles);
+        _userRepository.save(user);
     }
 
     protected Certificate<UserInfo> getCertificate() {
@@ -143,9 +147,4 @@ public abstract class AbstractSsoIntegrationTest {
     protected void setClient(final Client<UserInfo> client) {
         _client = client;
     }
-
-    public TrustedKeysProvider getTrustedKeysProvider() {
-        return _trustedKeysProvider;
-    }
-
 }

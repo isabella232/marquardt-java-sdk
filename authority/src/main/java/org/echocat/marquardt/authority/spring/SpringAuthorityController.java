@@ -12,7 +12,7 @@ import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.persistence.ClientWhiteList;
+import org.echocat.marquardt.authority.persistence.ClientIdPolicy;
 import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -64,8 +64,8 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
      * @param sessionCreationPolicy Your session creation policy. See examples for use case.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      */
-    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final ClientWhiteList clientWhiteList, final KeyPairProvider issuerKeyProvider) {
-        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientWhiteList, issuerKeyProvider);
+    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final ClientIdPolicy clientIdPolicy, final KeyPairProvider issuerKeyProvider) {
+        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientIdPolicy, issuerKeyProvider);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)

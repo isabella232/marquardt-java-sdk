@@ -9,6 +9,7 @@
 package org.echocat.marquardt.client.util;
 
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
@@ -37,7 +38,7 @@ public class ResponseStatusTranslationUnitTest {
         givenForbidden();
         whenTranslating();
         thenTranslationIs(FORBIDDEN);
-        thenTranslatedExceptionIs(IllegalArgumentException.class);
+        thenTranslatedExceptionIs(ClientNotAuthorizedException.class);
     }
 
     @Test
