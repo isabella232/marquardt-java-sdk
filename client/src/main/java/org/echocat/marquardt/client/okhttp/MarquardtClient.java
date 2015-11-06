@@ -12,9 +12,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.squareup.okhttp.*;
+import com.squareup.okhttp.Interceptor;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
 import okio.Buffer;
-import org.apache.commons.codec.binary.Base64;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
 import org.echocat.marquardt.client.util.ResponseStatusTranslation;
@@ -44,24 +48,22 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
  */
 public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> implements Client<SIGNABLE> {
 
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
     private static final int OK_STATUS = 200;
     private static final int NO_CONTENT_STATUS = 204;
-    private static final int CREATED_STATUS = 201;
 
+    private static final int CREATED_STATUS = 201;
     private final OkHttpClient _httpClient = new OkHttpClient();
     private final OkHttpClient _headerSignedHttpClient = new OkHttpClient();
-
     private final String _baseUri;
-
     private final DeserializingFactory<SIGNABLE> _deserializingFactory;
     private final CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
     private final RequestSigner _requestSigner = new RequestSigner();
     private final KeyPairProvider _clientKeyProvider;
     private DateProvider _dateProvider = new DateProvider();
-    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(PublicKey.class, new PublicKeyAdapter()).create();
 
-    public static final MediaType JSON
-            = MediaType.parse("application/json; charset=utf-8");
+    private static final Gson GSON = new GsonBuilder().registerTypeAdapter(PublicKey.class, new PublicKeyAdapter()).create();
 
     /**
      * Create a client instance.
@@ -114,7 +116,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
     /**
      * Used for internal (testing) purposes only.
      */
-    public void setDateProvider(DateProvider dateProvider) {
+    public void setDateProvider(final DateProvider dateProvider) {
         _dateProvider = dateProvider;
         _certificateValidator.setDateProvider(_dateProvider);
     }
@@ -124,9 +126,8 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      */
     @Override
     public Certificate<SIGNABLE> signup(final Credentials credentials) throws IOException {
-        Response response;
-        Request request = postRequestWithCredentialsParameter(_baseUri + "/auth/signup", credentials);
-        response = _httpClient.newCall(request).execute();
+        final Request request = postRequestWithCredentialsParameter(_baseUri + "/auth/signup", credentials);
+        final Response response = _httpClient.newCall(request).execute();
         if (response.code() != CREATED_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
         }
@@ -138,9 +139,8 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      */
     @Override
     public Certificate<SIGNABLE> signin(final Credentials credentials) throws IOException {
-        Response response;
-        Request request = postRequestWithCredentialsParameter(_baseUri + "/auth/signin", credentials);
-        response = _httpClient.newCall(request).execute();
+        final Request request = postRequestWithCredentialsParameter(_baseUri + "/auth/signin", credentials);
+        final Response response = _httpClient.newCall(request).execute();
         if (response.code() != OK_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
         }
@@ -151,10 +151,9 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      * {@inheritDoc}
      */
     @Override
-    public Certificate<SIGNABLE> refresh(Certificate<SIGNABLE> certificateToRefesh) throws IOException {
-        Response response;
-        Request request = postRequestWithCertificateHeader(_baseUri + "/auth/refresh", certificateToRefesh);
-        response = _headerSignedHttpClient.newCall(request).execute();
+    public Certificate<SIGNABLE> refresh(final Certificate<SIGNABLE> certificateToRefesh) throws IOException {
+        final Request request = postRequestWithCertificateHeader(_baseUri + "/auth/refresh", certificateToRefesh);
+        final Response response = _headerSignedHttpClient.newCall(request).execute();
         if (response.code() != OK_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
         }
@@ -165,10 +164,9 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      * {@inheritDoc}
      */
     @Override
-    public boolean signout(Certificate<SIGNABLE> certificate) throws IOException {
-        Response response;
-        Request request = postRequestWithCertificateHeader(_baseUri + "/auth/signout", certificate);
-        response = _headerSignedHttpClient.newCall(request).execute();
+    public boolean signout(final Certificate<SIGNABLE> certificate) throws IOException {
+        final Request request = postRequestWithCertificateHeader(_baseUri + "/auth/signout", certificate);
+        final Response response = _headerSignedHttpClient.newCall(request).execute();
         if (response.code() != NO_CONTENT_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
         }
@@ -184,16 +182,16 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
                                                             final REQUEST payload,
                                                             final Class<RESPONSE> responseType,
                                                             final Certificate<SIGNABLE> certificate) throws IOException {
-        Request request = postRequestWithCertificateHeader(url, certificate, payload);
-        Response response = _headerSignedHttpClient.newCall(request).execute();
+        final Request request = postRequestWithCertificateHeader(url, certificate, payload);
+        final Response response = _headerSignedHttpClient.newCall(request).execute();
         if (!response.isSuccessful()) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
         }
         return GSON.fromJson(response.body().string(), responseType);
     }
 
-    private Certificate<SIGNABLE> extractCertificateFrom(Response response) throws IOException {
-        JsonElement certificateJsonElement = GSON.fromJson(response.body().string(), JsonObject.class).get("certificate");
+    private Certificate<SIGNABLE> extractCertificateFrom(final Response response) throws IOException {
+        final JsonElement certificateJsonElement = GSON.fromJson(response.body().string(), JsonObject.class).get("certificate");
         final byte[] certificate = decodeBase64(certificateJsonElement.getAsString());
         final Certificate<SIGNABLE> deserializedCertificate = _certificateValidator.deserializeAndValidateCertificate(certificate);
         if (!deserializedCertificate.getClientPublicKey().equals(_clientKeyProvider.getPublicKey())) {
@@ -202,20 +200,20 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         return deserializedCertificate;
     }
 
-    private Request postRequestWithCredentialsParameter(String url, Credentials credentials) {
-        RequestBody body = RequestBody.create(JSON, GSON.toJson(credentials));
+    private Request postRequestWithCredentialsParameter(final String url, final Credentials credentials) {
+        final RequestBody body = RequestBody.create(JSON, GSON.toJson(credentials));
         return new Request.Builder()
                 .url(url)
                 .post(body)
                 .build();
     }
 
-    private Request postRequestWithCertificateHeader(String url, Certificate<SIGNABLE> certificate) throws IOException {
+    private Request postRequestWithCertificateHeader(final String url, final Certificate<SIGNABLE> certificate) throws IOException {
         return postRequestWithCertificateHeader(url, certificate, "");
     }
 
-    private Request postRequestWithCertificateHeader(String url, Certificate<SIGNABLE> certificate, Object bodyContent) throws IOException {
-        RequestBody body = RequestBody.create(JSON, GSON.toJson(bodyContent));
+    private Request postRequestWithCertificateHeader(final String url, final Certificate<SIGNABLE> certificate, final Object bodyContent) throws IOException {
+        final RequestBody body = RequestBody.create(JSON, GSON.toJson(bodyContent));
         return new Request.Builder()
                 .url(url)
                 .post(body)
