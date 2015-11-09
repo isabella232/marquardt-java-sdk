@@ -41,7 +41,7 @@ public abstract class AuthorityTest {
     private TestSession _validSession;
 
     @Mock
-    protected UserStore<TestUser, TestUserInfo, TestUserCredentials> _userStore;
+    protected UserStore<TestUser, TestUserCredentials> _userStore;
 
     @Mock
     protected SessionStore<TestSession> _sessionStore;
@@ -70,7 +70,7 @@ public abstract class AuthorityTest {
 
     protected void givenUserExists() {
         when(getUserStore().findByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
-        when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(getUserStore().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
         when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
     }
 
@@ -86,7 +86,7 @@ public abstract class AuthorityTest {
         when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
         when(getUserStore().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
         when(getUserStore().createFromCredentials(any(TestUserCredentials.class))).thenReturn(TEST_USER);
-        when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(getUserStore().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 
     protected void givenSessionCreationPolicyAllowsAnotherSession() {
@@ -101,7 +101,7 @@ public abstract class AuthorityTest {
         _validSession = validSession;
     }
 
-    protected UserStore<TestUser, TestUserInfo, TestUserCredentials> getUserStore() {
+    protected UserStore<TestUser, TestUserCredentials> getUserStore() {
         return _userStore;
     }
 

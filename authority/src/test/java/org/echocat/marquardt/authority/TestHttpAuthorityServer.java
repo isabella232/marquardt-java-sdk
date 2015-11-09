@@ -13,15 +13,14 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
-import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
+import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
-import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
@@ -41,10 +40,10 @@ public class TestHttpAuthorityServer {
 
     private final HttpServer _server;
     private final ObjectMapper _objectMapper;
-    private final Authority<TestUser, TestSession, TestUserInfo, TestUserCredentials, TestUserCredentials> _authority;
+    private final Authority<TestUser, TestSession, TestUserCredentials, TestUserCredentials> _authority;
     private final Signature _signature = mock(Signature.class);
 
-    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserInfo, TestUserCredentials> userStore, final SessionStore<TestSession> sessionStore, final SessionCreationPolicy sessionAccess, final ClientAccessPolicy clientAccessPolicy) throws IOException {
+    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserCredentials> userStore, final SessionStore<TestSession> sessionStore, final SessionCreationPolicy sessionAccess, final ClientAccessPolicy clientAccessPolicy) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
         _authority = new Authority<>(userStore, sessionStore, sessionAccess, clientAccessPolicy, TestKeyPairProvider.create(), new ExpiryDateCalculatorImpl<>());

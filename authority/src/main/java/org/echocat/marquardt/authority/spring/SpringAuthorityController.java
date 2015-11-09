@@ -12,16 +12,20 @@ import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
-import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
+import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.common.domain.Credentials;
-import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.domain.certificate.Role;
-import org.echocat.marquardt.common.exceptions.*;
+import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
+import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
+import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.RequestValidator;
@@ -45,17 +49,15 @@ import java.io.IOException;
  *
  * @param <USER>        Your authority's user implementation.
  * @param <SESSION>     Your authority's session implementation.
- * @param <SIGNABLE>    Your user information that is wrapped into the Certificate.
  */
 public class SpringAuthorityController<USER extends User<? extends Role>,
         SESSION extends Session,
-        SIGNABLE extends Signable,
         SIGNUP_CREDENTIALS extends Credentials,
         SIGNIN_CREDENTIALS extends Credentials> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
-    private final Authority<USER, SESSION, SIGNABLE, SIGNUP_CREDENTIALS, SIGNIN_CREDENTIALS> _authority;
+    private final Authority<USER, SESSION, SIGNUP_CREDENTIALS, SIGNIN_CREDENTIALS> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
 
     /**
@@ -66,7 +68,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore,
+    public SpringAuthorityController(final UserStore<USER, SIGNUP_CREDENTIALS> userStore,
                                      final SessionStore<SESSION> sessionStore,
                                      final SessionCreationPolicy sessionCreationPolicy,
                                      final ClientAccessPolicy clientAccessPolicy,

@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class PersistentUserStore implements UserStore<PersistentUser, UserInfo, UserCredentials> {
+public class PersistentUserStore implements UserStore<PersistentUser, UserCredentials> {
 
     private final UserRepository _userRepository;
     private final PasswordEncoder _passwordEncoder;
@@ -56,7 +56,7 @@ public class PersistentUserStore implements UserStore<PersistentUser, UserInfo, 
     }
 
     @Override
-    public UserInfo createSignableFromUser(final PersistentUser persistentUser) {
+    public UserInfo toSignable(final PersistentUser persistentUser) {
         return new UserInfo(persistentUser.getUserId());
     }
 }

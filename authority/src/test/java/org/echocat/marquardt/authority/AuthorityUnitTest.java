@@ -15,7 +15,6 @@ import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInf
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
-import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -66,7 +65,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     private Signature _signature;
 
     private final ExpiryDateCalculatorImpl<TestUser> _expiryDateCalculator = new ExpiryDateCalculatorImpl<>();
-    private Authority<TestUser, TestSession, TestUserInfo, TestUserCredentials, TestUserCredentials> _authority;
+    private Authority<TestUser, TestSession, TestUserCredentials, TestUserCredentials> _authority;
 
     private byte[] _certificate;
 
@@ -238,7 +237,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void givenSignableThrowingException() {
-        when(getUserStore().createSignableFromUser(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
+        when(getUserStore().toSignable(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
     }
 
     private void whenSigningInWithWrongPassword() {

@@ -45,22 +45,19 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
  *
  * @param <USER> Your authority's user implementation.
  * @param <SESSION> Your authority's session implementation.
- * @param <SIGNABLE> Your user information object to wrap into Certificate.
  * @see User
  * @see Session
- * @see Signable
  * @see Certificate
  * @see org.echocat.marquardt.authority.spring.SpringAuthorityController
  */
 public class Authority<USER extends User<? extends Role>,
     SESSION extends Session,
-    SIGNABLE extends Signable,
     SIGNUP_CREDENTIALS extends Credentials,
     SIGNIN_CREDENTIALS extends Credentials> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
-    private final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> _userStore;
+    private final UserStore<USER, SIGNUP_CREDENTIALS> _userStore;
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
@@ -77,7 +74,7 @@ public class Authority<USER extends User<? extends Role>,
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore,
+    public Authority(final UserStore<USER, SIGNUP_CREDENTIALS> userStore,
                      final SessionStore<SESSION> sessionStore,
                      final SessionCreationPolicy sessionCreationPolicy,
                      final ClientAccessPolicy clientIdPolicy,
@@ -197,8 +194,8 @@ public class Authority<USER extends User<? extends Role>,
     }
 
     private byte[] createCertificate(final USER user, final PublicKey clientPublicKey, final String clientId) throws IOException {
-        final SIGNABLE signable = _userStore.createSignableFromUser(user);
-        final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, clientId, user.getRoles(), signable);
+        final Signable signable = _userStore.toSignable(user);
+        final Certificate<Signable> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, clientId, user.getRoles(), signable);
         return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }
 
