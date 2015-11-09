@@ -8,9 +8,7 @@
 
 package org.echocat.marquardt.authority.testdomain;
 
-import org.echocat.marquardt.authority.domain.Client;
-
-public class TestClient implements Client {
+public class TestClient {
 
     private String _clientId;
     private boolean _allowed;
@@ -20,7 +18,6 @@ public class TestClient implements Client {
         _allowed = allowed;
     }
 
-    @Override
     public String getId() {
         return _clientId;
     }
@@ -29,7 +26,6 @@ public class TestClient implements Client {
         _clientId = clientId;
     }
 
-    @Override
     public boolean isAllowed() {
         return _allowed;
     }

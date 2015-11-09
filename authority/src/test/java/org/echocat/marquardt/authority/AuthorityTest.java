@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.policies.ClientIdPolicy;
+import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -47,7 +47,7 @@ public abstract class AuthorityTest {
     private SessionStore<TestSession> _sessionStore;
 
     @Mock
-    private ClientIdPolicy _clientIdPolicy;
+    private ClientAccessPolicy _clientAccessPolicy;
 
     @Mock
     private SessionCreationPolicy _sessionCreationPolicy;
@@ -55,7 +55,7 @@ public abstract class AuthorityTest {
     @Before
     public void setup() throws Exception {
         when(getSessionStore().createTransient()).thenReturn(createTestSession());
-        when(_clientIdPolicy.isAllowed(TEST_CLIENT_ID)).thenReturn(true);
+        when(_clientAccessPolicy.isAllowed(TEST_CLIENT_ID)).thenReturn(true);
         setValidSession(createTestSession());
     }
 
@@ -113,7 +113,7 @@ public abstract class AuthorityTest {
         return _sessionCreationPolicy;
     }
 
-    protected ClientIdPolicy getClientIdPolicy() {
-        return _clientIdPolicy;
+    protected ClientAccessPolicy getClientAccessPolicy() {
+        return _clientAccessPolicy;
     }
 }

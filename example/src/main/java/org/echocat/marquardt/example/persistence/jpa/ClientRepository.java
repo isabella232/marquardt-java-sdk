@@ -8,15 +8,14 @@
 
 package org.echocat.marquardt.example.persistence.jpa;
 
-import org.echocat.marquardt.authority.domain.Client;
-import org.echocat.marquardt.example.domain.PersistentClient;
+import org.echocat.marquardt.example.domain.Client;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
-public interface ClientRepository extends CrudRepository<PersistentClient, Long> {
+public interface ClientRepository extends CrudRepository<Client, Long> {
 
     Optional<Client> findById(final String id);
 }

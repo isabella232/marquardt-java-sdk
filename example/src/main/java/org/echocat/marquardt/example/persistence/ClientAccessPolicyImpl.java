@@ -8,19 +8,19 @@
 
 package org.echocat.marquardt.example.persistence;
 
-import org.echocat.marquardt.authority.domain.Client;
-import org.echocat.marquardt.authority.policies.ClientIdPolicy;
+import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
+import org.echocat.marquardt.example.domain.Client;
 import org.echocat.marquardt.example.persistence.jpa.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ClientIdPolicyImpl implements ClientIdPolicy {
+public class ClientAccessPolicyImpl implements ClientAccessPolicy {
 
     private final ClientRepository _clientRepository;
 
     @Autowired
-    public ClientIdPolicyImpl(final ClientRepository clientRepository) {
+    public ClientAccessPolicyImpl(final ClientRepository clientRepository) {
         _clientRepository = clientRepository;
     }
 

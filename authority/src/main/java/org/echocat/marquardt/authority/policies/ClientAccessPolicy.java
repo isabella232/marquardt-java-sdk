@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.authority.policies;
 
-public interface ClientIdPolicy {
+public interface ClientAccessPolicy {
 
     boolean isAllowed(final String clientId);
 }

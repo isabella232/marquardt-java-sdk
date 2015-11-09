@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.example;
 
-import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.okhttp.GsonUserCredentials;
 import org.echocat.marquardt.client.okhttp.MarquardtClient;
 import org.echocat.marquardt.common.Signer;
@@ -63,7 +62,7 @@ public abstract class AbstractSsoIntegrationTest {
     private String _port;
     private GsonUserCredentials _userCredentials;
 
-    private Client<UserInfo> _client;
+    private org.echocat.marquardt.client.Client _client;
 
     protected String baseUriOfApp() {
         return "http://127.0.0.1:" + _port;
@@ -102,14 +101,14 @@ public abstract class AbstractSsoIntegrationTest {
     }
 
     void givenClientIdIsAllowed() {
-        final PersistentClient entry = new PersistentClient();
+        final Client entry = new Client();
         entry.setId(TEST_CLIENT_ID);
         entry.setAllowed(true);
         _clientRepository.save(entry);
     }
 
     void givenProhibitedClientId() {
-        final PersistentClient entry = new PersistentClient();
+        final Client entry = new Client();
         entry.setId(TEST_CLIENT_ID);
         entry.setAllowed(false);
         _clientRepository.save(entry);
@@ -140,11 +139,11 @@ public abstract class AbstractSsoIntegrationTest {
         return _clientSigner;
     }
 
-    protected Client<UserInfo> getClient() {
+    protected org.echocat.marquardt.client.Client getClient() {
         return _client;
     }
 
-    protected void setClient(final Client<UserInfo> client) {
+    protected void setClient(final org.echocat.marquardt.client.Client client) {
         _client = client;
     }
 }

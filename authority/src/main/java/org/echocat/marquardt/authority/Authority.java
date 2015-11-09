@@ -12,7 +12,7 @@ import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.policies.ClientIdPolicy;
+import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
@@ -61,7 +61,7 @@ public class Authority<USER extends User<? extends Role>,
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
-    private final ClientIdPolicy _clientIdPolicy;
+    private final ClientAccessPolicy _clientAccessPolicy;
     private final KeyPairProvider _issuerKeyProvider;
     private DateProvider _dateProvider = new DateProvider();
 
@@ -73,11 +73,11 @@ public class Authority<USER extends User<? extends Role>,
      * @param sessionCreationPolicy to enable the authority to decide, if the client is allowed to create more than one session.
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      */
-    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, ClientIdPolicy clientIdPolicy, KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, ClientAccessPolicy clientIdPolicy, KeyPairProvider issuerKeyProvider) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _sessionCreationPolicy = sessionCreationPolicy;
-        _clientIdPolicy = clientIdPolicy;
+        _clientAccessPolicy = clientIdPolicy;
         _issuerKeyProvider = issuerKeyProvider;
     }
 
@@ -168,7 +168,7 @@ public class Authority<USER extends User<? extends Role>,
     }
 
     private void throwExceptionWhenClientIdIsProhibited(final String clientId) {
-        if (!_clientIdPolicy.isAllowed(clientId)) {
+        if (!_clientAccessPolicy.isAllowed(clientId)) {
             throw new ClientNotAuthorizedException("Client not authorized");
         }
     }

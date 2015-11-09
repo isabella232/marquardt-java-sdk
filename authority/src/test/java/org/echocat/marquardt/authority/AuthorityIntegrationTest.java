@@ -45,7 +45,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     @Override
     @Before
     public void setup() throws Exception {
-        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore(), getSessionCreationPolicy(), getClientIdPolicy());
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore(), getSessionCreationPolicy(), getClientAccessPolicy());
         _testHttpAuthorityServer.start();
         super.setup();
     }
