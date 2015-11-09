@@ -21,6 +21,5 @@ public interface SessionCreationPolicy {
      * @param clientPublicKey Public key of the client.
      * @return True if (another) session may be created, false if not.
      */
-    boolean mayCreateSession(UUID userId, byte[] clientPublicKey);
-
+    boolean mayCreateSession(final UUID userId, final byte[] clientPublicKey);
 }
