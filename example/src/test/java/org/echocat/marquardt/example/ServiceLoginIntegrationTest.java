@@ -11,6 +11,7 @@ package org.echocat.marquardt.example;
 
 import com.google.common.collect.Sets;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
+import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
         whenSignedContentIsSent();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = ClientNotAuthorizedException.class)
     public void shouldDenyAccessToAdminResourceWhenRoleIsMissing() throws Exception{
         givenSignedInUser();
         whenAccessingAdminResourceOnService();
