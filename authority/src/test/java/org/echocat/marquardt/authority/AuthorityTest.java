@@ -8,8 +8,8 @@
 
 package org.echocat.marquardt.authority;
 
-import org.echocat.marquardt.authority.persistence.ClientIdPolicy;
-import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
+import org.echocat.marquardt.authority.policies.ClientIdPolicy;
+import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.testdomain.TestSession;

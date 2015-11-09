@@ -25,7 +25,6 @@ public class TestClient implements Client {
         return _clientId;
     }
 
-    @Override
     public void setId(final String clientId) {
         _clientId = clientId;
     }
@@ -35,7 +34,6 @@ public class TestClient implements Client {
         return _allowed;
     }
 
-    @Override
     public void setAllowed(boolean allowed) {
         _allowed = allowed;
     }

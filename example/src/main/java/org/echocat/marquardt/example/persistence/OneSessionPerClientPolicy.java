@@ -8,7 +8,7 @@
 
 package org.echocat.marquardt.example.persistence;
 
-import org.echocat.marquardt.authority.persistence.SessionCreationPolicy;
+import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.echocat.marquardt.example.domain.PersistentSession;

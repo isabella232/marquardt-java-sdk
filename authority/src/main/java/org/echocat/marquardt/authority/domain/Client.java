@@ -12,9 +12,5 @@ public interface Client {
 
     String getId();
 
-    void setId(final String clientId);
-
     boolean isAllowed();
-
-    void setAllowed(boolean allowed);
 }

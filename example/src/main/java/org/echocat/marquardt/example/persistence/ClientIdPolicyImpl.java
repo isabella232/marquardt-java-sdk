@@ -9,7 +9,7 @@
 package org.echocat.marquardt.example.persistence;
 
 import org.echocat.marquardt.authority.domain.Client;
-import org.echocat.marquardt.authority.persistence.ClientIdPolicy;
+import org.echocat.marquardt.authority.policies.ClientIdPolicy;
 import org.echocat.marquardt.example.persistence.jpa.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
