@@ -10,7 +10,12 @@ package org.echocat.marquardt.authority;
 
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.testdomain.*;
+import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
+import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
+import org.echocat.marquardt.authority.testdomain.TestSession;
+import org.echocat.marquardt.authority.testdomain.TestUser;
+import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
+import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -25,7 +30,6 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -58,13 +62,13 @@ public class AuthorityUnitTest extends AuthorityTest {
 
     @Mock
     private KeyPairProvider _issuerKeyProvider;
+    @Mock
+    private Signature _signature;
 
-    @InjectMocks
+    private final ExpiryDateCalculatorImpl<TestUser> _expiryDateCalculator = new ExpiryDateCalculatorImpl<>();
     private Authority<TestUser, TestSession, TestUserInfo, TestUserCredentials, TestUserCredentials> _authority;
 
     private byte[] _certificate;
-    @Mock
-    private Signature _signature;
 
     @Before
     @Override
@@ -74,6 +78,8 @@ public class AuthorityUnitTest extends AuthorityTest {
         when(_issuerKeyProvider.getPublicKey()).thenReturn(keyPairProvider.getPublicKey());
         when(_signature.isValidFor(any(), any())).thenReturn(true);
         super.setup();
+        _authority = new Authority<>(_userStore, _sessionStore, getSessionCreationPolicy(), _clientAccessPolicy, _issuerKeyProvider, _expiryDateCalculator);
+
     }
 
     @Test
@@ -224,7 +230,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void givenCustomDateProvider() {
-        _authority.setDateProvider(CUSTOM_DATE_PROVIDER);
+        _expiryDateCalculator.setDateProvider(CUSTOM_DATE_PROVIDER);
     }
 
     private void givenInvalidSignature() {

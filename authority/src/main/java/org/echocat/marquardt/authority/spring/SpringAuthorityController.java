@@ -16,6 +16,7 @@ import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
@@ -59,13 +60,19 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
 
     /**
      * Wire this with your stores.
-     *  @param userStore         Your user store implementation.
+     * @param userStore         Your user store implementation.
      * @param sessionStore      Your session store implementation.
      * @param sessionCreationPolicy Your session creation policy. See examples for use case.
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
+     * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, final ClientAccessPolicy clientAccessPolicy, final KeyPairProvider issuerKeyProvider) {
-        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider);
+    public SpringAuthorityController(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore,
+                                     final SessionStore<SESSION> sessionStore,
+                                     final SessionCreationPolicy sessionCreationPolicy,
+                                     final ClientAccessPolicy clientAccessPolicy,
+                                     final KeyPairProvider issuerKeyProvider,
+                                     final ExpiryDateCalculator<USER> expiryDateCalculator) {
+        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)

@@ -12,10 +12,11 @@ import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
-import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
+import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
+import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
@@ -23,17 +24,19 @@ import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.Role;
-import org.echocat.marquardt.common.exceptions.*;
+import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
+import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
+import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
-import org.echocat.marquardt.common.util.DateProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Date;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
@@ -63,30 +66,33 @@ public class Authority<USER extends User<? extends Role>,
     private final Signer _signer = new Signer();
     private final ClientAccessPolicy _clientAccessPolicy;
     private final KeyPairProvider _issuerKeyProvider;
-    private DateProvider _dateProvider = new DateProvider();
+    private final ExpiryDateCalculator<USER> _expiryDateCalculator;
+
 
     /**
      * Sets up a new Authority singleton.
-     *
-     * @param userStore Your user store.
+     *  @param userStore Your user store.
      * @param sessionStore Your session store.
      * @param sessionCreationPolicy to enable the authority to decide, if the client is allowed to create more than one session.
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
+     * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore, final SessionStore<SESSION> sessionStore, final SessionCreationPolicy sessionCreationPolicy, ClientAccessPolicy clientIdPolicy, KeyPairProvider issuerKeyProvider) {
+    public Authority(final UserStore<USER, SIGNABLE, SIGNUP_CREDENTIALS> userStore,
+                     final SessionStore<SESSION> sessionStore,
+                     final SessionCreationPolicy sessionCreationPolicy,
+                     final ClientAccessPolicy clientIdPolicy,
+                     final KeyPairProvider issuerKeyProvider,
+                     final ExpiryDateCalculator<USER> expiryDateCalculator) {
         _userStore = userStore;
         _sessionStore = sessionStore;
         _sessionCreationPolicy = sessionCreationPolicy;
         _clientAccessPolicy = clientIdPolicy;
         _issuerKeyProvider = issuerKeyProvider;
-    }
-
-    public void setDateProvider(final DateProvider dateProvider) {
-        _dateProvider = dateProvider;
+        _expiryDateCalculator = expiryDateCalculator;
     }
 
     /**
-     * Implements signup. Creates a new User and a new Session.
+     * Implements sign-up. Creates a new User and a new Session.
      *
      * @param credentials Credentials of the user that should be signed up.
      * @return certificate for the client.
@@ -144,7 +150,7 @@ public class Authority<USER extends User<? extends Role>,
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session), session.getClientId());
             session.setCertificate(newCertificate);
-            session.setExpiresAt(nowPlus60Days());
+            session.setExpiresAt(_expiryDateCalculator.calculateFor(user));
             _sessionStore.save(session);
             return newCertificate;
         } catch (final IOException e) {
@@ -183,14 +189,14 @@ public class Authority<USER extends User<? extends Role>,
     private byte[] createCertificateAndSession(final Credentials credentials, final USER user) {
         try {
             final byte[] certificate = createCertificate(user, credentials.getPublicKey(), credentials.getClientId());
-            createSession(credentials.getPublicKey(), credentials.getClientId(), user.getUserId(), certificate);
+            createAndStoreSession(credentials.getPublicKey(), credentials.getClientId(), user, certificate);
             return certificate;
         } catch (final IOException e) {
             throw new CertificateCreationException("failed to create certificate for user with id " + user.getUserId(), e);
         }
     }
 
-    private byte[] createCertificate(final USER user, final PublicKey clientPublicKey, String clientId) throws IOException {
+    private byte[] createCertificate(final USER user, final PublicKey clientPublicKey, final String clientId) throws IOException {
         final SIGNABLE signable = _userStore.createSignableFromUser(user);
         final Certificate<SIGNABLE> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, clientId, user.getRoles(), signable);
         return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
@@ -202,7 +208,7 @@ public class Authority<USER extends User<? extends Role>,
 
     private SESSION getValidSessionBasedOnCertificate(final byte[] certificateBytes) {
         final SESSION session = getSessionBasedOnCertificate(certificateBytes);
-        if (session.getExpiresAt().before(_dateProvider.now())) {
+        if (_expiryDateCalculator.isExpired(session.getExpiresAt())) {
             throw new ExpiredSessionException();
         }
         return session;
@@ -212,20 +218,16 @@ public class Authority<USER extends User<? extends Role>,
         return _sessionStore.findByCertificate(certificateBytes).orElseThrow(() -> new NoSessionFoundException("No session found."));
     }
 
-    private void createSession(final PublicKey publicKey, String clientId, final UUID userId, final byte[] certificate) {
+    private void createAndStoreSession(final PublicKey publicKey, final String clientId, final USER user, final byte[] certificate) {
+        final Date expiresAt = _expiryDateCalculator.calculateFor(user);
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
         final SESSION session = _sessionStore.createTransient();
-        session.setUserId(userId);
-        session.setExpiresAt(nowPlus60Days());
+        session.setUserId(user.getUserId());
+        session.setExpiresAt(expiresAt);
         session.setPublicKey(publicKeyWithMechanism.getValue());
         session.setMechanism(publicKeyWithMechanism.getMechanism().getName());
         session.setClientId(clientId);
         session.setCertificate(certificate);
         _sessionStore.save(session);
-    }
-
-    @SuppressWarnings("UseOfObsoleteDateTimeApi")
-    private Date nowPlus60Days() {
-        return new Date(_dateProvider.now().getTime() + TimeUnit.DAYS.toMillis(60));
     }
 }

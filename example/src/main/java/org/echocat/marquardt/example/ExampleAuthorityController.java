@@ -12,6 +12,7 @@ import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.authority.spring.SpringAuthorityController;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.example.domain.PersistentSession;
@@ -28,7 +29,7 @@ public class ExampleAuthorityController extends SpringAuthorityController<Persis
 
     @Autowired
     public ExampleAuthorityController(final UserStore<PersistentUser, UserInfo, UserCredentials> userStore, final SessionStore<PersistentSession> sessionStore, SessionCreationPolicy sessionCreationPolicy,
-                                      final ClientAccessPolicy clientAccessPolicy, final KeyPairProvider issuerKeyProvider) {
-        super(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider);
+                                      final ClientAccessPolicy clientAccessPolicy, final KeyPairProvider issuerKeyProvider, final ExpiryDateCalculator<PersistentUser> expiryDateCalculator) {
+        super(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
     }
 }

@@ -8,11 +8,14 @@
 
 package org.echocat.marquardt.example;
 
+import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
+import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
 import org.echocat.marquardt.example.domain.ExampleRoles;
+import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,6 +30,11 @@ public class ExampleApplication {
 
     public static void main(final String[] args) {
         SpringApplication.run(ExampleApplication.class, args);
+    }
+
+    @Bean
+    public ExpiryDateCalculator<PersistentUser> expiryDateCalculator() {
+        return new ExpiryDateCalculatorImpl<>();
     }
 
     @Bean

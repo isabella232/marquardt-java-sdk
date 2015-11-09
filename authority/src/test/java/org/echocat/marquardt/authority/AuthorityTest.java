@@ -41,16 +41,16 @@ public abstract class AuthorityTest {
     private TestSession _validSession;
 
     @Mock
-    private UserStore<TestUser, TestUserInfo, TestUserCredentials> _userStore;
+    protected UserStore<TestUser, TestUserInfo, TestUserCredentials> _userStore;
 
     @Mock
-    private SessionStore<TestSession> _sessionStore;
+    protected SessionStore<TestSession> _sessionStore;
 
     @Mock
-    private ClientAccessPolicy _clientAccessPolicy;
+    protected ClientAccessPolicy _clientAccessPolicy;
 
     @Mock
-    private SessionCreationPolicy _sessionCreationPolicy;
+    protected SessionCreationPolicy _sessionCreationPolicy;
 
     @Before
     public void setup() throws Exception {
