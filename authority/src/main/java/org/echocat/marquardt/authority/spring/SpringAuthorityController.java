@@ -142,7 +142,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
     @ExceptionHandler(IOException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public void handleIOException(final IOException ex) {
-        LOGGER.error("Unhandled IOException catched.", ex);
+        LOGGER.error("Caught unhandled IOException.", ex);
     }
 
     private JsonWrappedCertificate createCertificateResponse(final byte[] certificate) {
