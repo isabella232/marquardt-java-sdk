@@ -25,6 +25,7 @@ import org.echocat.marquardt.client.util.ResponseStatusTranslation;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.domain.SignUpAccountData;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 import org.echocat.marquardt.common.domain.certificate.Role;
@@ -125,8 +126,8 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      * {@inheritDoc}
      */
     @Override
-    public Certificate<SIGNABLE> signup(final Credentials credentials) throws IOException {
-        final Request request = postRequestWithCredentialsParameter(_baseUri + "/auth/signup", credentials);
+    public Certificate<SIGNABLE> signup(final SignUpAccountData<Credentials> signUpAccountData) throws IOException {
+        final Request request = postRequestWithJsonObjectParameter(_baseUri + "/auth/signup", signUpAccountData);
         final Response response = _httpClient.newCall(request).execute();
         if (response.code() != CREATED_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
@@ -139,7 +140,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      */
     @Override
     public Certificate<SIGNABLE> signin(final Credentials credentials) throws IOException {
-        final Request request = postRequestWithCredentialsParameter(_baseUri + "/auth/signin", credentials);
+        final Request request = postRequestWithJsonObjectParameter(_baseUri + "/auth/signin", credentials);
         final Response response = _httpClient.newCall(request).execute();
         if (response.code() != OK_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
@@ -200,8 +201,8 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         return deserializedCertificate;
     }
 
-    private Request postRequestWithCredentialsParameter(final String url, final Credentials credentials) {
-        final RequestBody body = RequestBody.create(JSON, GSON.toJson(credentials));
+    private Request postRequestWithJsonObjectParameter(final String url, final Object jsonObject) {
+        final RequestBody body = RequestBody.create(JSON, GSON.toJson(jsonObject));
         return new Request.Builder()
                 .url(url)
                 .post(body)

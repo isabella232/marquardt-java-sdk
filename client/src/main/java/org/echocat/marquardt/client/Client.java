@@ -9,6 +9,7 @@
 package org.echocat.marquardt.client;
 
 import org.echocat.marquardt.common.domain.Credentials;
+import org.echocat.marquardt.common.domain.SignUpAccountData;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 
@@ -22,12 +23,12 @@ import java.io.IOException;
 public interface Client<T extends Signable> {
 
     /**
-     * Sign up with the provided user credentials to the authority. This will create a new user account
+     * Sign up with the provided account data to the authority. This will create a new user account
      * if an account for the credentials does not exist already and return a certificate.
      *
      * @throws IOException
      */
-    Certificate<T> signup(final Credentials credentials) throws IOException;
+    Certificate<T> signup(final SignUpAccountData<Credentials> signUpAccountData) throws IOException;
 
     /**
      * Sign in to the authority with the provided user credentials. This will return a certificate if the

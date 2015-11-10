@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-@SuppressWarnings({"AbstractClassWithoutAbstractMethods", "SpringJavaAutowiredMembersInspection"})
+@SuppressWarnings({"AbstractClassWithoutAbstractMethods", "SpringJavaAutowiredMembersInspection", "unchecked"})
 @IntegrationTest("server.port=0")
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ExampleApplication.class)
@@ -61,6 +61,7 @@ public abstract class AbstractSsoIntegrationTest {
     @Value("${local.server.port}")
     private String _port;
     private GsonUserCredentials _userCredentials;
+    private GsonSignUpAccountData _signUpAccountData;
 
     private org.echocat.marquardt.client.Client _client;
 
@@ -73,7 +74,7 @@ public abstract class AbstractSsoIntegrationTest {
     }
 
     void whenSigningUp() throws IOException {
-        setCertificate(getClient().signup(_userCredentials));
+        setCertificate(getClient().signup(_signUpAccountData));
     }
 
     void whenSigningIn() throws IOException {
@@ -86,6 +87,11 @@ public abstract class AbstractSsoIntegrationTest {
 
     void givenIncorrectCredentials() {
         _userCredentials = new GsonUserCredentials("testuser@example.com", "Vati123", TestKeyPairProvider.create().getPublicKey(), TEST_CLIENT_ID);
+    }
+
+    void givenAccountDataWithCredentials() {
+        givenCorrectCredentials();
+        _signUpAccountData = new GsonSignUpAccountData(_userCredentials);
     }
 
     @Before

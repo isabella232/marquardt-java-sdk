@@ -71,7 +71,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     @Test
     public void shouldSignUpUser() throws IOException {
-        givenCorrectCredentials();
+        givenAccountDataWithCredentials();
         givenClientIdIsAllowed();
         whenSigningUp();
         thenCertificateIsProvided();
@@ -81,20 +81,20 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     public void shouldNotSignUpExistingUser() throws IOException {
         givenExistingUser(Collections.emptySet());
         givenClientIdIsAllowed();
-        givenCorrectCredentials();
+        givenAccountDataWithCredentials();
         whenSigningUp();
     }
 
     @Test(expected = ClientNotAuthorizedException.class)
     public void shouldNotSignUpUserWhenClientIdIsUnknown() throws IOException {
-        givenCorrectCredentials();
+        givenAccountDataWithCredentials();
         whenSigningUp();
     }
 
     @Test(expected = ClientNotAuthorizedException.class)
     public void shouldNotSignUpUserWhenClientIdProhibited() throws IOException {
         givenProhibitedClientId();
-        givenCorrectCredentials();
+        givenAccountDataWithCredentials();
         whenSigningUp();
     }
 
@@ -142,6 +142,7 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     }
 
     private void whenRefreshingCertificate() throws IOException {
+        //noinspection unchecked
         setCertificate(getClient().refresh(_certificate));
     }
 
