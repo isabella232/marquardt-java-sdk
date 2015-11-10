@@ -19,6 +19,7 @@ import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
 import org.echocat.marquardt.authority.testdomain.TestSession;
+import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.common.TestKeyPairProvider;
@@ -40,10 +41,10 @@ public class TestHttpAuthorityServer {
 
     private final HttpServer _server;
     private final ObjectMapper _objectMapper;
-    private final Authority<TestUser, TestSession, TestUserCredentials, TestUserCredentials> _authority;
+    private final Authority<TestUser, TestSession, TestUserCredentials, TestSignUpAccountData> _authority;
     private final Signature _signature = mock(Signature.class);
 
-    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserCredentials> userStore, final SessionStore<TestSession> sessionStore, final SessionCreationPolicy sessionAccess, final ClientAccessPolicy clientAccessPolicy) throws IOException {
+    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserCredentials, TestSignUpAccountData> userStore, final SessionStore<TestSession> sessionStore, final SessionCreationPolicy sessionAccess, final ClientAccessPolicy clientAccessPolicy) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
         _authority = new Authority<>(userStore, sessionStore, sessionAccess, clientAccessPolicy, TestKeyPairProvider.create(), new ExpiryDateCalculatorImpl<>());
@@ -73,7 +74,9 @@ public class TestHttpAuthorityServer {
         @Override
         String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
             final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
-            final JsonWrappedCertificate jsonWrappedCertificate = createCertificateResponse(_authority.signUp(testUserCredentials));
+            final TestSignUpAccountData signUpAccountData = new TestSignUpAccountData();
+            signUpAccountData.setCredentials(testUserCredentials);
+            final JsonWrappedCertificate jsonWrappedCertificate = createCertificateResponse(_authority.signUp(signUpAccountData));
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
         }
     }

@@ -18,6 +18,7 @@ import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.common.domain.Credentials;
+import org.echocat.marquardt.common.domain.SignUpAccountData;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -52,12 +53,12 @@ import java.io.IOException;
  */
 public class SpringAuthorityController<USER extends User<? extends Role>,
         SESSION extends Session,
-        SIGNUP_CREDENTIALS extends Credentials,
-        SIGNIN_CREDENTIALS extends Credentials> {
+        CREDENTIALS extends Credentials,
+        SIGNUP_ACCCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
-    private final Authority<USER, SESSION, SIGNUP_CREDENTIALS, SIGNIN_CREDENTIALS> _authority;
+    private final Authority<USER, SESSION, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
 
     /**
@@ -68,7 +69,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
      * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
      * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public SpringAuthorityController(final UserStore<USER, SIGNUP_CREDENTIALS> userStore,
+    public SpringAuthorityController(final UserStore<USER, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> userStore,
                                      final SessionStore<SESSION> sessionStore,
                                      final SessionCreationPolicy sessionCreationPolicy,
                                      final ClientAccessPolicy clientAccessPolicy,
@@ -80,13 +81,13 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.CREATED)
     @ResponseBody
-    public JsonWrappedCertificate signUp(@RequestBody final SIGNUP_CREDENTIALS credentials) {
+    public JsonWrappedCertificate signUp(@RequestBody final SIGNUP_ACCCOUNT_DATA credentials) {
         return createCertificateResponse(_authority.signUp(credentials));
     }
 
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
     @ResponseBody
-    public JsonWrappedCertificate signIn(@RequestBody final SIGNIN_CREDENTIALS credentials) {
+    public JsonWrappedCertificate signIn(@RequestBody final CREDENTIALS credentials) {
         return createCertificateResponse(_authority.signIn(credentials));
     }
 

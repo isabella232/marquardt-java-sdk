@@ -13,6 +13,7 @@ import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
 import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
 import org.echocat.marquardt.authority.testdomain.TestSession;
+import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.common.TestKeyPairProvider;
@@ -65,7 +66,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     private Signature _signature;
 
     private final ExpiryDateCalculatorImpl<TestUser> _expiryDateCalculator = new ExpiryDateCalculatorImpl<>();
-    private Authority<TestUser, TestSession, TestUserCredentials, TestUserCredentials> _authority;
+    private Authority<TestUser, TestSession, TestUserCredentials, TestSignUpAccountData> _authority;
 
     private byte[] _certificate;
 
@@ -249,7 +250,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void whenSigningUp() {
-        _certificate = _authority.signUp(TEST_USER_CREDENTIALS);
+        _certificate = _authority.signUp(TEST_USER_ACCOUNT_DATA);
     }
 
     private void whenRefreshingCertificate() {
@@ -261,7 +262,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void thenUserIsStored() {
-        verify(getUserStore()).createFromCredentials(TEST_USER_CREDENTIALS);
+        verify(getUserStore()).createFrom(TEST_USER_ACCOUNT_DATA);
     }
 
     private void thenSessionIsCreated() {

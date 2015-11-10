@@ -20,6 +20,7 @@ import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.common.Signer;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
+import org.echocat.marquardt.common.domain.SignUpAccountData;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
@@ -52,12 +53,12 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
  */
 public class Authority<USER extends User<? extends Role>,
     SESSION extends Session,
-    SIGNUP_CREDENTIALS extends Credentials,
-    SIGNIN_CREDENTIALS extends Credentials> {
+    CREDENTIALS extends Credentials,
+    SIGNUP_ACCCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
-    private final UserStore<USER, SIGNUP_CREDENTIALS> _userStore;
+    private final UserStore<USER, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> _userStore;
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
@@ -74,7 +75,7 @@ public class Authority<USER extends User<? extends Role>,
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public Authority(final UserStore<USER, SIGNUP_CREDENTIALS> userStore,
+    public Authority(final UserStore<USER, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> userStore,
                      final SessionStore<SESSION> sessionStore,
                      final SessionCreationPolicy sessionCreationPolicy,
                      final ClientAccessPolicy clientIdPolicy,
@@ -91,30 +92,31 @@ public class Authority<USER extends User<? extends Role>,
     /**
      * Implements sign-up. Creates a new User and a new Session.
      *
-     * @param credentials Credentials of the user that should be signed up.
+     * @param acccountData of the user that should be signed up.
      * @return certificate for the client.
      * @throws UserAlreadyExistsException If a user with the same identifier already exists.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public byte[] signUp(final SIGNUP_CREDENTIALS credentials) {
+    public byte[] signUp(final SIGNUP_ACCCOUNT_DATA acccountData) {
+        final CREDENTIALS credentials = acccountData.getCredentials();
         throwExceptionWhenClientIdIsProhibited(credentials.getClientId());
         if (_userStore.findByCredentials(credentials).isPresent()) {
             throw new UserAlreadyExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
-        final USER user = _userStore.createFromCredentials(credentials);
+        final USER user = _userStore.createFrom(acccountData);
         return createCertificateAndSession(credentials, user);
     }
 
     /**
-     * Implements signin. Creates a new Session for a known user.
+     * Implements sign-in. Creates a new Session for a known user.
      *
-     * @param credentials Credentials of the user with the client's public key.
+     * @param credentials of the user with the client's public key.
      * @return certificate for the client.
      * @throws LoginFailedException If user does not exist or password does not match.
      * @throws AlreadyLoggedInException If the user is not allowed to obtain (another) session.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public byte[] signIn(final SIGNIN_CREDENTIALS credentials) {
+    public byte[] signIn(final CREDENTIALS credentials) {
         throwExceptionWhenClientIdIsProhibited(credentials.getClientId());
         final USER user = _userStore.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (!user.passwordMatches(credentials.getPassword())) {

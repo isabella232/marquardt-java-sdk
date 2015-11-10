@@ -10,6 +10,7 @@ package org.echocat.marquardt.example.persistence;
 
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.common.domain.Credentials;
+import org.echocat.marquardt.example.domain.CustomSignUpAccountData;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserCredentials;
@@ -24,7 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
-public class PersistentUserStore implements UserStore<PersistentUser, UserCredentials> {
+public class PersistentUserStore implements UserStore<PersistentUser, UserCredentials, CustomSignUpAccountData> {
 
     private final UserRepository _userRepository;
     private final PasswordEncoder _passwordEncoder;
@@ -46,9 +47,12 @@ public class PersistentUserStore implements UserStore<PersistentUser, UserCreden
     }
 
     @Override
-    public PersistentUser createFromCredentials(final UserCredentials credentials) {
+    public PersistentUser createFrom(final CustomSignUpAccountData accountData) {
+        final UserCredentials credentials = accountData.getCredentials();
         final PersistentUser persistentUserToCreate = new PersistentUser();
         persistentUserToCreate.setEmail(credentials.getIdentifier());
+        persistentUserToCreate.setFirstName(accountData.getFirstName());
+        persistentUserToCreate.setLastName(accountData.getLastName());
         persistentUserToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
         persistentUserToCreate.setUserId(UUID.randomUUID());
         persistentUserToCreate.setRoles(Collections.<ExampleRoles>emptySet());

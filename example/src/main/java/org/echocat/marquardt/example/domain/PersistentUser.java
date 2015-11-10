@@ -41,6 +41,9 @@ public class PersistentUser implements User<ExampleRoles> {
     @NotNull
     private String email;
 
+    private String firstName;
+    private String lastName;
+
     @NotNull
     private String encodedPassword;
 
@@ -65,6 +68,24 @@ public class PersistentUser implements User<ExampleRoles> {
     @SuppressWarnings("unused")
     public String getEmail() {
         return email;
+    }
+
+    @SuppressWarnings("unused")
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(final String firstName) {
+        this.firstName = firstName;
+    }
+
+    @SuppressWarnings("unused")
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(final String lastName) {
+        this.lastName = lastName;
     }
 
     public void setUserId(final UUID userId) {

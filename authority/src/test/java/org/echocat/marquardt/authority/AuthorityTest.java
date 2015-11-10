@@ -13,6 +13,7 @@ import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.testdomain.TestSession;
+import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
@@ -33,15 +34,17 @@ import static org.mockito.Mockito.when;
 public abstract class AuthorityTest {
     private static final String TEST_CLIENT_ID = "asdf";
     protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TestKeyPairProvider.create().getPublicKey(), TEST_CLIENT_ID);
+    protected static final TestSignUpAccountData TEST_USER_ACCOUNT_DATA = TestSignUpAccountData.of(TEST_USER_CREDENTIALS);
     protected static final TestUserCredentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey(), TEST_CLIENT_ID);
     protected static final byte[] CERTIFICATE = new byte[0];
     private static final TestUser TEST_USER = new TestUser();
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
     private static final UUID USER_ID = UUID.randomUUID();
+
     private TestSession _validSession;
 
     @Mock
-    protected UserStore<TestUser, TestUserCredentials> _userStore;
+    protected UserStore<TestUser, TestUserCredentials, TestSignUpAccountData> _userStore;
 
     @Mock
     protected SessionStore<TestSession> _sessionStore;
@@ -85,7 +88,7 @@ public abstract class AuthorityTest {
     protected void givenUserDoesNotExist() {
         when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
         when(getUserStore().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
-        when(getUserStore().createFromCredentials(any(TestUserCredentials.class))).thenReturn(TEST_USER);
+        when(getUserStore().createFrom(any(TestSignUpAccountData.class))).thenReturn(TEST_USER);
         when(getUserStore().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 
@@ -101,7 +104,7 @@ public abstract class AuthorityTest {
         _validSession = validSession;
     }
 
-    protected UserStore<TestUser, TestUserCredentials> getUserStore() {
+    protected UserStore<TestUser, TestUserCredentials, TestSignUpAccountData> getUserStore() {
         return _userStore;
     }
 

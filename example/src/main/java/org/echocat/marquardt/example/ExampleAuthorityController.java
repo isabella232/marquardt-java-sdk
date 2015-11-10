@@ -15,6 +15,7 @@ import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.authority.spring.SpringAuthorityController;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
+import org.echocat.marquardt.example.domain.CustomSignUpAccountData;
 import org.echocat.marquardt.example.domain.PersistentSession;
 import org.echocat.marquardt.example.domain.PersistentUser;
 import org.echocat.marquardt.example.domain.UserCredentials;
@@ -24,10 +25,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/auth")
-public class ExampleAuthorityController extends SpringAuthorityController<PersistentUser, PersistentSession, UserCredentials, UserCredentials> {
+public class ExampleAuthorityController extends SpringAuthorityController<PersistentUser, PersistentSession, UserCredentials, CustomSignUpAccountData> {
 
     @Autowired
-    public ExampleAuthorityController(final UserStore<PersistentUser, UserCredentials> userStore, final SessionStore<PersistentSession> sessionStore, SessionCreationPolicy sessionCreationPolicy,
+    public ExampleAuthorityController(final UserStore<PersistentUser, UserCredentials, CustomSignUpAccountData> userStore, final SessionStore<PersistentSession> sessionStore, SessionCreationPolicy sessionCreationPolicy,
                                       final ClientAccessPolicy clientAccessPolicy, final KeyPairProvider issuerKeyProvider, final ExpiryDateCalculator<PersistentUser> expiryDateCalculator) {
         super(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
     }
