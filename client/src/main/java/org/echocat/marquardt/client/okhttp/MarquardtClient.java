@@ -126,7 +126,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      * {@inheritDoc}
      */
     @Override
-    public Certificate<SIGNABLE> signup(final SignUpAccountData<Credentials> signUpAccountData) throws IOException {
+    public Certificate<SIGNABLE> signup(final SignUpAccountData<? extends Credentials> signUpAccountData) throws IOException {
         final Request request = postRequestWithJsonObjectParameter(_baseUri + "/auth/signup", signUpAccountData);
         final Response response = _httpClient.newCall(request).execute();
         if (response.code() != CREATED_STATUS) {

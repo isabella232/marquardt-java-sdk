@@ -28,7 +28,7 @@ public interface Client<T extends Signable> {
      *
      * @throws IOException
      */
-    Certificate<T> signup(final SignUpAccountData<Credentials> signUpAccountData) throws IOException;
+    Certificate<T> signup(final SignUpAccountData<? extends Credentials> signUpAccountData) throws IOException;
 
     /**
      * Sign in to the authority with the provided user credentials. This will return a certificate if the
