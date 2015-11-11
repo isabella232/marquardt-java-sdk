@@ -12,12 +12,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
+import com.squareup.okhttp.*;
+import com.squareup.okhttp.Request.Builder;
 import okio.Buffer;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
@@ -52,9 +48,14 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private static final int OK_STATUS = 200;
+    private static final int CREATED_STATUS = 201;
     private static final int NO_CONTENT_STATUS = 204;
 
-    private static final int CREATED_STATUS = 201;
+    private static final String POST_METHOD = "POST";
+    private static final String GET_METHOD = "GET";
+    private static final String PUT_METHOD = "PUT";
+    private static final String DELETE_METHOD = "DELETE";
+
     private final OkHttpClient _httpClient = new OkHttpClient();
     private final OkHttpClient _headerSignedHttpClient = new OkHttpClient();
     private final String _baseUri;
@@ -89,7 +90,9 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
                     public Response intercept(Chain chain) throws IOException {
                         Request originalRequest = chain.request();
                         final Buffer requestBodyBuffer = new Buffer();
-                        originalRequest.body().writeTo(requestBodyBuffer);
+                        if(originalRequest.body()!=null) {
+                            originalRequest.body().writeTo(requestBodyBuffer);
+                        }
                         Request requestWithContentMd5 = originalRequest.newBuilder()
                                 .addHeader(SignatureHeaders.CONTENT.getHeaderName(), encodeBase64URLSafeString(Md5Creator.create(requestBodyBuffer.readByteArray())))
                                 .build();
@@ -153,7 +156,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      */
     @Override
     public Certificate<SIGNABLE> refresh(final Certificate<SIGNABLE> certificateToRefesh) throws IOException {
-        final Request request = postRequestWithCertificateHeader(_baseUri + "/auth/refresh", certificateToRefesh);
+        final Request request = sendRequestWithCertificateHeader(_baseUri + "/auth/refresh", POST_METHOD, certificateToRefesh);
         final Response response = _headerSignedHttpClient.newCall(request).execute();
         if (response.code() != OK_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
@@ -166,7 +169,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      */
     @Override
     public boolean signout(final Certificate<SIGNABLE> certificate) throws IOException {
-        final Request request = postRequestWithCertificateHeader(_baseUri + "/auth/signout", certificate);
+        final Request request = sendRequestWithCertificateHeader(_baseUri + "/auth/signout", POST_METHOD, certificate);
         final Response response = _headerSignedHttpClient.newCall(request).execute();
         if (response.code() != NO_CONTENT_STATUS) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
@@ -183,7 +186,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
                                                             final REQUEST payload,
                                                             final Class<RESPONSE> responseType,
                                                             final Certificate<SIGNABLE> certificate) throws IOException {
-        final Request request = postRequestWithCertificateHeader(url, certificate, payload);
+        final Request request = sendRequestWithCertificateHeader(url, httpMethod, certificate, payload);
         final Response response = _headerSignedHttpClient.newCall(request).execute();
         if (!response.isSuccessful()) {
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
@@ -209,16 +212,31 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
                 .build();
     }
 
-    private Request postRequestWithCertificateHeader(final String url, final Certificate<SIGNABLE> certificate) throws IOException {
-        return postRequestWithCertificateHeader(url, certificate, "");
+    private Request sendRequestWithCertificateHeader(final String url, final String httpMethod, final Certificate<SIGNABLE> certificate) throws IOException {
+        return sendRequestWithCertificateHeader(url, httpMethod, certificate, "");
     }
 
-    private Request postRequestWithCertificateHeader(final String url, final Certificate<SIGNABLE> certificate, final Object bodyContent) throws IOException {
+    private Request sendRequestWithCertificateHeader(final String url, final String httpMethod, final Certificate<SIGNABLE> certificate, final Object bodyContent) throws IOException {
         final RequestBody body = RequestBody.create(JSON, GSON.toJson(bodyContent));
-        return new Request.Builder()
-                .url(url)
-                .post(body)
+        final Builder builder = new Builder()
+            .url(url);
+        setRequestHttpMethod(httpMethod, body, builder);
+        return builder
                 .addHeader(SignatureHeaders.X_CERTIFICATE.getHeaderName(), encodeBase64URLSafeString(certificate.getContent()))
-                .build();
+            .build();
+    }
+
+    private void setRequestHttpMethod(final String httpMethod, final RequestBody body, final Builder builder) {
+        if(httpMethod.equalsIgnoreCase(GET_METHOD)) {
+            builder.get();
+        } else if (httpMethod.equalsIgnoreCase(POST_METHOD)) {
+            builder.post(body);
+        } else if (httpMethod.equalsIgnoreCase(PUT_METHOD)) {
+            builder.put(body);
+        } else if (httpMethod.equalsIgnoreCase(DELETE_METHOD)) {
+            builder.delete(body);
+        } else {
+            throw new IllegalArgumentException("HttpMethod " + httpMethod + " is not supported by this client.");
+        }
     }
 }
