@@ -12,11 +12,6 @@ import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.authority.persistence.UserStore;
-import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
-import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
-import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.SignUpAccountData;
 import org.echocat.marquardt.common.domain.Signature;
@@ -27,7 +22,6 @@ import org.echocat.marquardt.common.exceptions.InvalidCertificateException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
-import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.web.JsonWrappedCertificate;
 import org.echocat.marquardt.common.web.RequestValidator;
 import org.slf4j.Logger;
@@ -61,21 +55,8 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
     private final Authority<USER, SESSION, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
 
-    /**
-     * Wire this with your stores.
-     * @param userStore         Your user store implementation.
-     * @param sessionStore      Your session store implementation.
-     * @param sessionCreationPolicy Your session creation policy. See examples for use case.
-     * @param issuerKeyProvider Your KeyPairProvider. The public key from this must be trusted by clients and services.
-     * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
-     */
-    public SpringAuthorityController(final UserStore<USER, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> userStore,
-                                     final SessionStore<SESSION> sessionStore,
-                                     final SessionCreationPolicy sessionCreationPolicy,
-                                     final ClientAccessPolicy clientAccessPolicy,
-                                     final KeyPairProvider issuerKeyProvider,
-                                     final ExpiryDateCalculator<USER> expiryDateCalculator) {
-        _authority = new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
+    public SpringAuthorityController(final Authority<USER, SESSION, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> authority) {
+        _authority = authority;
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)

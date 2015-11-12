@@ -8,14 +8,23 @@
 
 package org.echocat.marquardt.example;
 
+import org.echocat.marquardt.authority.Authority;
+import org.echocat.marquardt.authority.persistence.SessionStore;
+import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
+import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.keyprovisioning.TrustedKeysProvider;
 import org.echocat.marquardt.common.serialization.RolesDeserializer;
+import org.echocat.marquardt.example.domain.CustomSignUpAccountData;
 import org.echocat.marquardt.example.domain.ExampleRoles;
+import org.echocat.marquardt.example.domain.PersistentSession;
 import org.echocat.marquardt.example.domain.PersistentUser;
+import org.echocat.marquardt.example.domain.UserCredentials;
 import org.echocat.marquardt.example.domain.UserInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -40,6 +49,17 @@ public class ExampleApplication {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public Authority<PersistentUser, PersistentSession, UserCredentials, CustomSignUpAccountData> authority(
+                                        final UserStore<PersistentUser, UserCredentials, CustomSignUpAccountData> userStore,
+                                        final SessionStore<PersistentSession> sessionStore,
+                                        final SessionCreationPolicy sessionCreationPolicy,
+                                        final ClientAccessPolicy clientAccessPolicy,
+                                        final KeyPairProvider issuerKeyProvider,
+                                        final ExpiryDateCalculator<PersistentUser> expiryDateCalculator) {
+        return new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
     }
 
     @Bean
