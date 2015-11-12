@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.client.okhttp;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -34,6 +35,7 @@ import org.echocat.marquardt.common.web.SignatureHeaders;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
@@ -58,6 +60,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
 
     private final OkHttpClient _httpClient = new OkHttpClient();
     private final OkHttpClient _headerSignedHttpClient = new OkHttpClient();
+
     private final String _baseUri;
     private final DeserializingFactory<SIGNABLE> _deserializingFactory;
     private final CertificateValidator<SIGNABLE, ROLE> _certificateValidator;
@@ -87,17 +90,17 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         _headerSignedHttpClient.networkInterceptors().add(
                 new Interceptor() {
                     @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request originalRequest = chain.request();
+                    public Response intercept(final Chain chain) throws IOException {
+                        final Request originalRequest = chain.request();
                         final Buffer requestBodyBuffer = new Buffer();
                         if(originalRequest.body()!=null) {
                             originalRequest.body().writeTo(requestBodyBuffer);
                         }
-                        Request requestWithContentMd5 = originalRequest.newBuilder()
+                        final Request requestWithContentMd5 = originalRequest.newBuilder()
                                 .addHeader(SignatureHeaders.CONTENT.getHeaderName(), encodeBase64URLSafeString(Md5Creator.create(requestBodyBuffer.readByteArray())))
                                 .build();
 
-                        Request requestWithSignature = requestWithContentMd5.newBuilder()
+                        final Request requestWithSignature = requestWithContentMd5.newBuilder()
                                 .addHeader("X-Signature", new String(_requestSigner.getSignature(requestWithContentMd5, _clientKeyProvider.getPrivateKey())))
                                 .build();
                         return chain.proceed(requestWithSignature);
@@ -115,6 +118,20 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
             }
         };
         _certificateValidator.setDateProvider(_dateProvider);
+    }
+
+    /**
+     * Used to change timeouts of marquardt client.
+     */
+    public void setTimeouts(final int connectTimeout,
+                            final int readTimeout,
+                            final int writeTimeout,
+                            final TimeUnit timeUnit) {
+        for (final OkHttpClient client: Lists.newArrayList(_httpClient, _headerSignedHttpClient)){
+            client.setConnectTimeout(connectTimeout, timeUnit);
+            client.setReadTimeout(readTimeout, timeUnit);
+            client.setWriteTimeout(writeTimeout, timeUnit);
+        }
     }
 
     /**
