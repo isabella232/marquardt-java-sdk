@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Date;
+import java.util.function.Consumer;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
@@ -65,7 +66,7 @@ public class Authority<USER extends User<? extends Role>,
     private final ClientAccessPolicy _clientAccessPolicy;
     private final KeyPairProvider _issuerKeyProvider;
     private final ExpiryDateCalculator<USER> _expiryDateCalculator;
-
+    private Consumer<USER> _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer = user -> {  /* No-op by default */ };
 
     /**
      * Sets up a new Authority singleton.
@@ -87,6 +88,15 @@ public class Authority<USER extends User<? extends Role>,
         _clientAccessPolicy = clientIdPolicy;
         _issuerKeyProvider = issuerKeyProvider;
         _expiryDateCalculator = expiryDateCalculator;
+    }
+
+    /**
+     * The consumer will be invoked before a sign-in or refresh is permitted. The Consumer may throw any {@link java.lang.RuntimeException} in case
+     * the given user does not fulfill the criteria to successfully complete e.g. a sign-in or refresh. For example when the user have a expiry date
+     * and this date is expired the consumer may throw an exception to force the action to fail.
+     */
+    public void setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(final Consumer<USER> checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer) {
+        _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer = checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer;
     }
 
     /**
@@ -122,6 +132,7 @@ public class Authority<USER extends User<? extends Role>,
         if (!user.passwordMatches(credentials.getPassword())) {
             throw new LoginFailedException("Login failed");
         }
+        _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer.accept(user);
         final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
         if (_sessionCreationPolicy.mayCreateSession(user.getUserId(), publicKeyWithMechanism.getValue())) {
             return createCertificateAndSession(credentials, user);
@@ -146,6 +157,7 @@ public class Authority<USER extends User<? extends Role>,
         verifySignature(signedBytes, signature, session);
         throwExceptionWhenClientIdIsProhibited(session.getClientId());
         final USER user = _userStore.findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
+        _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer.accept(user);
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session), session.getClientId());
             session.setCertificate(newCertificate);

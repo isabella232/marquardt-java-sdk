@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class AuthorityTest {
-    private static final String TEST_CLIENT_ID = "asdf";
+    protected static final String TEST_CLIENT_ID = "asdf";
     protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TestKeyPairProvider.create().getPublicKey(), TEST_CLIENT_ID);
     protected static final TestSignUpAccountData TEST_USER_ACCOUNT_DATA = TestSignUpAccountData.of(TEST_USER_CREDENTIALS);
     protected static final TestUserCredentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey(), TEST_CLIENT_ID);

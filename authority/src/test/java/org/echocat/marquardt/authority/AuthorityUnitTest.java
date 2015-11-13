@@ -19,6 +19,7 @@ import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
 import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
@@ -33,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.validation.ValidationException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +45,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +82,6 @@ public class AuthorityUnitTest extends AuthorityTest {
         when(_signature.isValidFor(any(), any())).thenReturn(true);
         super.setup();
         _authority = new Authority<>(_userStore, _sessionStore, getSessionCreationPolicy(), _clientAccessPolicy, _issuerKeyProvider, _expiryDateCalculator);
-
     }
 
     @Test
@@ -91,7 +93,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     @Test(expected = CertificateCreationException.class)
-    public void shouldThrowCertificateCreationExceptionWhenSignupAndSignableSerializationFails() throws Exception {
+    public void shouldThrowCertificateCreationExceptionWhenSignUpAndSignableSerializationFails() throws Exception {
         givenUserDoesNotExist();
         givenSignableThrowingException();
         whenSigningUp();
@@ -103,8 +105,15 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenSigningUp();
     }
 
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldThrowExceptionOnSignUpWhenClientPolicyProhibitsId() {
+        givenClientIdIsProhibited();
+        givenUserDoesNotExist();
+        whenSigningUp();
+    }
+
     @Test
-    public void shouldSigninUser() throws Exception {
+    public void shouldSignInUser() throws Exception {
         givenUserExists();
         givenNoExistingSession();
         givenSessionCreationPolicyAllowsAnotherSession();
@@ -113,8 +122,16 @@ public class AuthorityUnitTest extends AuthorityTest {
         thenCertificateIsMade();
     }
 
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldThrowExceptionOnSignInWhenClientPolicyProhibitsId() {
+        givenClientIdIsProhibited();
+        givenUserExists();
+        givenNoExistingSession();
+        whenSigningIn();
+    }
+
     @Test(expected = CertificateCreationException.class)
-    public void shouldThrowCerificateCreationFailedExceptionWhenSigningInButPayloadCannotBeSigned() throws Exception {
+    public void shouldThrowCertificateCreationFailedExceptionWhenSigningInButPayloadCannotBeSigned() throws Exception {
         givenUserExists();
         givenNoExistingSession();
         givenSessionCreationPolicyAllowsAnotherSession();
@@ -149,6 +166,14 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenRefreshingCertificate();
         thenSessionIsUpdated();
         thenCertificateIsMade();
+    }
+
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldThrowExceptionOnRefreshWhenClientPolicyProhibitsId() {
+        givenClientIdIsProhibited();
+        givenUserExists();
+        givenExistingSession();
+        whenRefreshingCertificate();
     }
 
     @Test(expected = SignatureValidationFailedException.class)
@@ -227,6 +252,32 @@ public class AuthorityUnitTest extends AuthorityTest {
         givenSessionCreationPolicyAllowsAnotherSession();
         whenSigningIn();
         thenSessionExpiringNextYearIsCreated();
+    }
+
+    @Test(expected = ValidationException.class)
+    public void shouldAllowUserCheckConsumerToThrowExceptionOnRefresh() {
+        givenAuthorityIsConfiguredWithExceptionThrowingConsumer();
+        givenUserExists();
+        givenExistingSession();
+        whenRefreshingCertificate();
+    }
+
+    @Test(expected = ValidationException.class)
+    public void shouldAllowUserCheckConsumerToThrowExceptionOnSignIn() {
+        givenAuthorityIsConfiguredWithExceptionThrowingConsumer();
+        givenUserExists();
+        givenNoExistingSession();
+        whenSigningIn();
+    }
+
+    private void givenClientIdIsProhibited() {
+        doReturn(false).when(_clientAccessPolicy).isAllowed(TEST_CLIENT_ID);
+    }
+
+    private void givenAuthorityIsConfiguredWithExceptionThrowingConsumer() {
+        _authority.setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(testUser -> {
+            throw new ValidationException();
+        });
     }
 
     private void givenCustomDateProvider() {
