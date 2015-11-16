@@ -48,22 +48,22 @@ import java.io.IOException;
 public class SpringAuthorityController<USER extends User<? extends Role>,
         SESSION extends Session,
         CREDENTIALS extends Credentials,
-        SIGNUP_ACCCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
+        SIGNUP_ACCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpringAuthorityController.class);
 
-    private final Authority<USER, SESSION, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> _authority;
+    private final Authority<USER, SESSION, CREDENTIALS, SIGNUP_ACCOUNT_DATA> _authority;
     private final RequestValidator _requestValidator = new RequestValidator();
 
-    public SpringAuthorityController(final Authority<USER, SESSION, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> authority) {
+    public SpringAuthorityController(final Authority<USER, SESSION, CREDENTIALS, SIGNUP_ACCOUNT_DATA> authority) {
         _authority = authority;
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.CREATED)
     @ResponseBody
-    public JsonWrappedCertificate signUp(@RequestBody final SIGNUP_ACCCOUNT_DATA credentials) {
-        return createCertificateResponse(_authority.signUp(credentials));
+    public JsonWrappedCertificate signUp(@RequestBody final SIGNUP_ACCOUNT_DATA accountData) {
+        return createCertificateResponse(_authority.signUp(accountData));
     }
 
     @RequestMapping(value = "/signin", method = RequestMethod.POST)
