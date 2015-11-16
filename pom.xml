@@ -20,7 +20,7 @@
     <groupId>org.echocat.marquardt</groupId>
     <artifactId>parent</artifactId>
     <name>Marquardt Java SDK</name>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.10-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>A library for access control based on signed certificates from a central authority. Certificates can be
         verified without roundtrips to the authority.
