@@ -55,11 +55,11 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
 public class Authority<USER extends User<? extends Role>,
     SESSION extends Session,
     CREDENTIALS extends Credentials,
-    SIGNUP_ACCCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
+    SIGNUP_ACCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
-    private final UserStore<USER, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> _userStore;
+    private final UserStore<USER, CREDENTIALS, SIGNUP_ACCOUNT_DATA> _userStore;
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
@@ -76,7 +76,7 @@ public class Authority<USER extends User<? extends Role>,
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public Authority(final UserStore<USER, CREDENTIALS, SIGNUP_ACCCOUNT_DATA> userStore,
+    public Authority(final UserStore<USER, CREDENTIALS, SIGNUP_ACCOUNT_DATA> userStore,
                      final SessionStore<SESSION> sessionStore,
                      final SessionCreationPolicy sessionCreationPolicy,
                      final ClientAccessPolicy clientIdPolicy,
@@ -102,18 +102,18 @@ public class Authority<USER extends User<? extends Role>,
     /**
      * Implements sign-up. Creates a new User and a new Session.
      *
-     * @param acccountData of the user that should be signed up.
+     * @param accountData of the user that should be signed up.
      * @return certificate for the client.
      * @throws UserAlreadyExistsException If a user with the same identifier already exists.
      * @throws CertificateCreationException If there were problems creating the certificate.
      */
-    public byte[] signUp(final SIGNUP_ACCCOUNT_DATA acccountData) {
-        final CREDENTIALS credentials = acccountData.getCredentials();
+    public byte[] signUp(final SIGNUP_ACCOUNT_DATA accountData) {
+        final CREDENTIALS credentials = accountData.getCredentials();
         throwExceptionWhenClientIdIsProhibited(credentials.getClientId());
         if (_userStore.findByCredentials(credentials).isPresent()) {
             throw new UserAlreadyExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
-        final USER user = _userStore.createFrom(acccountData);
+        final USER user = _userStore.createFrom(accountData);
         return createCertificateAndSession(credentials, user);
     }
 
