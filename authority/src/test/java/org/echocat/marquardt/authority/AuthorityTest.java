@@ -13,6 +13,9 @@ import org.echocat.marquardt.authority.persistence.UserCatalog;
 import org.echocat.marquardt.authority.persistence.UserCreator;
 import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
+import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
+import org.echocat.marquardt.authority.session.SessionCreator;
+import org.echocat.marquardt.authority.session.SessionRenewal;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
@@ -20,6 +23,7 @@ import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
 import org.echocat.marquardt.authority.testdomain.TestUserInfo;
 import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Credentials;
+import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.junit.Before;
 import org.mockito.Mock;
 
@@ -28,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.echocat.marquardt.authority.testdomain.TestUser.USER_ID;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -40,29 +45,38 @@ public abstract class AuthorityTest {
     protected static final byte[] CERTIFICATE = new byte[0];
     private static final TestUser TEST_USER = new TestUser();
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
-    private static final UUID USER_ID = UUID.randomUUID();
 
-    private TestSession _validSession;
+    protected final ExpiryDateCalculatorImpl<TestUser> _expiryDateCalculator = new ExpiryDateCalculatorImpl<>();
 
     @Mock
     protected UserCatalog<TestUser> _userCatalog;
     @Mock
     protected UserCreator<TestUser, TestUserCredentials, TestSignUpAccountData> _userCreator;
-
     @Mock
     protected SessionStore<TestSession> _sessionStore;
-
     @Mock
     protected ClientAccessPolicy _clientAccessPolicy;
-
     @Mock
     protected SessionCreationPolicy _sessionCreationPolicy;
+    @Mock
+    protected KeyPairProvider _issuerKeyProvider;
+
+    private SessionCreator<TestUser, TestSession> _sessionCreator;
+    private SessionRenewal<TestUser, TestSession> _sessionRenewal;
+    private TestSession _validSession;
 
     @Before
     public void setup() throws Exception {
+        final KeyPairProvider keyPairProvider = TestKeyPairProvider.create();
+        when(_issuerKeyProvider.getPrivateKey()).thenReturn(keyPairProvider.getPrivateKey());
+        when(_issuerKeyProvider.getPublicKey()).thenReturn(keyPairProvider.getPublicKey());
         when(getSessionStore().createTransient()).thenReturn(createTestSession());
         when(_clientAccessPolicy.isAllowed(TEST_CLIENT_ID)).thenReturn(true);
         setValidSession(createTestSession());
+        when(_sessionCreationPolicy.mayCreateSession(any(), any())).thenReturn(true);
+        _sessionCreator = new SessionCreator<>(_sessionStore, _userCatalog, _expiryDateCalculator, _issuerKeyProvider);
+        _sessionCreator.setSessionCreationPolicy(_sessionCreationPolicy);
+        _sessionRenewal = new SessionRenewal<>(_sessionStore, _userCatalog, _expiryDateCalculator, _issuerKeyProvider);
     }
 
     protected static TestSession createTestSession() {
@@ -113,6 +127,14 @@ public abstract class AuthorityTest {
 
     protected UserCreator<TestUser, TestUserCredentials, TestSignUpAccountData> getUserCreator() {
         return _userCreator;
+    }
+
+    protected SessionCreator<TestUser, TestSession> getSessionCreator() {
+        return _sessionCreator;
+    }
+
+    protected SessionRenewal<TestUser, TestSession> getSessionRenewal() {
+        return _sessionRenewal;
     }
 
     protected SessionStore<TestSession> getSessionStore() {

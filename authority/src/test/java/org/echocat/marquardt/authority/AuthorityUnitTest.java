@@ -10,13 +10,11 @@ package org.echocat.marquardt.authority;
 
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
-import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
 import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
 import org.echocat.marquardt.authority.testdomain.TestUserCredentials;
-import org.echocat.marquardt.common.TestKeyPairProvider;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
 import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
@@ -24,7 +22,6 @@ import org.echocat.marquardt.common.exceptions.LoginFailedException;
 import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
 import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
-import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.echocat.marquardt.common.util.DateProvider;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -37,12 +34,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.validation.ValidationException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -62,11 +61,8 @@ public class AuthorityUnitTest extends AuthorityTest {
     };
 
     @Mock
-    private KeyPairProvider _issuerKeyProvider;
-    @Mock
     private Signature _signature;
 
-    private final ExpiryDateCalculatorImpl<TestUser> _expiryDateCalculator = new ExpiryDateCalculatorImpl<>();
     private Authority<TestUser, TestSession, TestUserCredentials, TestSignUpAccountData> _authority;
 
     private byte[] _certificate;
@@ -74,12 +70,9 @@ public class AuthorityUnitTest extends AuthorityTest {
     @Before
     @Override
     public void setup() throws Exception {
-        final KeyPairProvider keyPairProvider = TestKeyPairProvider.create();
-        when(_issuerKeyProvider.getPrivateKey()).thenReturn(keyPairProvider.getPrivateKey());
-        when(_issuerKeyProvider.getPublicKey()).thenReturn(keyPairProvider.getPublicKey());
-        when(_signature.isValidFor(any(), any())).thenReturn(true);
         super.setup();
-        _authority = new Authority<>(_userCatalog, _userCreator, _sessionStore, getSessionCreationPolicy(), _clientAccessPolicy, _issuerKeyProvider, _expiryDateCalculator);
+        when(_signature.isValidFor(any(), any())).thenReturn(true);
+        _authority = new Authority<>(_userCatalog, _userCreator, getSessionCreator(), getSessionRenewal(), _sessionStore, _clientAccessPolicy);
     }
 
     @Test
@@ -147,6 +140,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     public void shouldThrowExceptionWhenSessionAlreadyExistsWhenSignIn() throws Exception {
         givenUserExists();
         givenExistingSession();
+        givenOneSessionPerClientAllowed();
         whenSigningIn();
     }
 
@@ -268,14 +262,20 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenSigningIn();
     }
 
+    private void givenOneSessionPerClientAllowed() {
+        when(_sessionCreationPolicy.mayCreateSession(eq(TestUser.USER_ID), any())).thenReturn(false);
+    }
+
     private void givenClientIdIsProhibited() {
         doReturn(false).when(_clientAccessPolicy).isAllowed(TEST_CLIENT_ID);
     }
 
     private void givenAuthorityIsConfiguredWithExceptionThrowingConsumer() {
-        _authority.setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(testUser -> {
+        final Consumer<TestUser> consumer = testUser -> {
             throw new ValidationException();
-        });
+        };
+        getSessionRenewal().setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(consumer);
+        _authority.setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(consumer);
     }
 
     private void givenCustomDateProvider() {

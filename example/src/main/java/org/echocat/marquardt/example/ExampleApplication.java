@@ -16,6 +16,8 @@ import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
+import org.echocat.marquardt.authority.session.SessionCreator;
+import org.echocat.marquardt.authority.session.SessionRenewal;
 import org.echocat.marquardt.common.CertificateValidator;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
@@ -33,6 +35,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 @SpringBootApplication
 @Import(SecurityConfiguration.class)
@@ -53,15 +57,35 @@ public class ExampleApplication {
     }
 
     @Bean
+    public SessionCreator<PersistentUser, PersistentSession> sessionCreator(
+                                                        final SessionStore<PersistentSession> sessionStore,
+                                                        final UserCatalog<PersistentUser> userCatalog,
+                                                        final ExpiryDateCalculator<PersistentUser> expiryDateCalculator,
+                                                        final KeyPairProvider issuerKeyProvider,
+                                                        final Optional<SessionCreationPolicy> sessionCreationPolicy) {
+        final SessionCreator<PersistentUser, PersistentSession> result = new SessionCreator<>(sessionStore, userCatalog, expiryDateCalculator, issuerKeyProvider);
+        sessionCreationPolicy.ifPresent(result::setSessionCreationPolicy);
+        return result;
+    }
+
+    @Bean
+    public SessionRenewal<PersistentUser, PersistentSession> sessionRenewal(
+                                                        final SessionStore<PersistentSession> sessionStore,
+                                                        final UserCatalog<PersistentUser> userCatalog,
+                                                        final ExpiryDateCalculator<PersistentUser> expiryDateCalculator,
+                                                        final KeyPairProvider issuerKeyProvider) {
+        return new SessionRenewal<>(sessionStore, userCatalog, expiryDateCalculator, issuerKeyProvider);
+    }
+
+    @Bean
     public Authority<PersistentUser, PersistentSession, UserCredentials, CustomSignUpAccountData> authority(
                                         final UserCatalog<PersistentUser> userCatalog,
                                         final UserCreator<PersistentUser, UserCredentials, CustomSignUpAccountData> userCreator,
+                                        final SessionCreator<PersistentUser, PersistentSession> sessionCreator,
+                                        final SessionRenewal<PersistentUser, PersistentSession> sessionRenewal,
                                         final SessionStore<PersistentSession> sessionStore,
-                                        final SessionCreationPolicy sessionCreationPolicy,
-                                        final ClientAccessPolicy clientAccessPolicy,
-                                        final KeyPairProvider issuerKeyProvider,
-                                        final ExpiryDateCalculator<PersistentUser> expiryDateCalculator) {
-        return new Authority<>(userCatalog, userCreator, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
+                                        final ClientAccessPolicy clientAccessPolicy) {
+        return new Authority<>(userCatalog, userCreator, sessionCreator, sessionRenewal, sessionStore, clientAccessPolicy);
     }
 
     @Bean

@@ -16,9 +16,12 @@ import java.util.Set;
 import java.util.UUID;
 
 public class TestUser implements User<TestRoles> {
+
+    public static final UUID USER_ID = UUID.fromString("ccacd003-3a28-48b2-9c0c-35dfac149190");
+
     @Override
     public UUID getUserId() {
-        return null;
+        return USER_ID;
     }
 
     @Override

@@ -18,6 +18,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,17 +30,16 @@ import java.net.URL;
 
 import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.nullValue;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuthorityIntegrationTest extends AuthorityTest {
 
-    private TestHttpAuthorityServer _testHttpAuthorityServer;
-
     private final ObjectMapper _objectMapper = new ObjectMapper();
 
+    private TestHttpAuthorityServer _testHttpAuthorityServer;
     private HttpURLConnection _connection;
     private String _response;
     private int _status;
@@ -45,9 +47,14 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     @Override
     @Before
     public void setup() throws Exception {
-        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserCatalog(), getUserCreator(), getSessionStore(), getSessionCreationPolicy(), getClientAccessPolicy());
-        _testHttpAuthorityServer.start();
         super.setup();
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserCatalog(), getUserCreator(), getSessionCreator(), getSessionRenewal(), getSessionStore(), getClientAccessPolicy());
+        _testHttpAuthorityServer.start();
+    }
+
+    @After
+    public void tearDown() throws InterruptedException {
+        _testHttpAuthorityServer.stop();
     }
 
     @Test
@@ -102,33 +109,30 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     }
 
     private void whenCallingAuthority() throws IOException {
-        try (InputStream inputStream = _connection.getInputStream()) {
+        try (final InputStream inputStream = _connection.getInputStream()) {
             _status = _connection.getResponseCode();
-            _response = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+            try (final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charsets.UTF_8)) {
+                _response = CharStreams.toString(inputStreamReader);
+            }
         }
     }
 
     private void thenSignedCertificateIsProduced() throws IOException {
         final JsonWrappedCertificate jsonWrappedCertificate = _objectMapper.readValue(_response, JsonWrappedCertificate.class);
-        assertThat(jsonWrappedCertificate.getCertificate(), is(not(nullValue())));
+        assertThat(jsonWrappedCertificate.getCertificate(), notNullValue());
     }
 
     private void thenSignOutIsPerformed() {
-        assertThat(_status, is(204));
+        assertThat(_status, is(NO_CONTENT.value()));
     }
 
     private void doPost(final String url, final Object content) throws Exception {
         final URL urlToPost = new URL(url);
         _connection = (HttpURLConnection) urlToPost.openConnection();
-        _connection.setRequestMethod("POST");
-        _connection.setRequestProperty("Content-Type", "application/json");
+        _connection.setRequestMethod(HttpMethod.POST.name());
+        _connection.setRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         _connection.setRequestProperty(X_CERTIFICATE.getHeaderName(), Base64.encodeBase64URLSafeString(CERTIFICATE));
         _connection.setDoOutput(true);
         _objectMapper.writeValue(_connection.getOutputStream(), content);
-    }
-
-    @After
-    public void tearDown() throws InterruptedException {
-        _testHttpAuthorityServer.stop();
     }
 }
