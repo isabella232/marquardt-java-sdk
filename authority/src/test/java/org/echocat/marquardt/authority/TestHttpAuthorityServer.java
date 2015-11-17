@@ -14,7 +14,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.persistence.UserCatalog;
+import org.echocat.marquardt.authority.persistence.UserCreator;
 import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
@@ -44,10 +45,11 @@ public class TestHttpAuthorityServer {
     private final Authority<TestUser, TestSession, TestUserCredentials, TestSignUpAccountData> _authority;
     private final Signature _signature = mock(Signature.class);
 
-    public TestHttpAuthorityServer(final UserStore<TestUser, TestUserCredentials, TestSignUpAccountData> userStore, final SessionStore<TestSession> sessionStore, final SessionCreationPolicy sessionAccess, final ClientAccessPolicy clientAccessPolicy) throws IOException {
+    public TestHttpAuthorityServer(final UserCatalog<TestUser> userCatalog, final UserCreator<TestUser, TestUserCredentials, TestSignUpAccountData> userCreator,
+                                   final SessionStore<TestSession> sessionStore, final SessionCreationPolicy sessionAccess, final ClientAccessPolicy clientAccessPolicy) throws IOException {
         _server = HttpServer.create(new InetSocketAddress(8000), 0);
         _objectMapper = new ObjectMapper();
-        _authority = new Authority<>(userStore, sessionStore, sessionAccess, clientAccessPolicy, TestKeyPairProvider.create(), new ExpiryDateCalculatorImpl<>());
+        _authority = new Authority<>(userCatalog, userCreator, sessionStore, sessionAccess, clientAccessPolicy, TestKeyPairProvider.create(), new ExpiryDateCalculatorImpl<>());
         when(_signature.isValidFor(any(), any())).thenReturn(true);
     }
 

@@ -11,24 +11,10 @@ package org.echocat.marquardt.authority.persistence;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.SignUpAccountData;
-import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Role;
 
-import java.util.Optional;
-import java.util.UUID;
-
-public interface UserStore<USER extends User<? extends Role>, CREDENTIALS extends Credentials, SIGN_UP_ACCOUNT_DATA extends SignUpAccountData<CREDENTIALS>>  {
-
-    Optional<USER> findByCredentials(final Credentials credentials);
-
-    Optional<USER> findByUuid(final UUID userId);
+public interface UserCreator<USER extends User<? extends Role>, CREDENTIALS extends Credentials, SIGN_UP_ACCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
 
     USER createFrom(final SIGN_UP_ACCOUNT_DATA accountData);
 
-    /**
-     * Creates a signable from a user in the authority.
-     * @param user User to create signable from.
-     * @return Signable instance
-     */
-    Signable toSignable(final USER user);
 }

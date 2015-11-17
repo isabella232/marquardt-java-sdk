@@ -13,7 +13,8 @@ import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.persistence.UserCatalog;
+import org.echocat.marquardt.authority.persistence.UserCreator;
 import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
@@ -59,7 +60,8 @@ public class Authority<USER extends User<? extends Role>,
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Authority.class);
 
-    private final UserStore<USER, CREDENTIALS, SIGNUP_ACCOUNT_DATA> _userStore;
+    private final UserCatalog<USER> _userCatalog;
+    private final UserCreator<USER, CREDENTIALS, SIGNUP_ACCOUNT_DATA> _userCreator;
     private final SessionStore<SESSION> _sessionStore;
     private final SessionCreationPolicy _sessionCreationPolicy;
     private final Signer _signer = new Signer();
@@ -70,19 +72,22 @@ public class Authority<USER extends User<? extends Role>,
 
     /**
      * Sets up a new Authority singleton.
-     *  @param userStore Your user store.
+     * @param userCatalog Your user store.
+     * @param userCreator to create new user and assign all data from given account data to user instance.
      * @param sessionStore Your session store.
      * @param sessionCreationPolicy to enable the authority to decide, if the client is allowed to create more than one session.
      * @param issuerKeyProvider KeyPairProvider of the authority. Public key should be trusted by the clients and services.
      * @param expiryDateCalculator to calculate expires at for new sessions and validate if existing date is expired
      */
-    public Authority(final UserStore<USER, CREDENTIALS, SIGNUP_ACCOUNT_DATA> userStore,
+    public Authority(final UserCatalog<USER> userCatalog,
+                     final UserCreator<USER, CREDENTIALS, SIGNUP_ACCOUNT_DATA> userCreator,
                      final SessionStore<SESSION> sessionStore,
                      final SessionCreationPolicy sessionCreationPolicy,
                      final ClientAccessPolicy clientIdPolicy,
                      final KeyPairProvider issuerKeyProvider,
                      final ExpiryDateCalculator<USER> expiryDateCalculator) {
-        _userStore = userStore;
+        _userCatalog = userCatalog;
+        _userCreator = userCreator;
         _sessionStore = sessionStore;
         _sessionCreationPolicy = sessionCreationPolicy;
         _clientAccessPolicy = clientIdPolicy;
@@ -110,10 +115,10 @@ public class Authority<USER extends User<? extends Role>,
     public byte[] signUp(final SIGNUP_ACCOUNT_DATA accountData) {
         final CREDENTIALS credentials = accountData.getCredentials();
         throwExceptionWhenClientIdIsProhibited(credentials.getClientId());
-        if (_userStore.findByCredentials(credentials).isPresent()) {
+        if (_userCatalog.findByCredentials(credentials).isPresent()) {
             throw new UserAlreadyExistsException("User with identifier " + credentials.getIdentifier() + " already exists.");
         }
-        final USER user = _userStore.createFrom(accountData);
+        final USER user = _userCreator.createFrom(accountData);
         return createCertificateAndSession(credentials, user);
     }
 
@@ -128,7 +133,7 @@ public class Authority<USER extends User<? extends Role>,
      */
     public byte[] signIn(final CREDENTIALS credentials) {
         throwExceptionWhenClientIdIsProhibited(credentials.getClientId());
-        final USER user = _userStore.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
+        final USER user = _userCatalog.findByCredentials(credentials).orElseThrow(() -> new LoginFailedException("Login failed"));
         if (!user.passwordMatches(credentials.getPassword())) {
             throw new LoginFailedException("Login failed");
         }
@@ -156,7 +161,7 @@ public class Authority<USER extends User<? extends Role>,
         final SESSION session = getValidSessionBasedOnCertificate(decodeBase64(certificate));
         verifySignature(signedBytes, signature, session);
         throwExceptionWhenClientIdIsProhibited(session.getClientId());
-        final USER user = _userStore.findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
+        final USER user = _userCatalog.findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer.accept(user);
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session), session.getClientId());
@@ -208,7 +213,7 @@ public class Authority<USER extends User<? extends Role>,
     }
 
     private byte[] createCertificate(final USER user, final PublicKey clientPublicKey, final String clientId) throws IOException {
-        final Signable signable = _userStore.toSignable(user);
+        final Signable signable = _userCatalog.toSignable(user);
         final Certificate<Signable> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, clientId, user.getRoles(), signable);
         return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }

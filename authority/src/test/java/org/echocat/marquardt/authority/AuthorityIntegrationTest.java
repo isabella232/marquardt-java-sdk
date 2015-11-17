@@ -45,33 +45,33 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     @Override
     @Before
     public void setup() throws Exception {
-        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserStore(), getSessionStore(), getSessionCreationPolicy(), getClientAccessPolicy());
+        _testHttpAuthorityServer = new TestHttpAuthorityServer(getUserCatalog(), getUserCreator(), getSessionStore(), getSessionCreationPolicy(), getClientAccessPolicy());
         _testHttpAuthorityServer.start();
         super.setup();
     }
 
     @Test
-    public void shouldSignupUserWithCorrectCredentials() throws Exception {
+    public void shouldSignUpUserWithCorrectCredentials() throws Exception {
         givenUserDoesNotExist();
         givenSessionCreationPolicyAllowsAnotherSession();
-        givenSignupCall();
+        givenSignUpCall();
         whenCallingAuthority();
         thenSignedCertificateIsProduced();
     }
 
     @Test
-    public void shouldSigninUserWithCorrectCredentials() throws Exception {
+    public void shouldSignInUserWithCorrectCredentials() throws Exception {
         givenUserExists();
         givenSessionCreationPolicyAllowsAnotherSession();
-        givenSigninCall();
+        givenSignInCall();
         whenCallingAuthority();
         thenSignedCertificateIsProduced();
     }
 
     @Test
-    public void shouldSignoutUserWithActiveSessionAndValidCertificate() throws Exception {
+    public void shouldSignOutUserWithActiveSessionAndValidCertificate() throws Exception {
         givenExistingSession();
-        givenSignoutCall();
+        givenSignOutCall();
         whenCallingAuthority();
         thenSignOutIsPerformed();
     }
@@ -85,15 +85,15 @@ public class AuthorityIntegrationTest extends AuthorityTest {
         thenSignedCertificateIsProduced();
     }
 
-    private void givenSignupCall() throws Exception {
+    private void givenSignUpCall() throws Exception {
         doPost("http://localhost:8000/signup", TEST_USER_CREDENTIALS);
     }
 
-    private void givenSignoutCall() throws Exception {
+    private void givenSignOutCall() throws Exception {
         doPost("http://localhost:8000/signout", null);
     }
 
-    private void givenSigninCall() throws Exception {
+    private void givenSignInCall() throws Exception {
         doPost("http://localhost:8000/signin", TEST_USER_CREDENTIALS);
     }
 

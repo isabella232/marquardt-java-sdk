@@ -39,10 +39,8 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.nullValue;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doReturn;
@@ -81,7 +79,7 @@ public class AuthorityUnitTest extends AuthorityTest {
         when(_issuerKeyProvider.getPublicKey()).thenReturn(keyPairProvider.getPublicKey());
         when(_signature.isValidFor(any(), any())).thenReturn(true);
         super.setup();
-        _authority = new Authority<>(_userStore, _sessionStore, getSessionCreationPolicy(), _clientAccessPolicy, _issuerKeyProvider, _expiryDateCalculator);
+        _authority = new Authority<>(_userCatalog, _userCreator, _sessionStore, getSessionCreationPolicy(), _clientAccessPolicy, _issuerKeyProvider, _expiryDateCalculator);
     }
 
     @Test
@@ -289,7 +287,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void givenSignableThrowingException() {
-        when(getUserStore().toSignable(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
+        when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(new IOExceptionThrowingTestUserInfo());
     }
 
     private void whenSigningInWithWrongPassword() {
@@ -313,7 +311,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void thenUserIsStored() {
-        verify(getUserStore()).createFrom(TEST_USER_ACCOUNT_DATA);
+        verify(getUserCreator()).createFrom(TEST_USER_ACCOUNT_DATA);
     }
 
     private void thenSessionIsCreated() {
@@ -329,7 +327,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void thenCertificateIsMade() {
-        assertThat(_certificate, is(not(nullValue())));
+        assertThat(_certificate, notNullValue());
     }
 
     private void thenSessionExpiringNextYearIsCreated() {

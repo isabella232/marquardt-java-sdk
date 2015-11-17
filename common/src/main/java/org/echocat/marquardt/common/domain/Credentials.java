@@ -8,16 +8,12 @@
 
 package org.echocat.marquardt.common.domain;
 
-import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
-
-import java.security.PublicKey;
-
 /**
  * Used to transport credentials for SignIn and SignUp from Client to Authority.
  *
  * Please make sure passwords are encrypted or use secure transport channels.
  */
-public interface Credentials {
+public interface Credentials extends ClientInformation {
 
     /**
      * Unique identifier of the User.
@@ -26,26 +22,10 @@ public interface Credentials {
      */
     String getIdentifier();
 
-
-    /**
-     * Client id  of the User.
-     *
-     * @return client id
-     */
-    String getClientId();
-
     /**
      * Password of User. Make sure this is encrypted or sent via a secure channel.
      *
      * @return password of user
      */
     String getPassword();
-
-    /**
-     * Public key of the client which sent the credentials.
-     *
-     * @see KeyPairProvider
-     * @return public key of the client used to signup / signin.
-     */
-    PublicKey getPublicKey();
 }

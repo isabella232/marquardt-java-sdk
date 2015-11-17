@@ -8,10 +8,11 @@
 
 package org.echocat.marquardt.authority;
 
+import org.echocat.marquardt.authority.persistence.SessionStore;
+import org.echocat.marquardt.authority.persistence.UserCatalog;
+import org.echocat.marquardt.authority.persistence.UserCreator;
 import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
-import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.authority.persistence.UserStore;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
@@ -44,7 +45,9 @@ public abstract class AuthorityTest {
     private TestSession _validSession;
 
     @Mock
-    protected UserStore<TestUser, TestUserCredentials, TestSignUpAccountData> _userStore;
+    protected UserCatalog<TestUser> _userCatalog;
+    @Mock
+    protected UserCreator<TestUser, TestUserCredentials, TestSignUpAccountData> _userCreator;
 
     @Mock
     protected SessionStore<TestSession> _sessionStore;
@@ -72,9 +75,9 @@ public abstract class AuthorityTest {
     }
 
     protected void givenUserExists() {
-        when(getUserStore().findByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
-        when(getUserStore().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
-        when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
+        when(getUserCatalog().findByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
+        when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(getUserCatalog().findByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
     }
 
     protected void givenExistingSession() {
@@ -86,10 +89,10 @@ public abstract class AuthorityTest {
     }
 
     protected void givenUserDoesNotExist() {
-        when(getUserStore().findByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
-        when(getUserStore().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
-        when(getUserStore().createFrom(any(TestSignUpAccountData.class))).thenReturn(TEST_USER);
-        when(getUserStore().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(getUserCatalog().findByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
+        when(getUserCatalog().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
+        when(getUserCreator().createFrom(any(TestSignUpAccountData.class))).thenReturn(TEST_USER);
+        when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 
     protected void givenSessionCreationPolicyAllowsAnotherSession() {
@@ -104,8 +107,12 @@ public abstract class AuthorityTest {
         _validSession = validSession;
     }
 
-    protected UserStore<TestUser, TestUserCredentials, TestSignUpAccountData> getUserStore() {
-        return _userStore;
+    protected UserCatalog<TestUser> getUserCatalog() {
+        return _userCatalog;
+    }
+
+    protected UserCreator<TestUser, TestUserCredentials, TestSignUpAccountData> getUserCreator() {
+        return _userCreator;
     }
 
     protected SessionStore<TestSession> getSessionStore() {

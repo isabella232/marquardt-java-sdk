@@ -10,7 +10,8 @@ package org.echocat.marquardt.example;
 
 import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.persistence.SessionStore;
-import org.echocat.marquardt.authority.persistence.UserStore;
+import org.echocat.marquardt.authority.persistence.UserCatalog;
+import org.echocat.marquardt.authority.persistence.UserCreator;
 import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculator;
@@ -53,13 +54,14 @@ public class ExampleApplication {
 
     @Bean
     public Authority<PersistentUser, PersistentSession, UserCredentials, CustomSignUpAccountData> authority(
-                                        final UserStore<PersistentUser, UserCredentials, CustomSignUpAccountData> userStore,
+                                        final UserCatalog<PersistentUser> userCatalog,
+                                        final UserCreator<PersistentUser, UserCredentials, CustomSignUpAccountData> userCreator,
                                         final SessionStore<PersistentSession> sessionStore,
                                         final SessionCreationPolicy sessionCreationPolicy,
                                         final ClientAccessPolicy clientAccessPolicy,
                                         final KeyPairProvider issuerKeyProvider,
                                         final ExpiryDateCalculator<PersistentUser> expiryDateCalculator) {
-        return new Authority<>(userStore, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
+        return new Authority<>(userCatalog, userCreator, sessionStore, sessionCreationPolicy, clientAccessPolicy, issuerKeyProvider, expiryDateCalculator);
     }
 
     @Bean
