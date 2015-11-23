@@ -12,8 +12,6 @@ import com.google.common.primitives.Ints;
 import org.apache.commons.io.IOUtils;
 import org.echocat.marquardt.common.domain.Signature;
 import org.echocat.marquardt.common.exceptions.SignatureValidationFailedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.WillNotClose;
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +20,7 @@ import java.io.IOException;
 import java.security.PublicKey;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
+import static org.echocat.marquardt.common.web.RequestHeaders.X_SIGNATURE;
 
 /**
  * Client signed header validator. Clients must sign their requests (including their certificate) with a
@@ -34,8 +33,6 @@ import static org.apache.commons.codec.binary.Base64.decodeBase64;
  * obtained the certificate.
  */
 public class RequestValidator {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RequestValidator.class);
 
     /**
      * Validate a request header that contains a Signature with this.
@@ -87,7 +84,7 @@ public class RequestValidator {
      * @return the signature
      */
     public Signature extractSignatureFromHeader(HttpServletRequest request) {
-        final String header = request.getHeader("X-Signature");
+        final String header = request.getHeader(X_SIGNATURE);
         if (header == null) {
             throw new IllegalArgumentException("Expected non-empty signature header.");
         }

@@ -17,8 +17,6 @@ import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.keyprovisioning.KeyPairProvider;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Set;
 

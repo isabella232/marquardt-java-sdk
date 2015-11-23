@@ -18,8 +18,6 @@ import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import java.io.IOException;
 import java.security.PublicKey;
 
-import static org.apache.commons.codec.binary.Base64.decodeBase64;
-
 public class PublicKeyDeserializer extends JsonDeserializer<PublicKey> {
     @Override
     public PublicKey deserialize(final JsonParser jsonParser, final DeserializationContext deserializationContext) throws IOException {

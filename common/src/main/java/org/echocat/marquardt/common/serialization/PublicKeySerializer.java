@@ -14,8 +14,6 @@ import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import java.io.IOException;
 import java.security.PublicKey;
 
-import static org.apache.commons.codec.binary.Base64.encodeBase64;
-
 public class PublicKeySerializer extends com.fasterxml.jackson.databind.JsonSerializer<PublicKey> {
 
     public static final String KEY = "key";

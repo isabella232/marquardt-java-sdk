@@ -14,9 +14,9 @@ import org.echocat.marquardt.common.domain.SignUpAccountData;
 
 public class CustomSignUpAccountData implements SignUpAccountData<UserCredentials> {
 
-    private String _firstName;
-    private String _lastName;
-    private UserCredentials _credentials;
+    private final String _firstName;
+    private final String _lastName;
+    private final UserCredentials _credentials;
 
     @JsonCreator
     public CustomSignUpAccountData(@JsonProperty("firstName") final String firstName,

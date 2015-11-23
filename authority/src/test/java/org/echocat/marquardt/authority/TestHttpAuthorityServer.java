@@ -59,7 +59,7 @@ public class TestHttpAuthorityServer {
         when(_signature.isValidFor(any(), any())).thenReturn(true);
     }
 
-    public void start() throws IOException {
+    public void start() {
         _server.createContext("/signup", new SignupHandler(201));
         _server.createContext("/signin", new SigninHandler(200));
         _server.createContext("/signout", new SignoutHandler(204));
