@@ -16,7 +16,6 @@ import org.echocat.marquardt.common.web.SignatureHeaders;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PrivateKey;
-import java.util.List;
 
 import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
@@ -24,6 +23,7 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64;
  * Creates signatures of http requests based on request headers.
  */
 public class RequestSigner {
+
     private final Signer _signer = new Signer();
 
     /**
@@ -53,14 +53,6 @@ public class RequestSigner {
                 bytesToSign.write(Ints.toByteArray(headerBytes.length));
                 bytesToSign.write(headerBytes);
             }
-        }
-    }
-
-    private String getFirstHeaderValue(final List<String> headerValues) {
-        try {
-            return headerValues.get(0);
-        } catch (final IndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("No payload of known signature header.", e);
         }
     }
 
