@@ -78,7 +78,7 @@ public class ServiceLoginIntegrationTest extends AbstractSsoIntegrationTest {
 
     private void givenSelfSignedCertificate() throws IOException {
         final UserInfo userInfo = new UserInfo(UUID.randomUUID());
-        final Certificate<UserInfo> certificate = Certificate.create(getClientKeyProvider().getPublicKey(), getClientKeyProvider().getPublicKey(), TEST_CLIENT_ID, Collections.emptySet(), userInfo);
+        final Certificate<UserInfo> certificate = Certificate.create(getClientKeyProvider().getPublicKey(), getClientKeyProvider().getPublicKey(), Collections.emptySet(), userInfo);
         final byte[] selfSignedCertificate = getClientSigner().sign(certificate, getClientKeyProvider().getPrivateKey());
         _selfSignedCertificate = encodeBase64(selfSignedCertificate);
     }

@@ -51,9 +51,9 @@ abstract class SessionAction<USER extends User<? extends Role>, SESSION extends 
         return _expiryDateCalculator;
     }
 
-    protected byte[] createCertificate(final USER user, final PublicKey clientPublicKey, final String clientId) throws IOException {
+    protected byte[] createCertificate(final USER user, final PublicKey clientPublicKey) throws IOException {
         final Signable signable = getUserCatalog().toSignable(user);
-        final Certificate<Signable> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, clientId, user.getRoles(), signable);
+        final Certificate<Signable> certificate = Certificate.create(_issuerKeyProvider.getPublicKey(), clientPublicKey, user.getRoles(), signable);
         return _signer.sign(certificate, _issuerKeyProvider.getPrivateKey());
     }
 }

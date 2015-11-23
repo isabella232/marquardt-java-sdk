@@ -47,7 +47,7 @@ public class SessionRenewal<USER extends User<? extends Role>, SESSION extends S
         final USER user = getUserCatalog().findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
         _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer.accept(user);
         try {
-            final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session), session.getClientId());
+            final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
             session.setCertificate(newCertificate);
             session.setExpiresAt(getExpiryDateCalculator().calculateFor(user));
             getSessionStore().save(session);

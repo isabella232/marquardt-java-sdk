@@ -49,7 +49,7 @@ public class SessionCreator<USER extends User<? extends Role>, SESSION extends S
             throw new AlreadyLoggedInException("User with id " + user.getUserId() + " is already logged in for current client.");
         }
         try {
-            final byte[] certificate = createCertificate(user, credentials.getPublicKey(), credentials.getClientId());
+            final byte[] certificate = createCertificate(user, credentials.getPublicKey());
             createAndStoreSession(credentials.getPublicKey(), credentials.getClientId(), user, certificate);
             return certificate;
         } catch (final IOException e) {
