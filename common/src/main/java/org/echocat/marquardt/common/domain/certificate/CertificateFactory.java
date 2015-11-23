@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.common.domain.certificate;
 
-import org.echocat.marquardt.common.domain.ClientId;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
