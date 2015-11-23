@@ -60,7 +60,7 @@ public class Authority<USER extends User<? extends Role>,
     private final SessionRenewal<USER, SESSION> _sessionRenewal;
     private final SessionStore<SESSION> _sessionStore;
     private final ClientAccessPolicy _clientAccessPolicy;
-    private Consumer<USER> _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer = user -> {  /* No-op by default */ };
+    private Consumer<USER> _checkUserToFulfillsAllRequirementsToSignInOrRefreshConsumer = user -> {  /* No-op by default */ };
 
     /**
      * Sets up a new Authority singleton.
@@ -87,8 +87,8 @@ public class Authority<USER extends User<? extends Role>,
      * the given user does not fulfill the criteria to successfully complete e.g. a sign-in or refresh. For example when the user have a expiry date
      * and this date is expired the consumer may throw an exception to force the action to fail.
      */
-    public void setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(final Consumer<USER> checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer) {
-        _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer = checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer;
+    public void setCheckUserToFulfillsAllRequirementsToSignInOrRefreshConsumer(final Consumer<USER> checkUserToFulfillsAllRequirementsToSignInOrRefreshConsumer) {
+        _checkUserToFulfillsAllRequirementsToSignInOrRefreshConsumer = checkUserToFulfillsAllRequirementsToSignInOrRefreshConsumer;
     }
 
     /**
@@ -124,7 +124,7 @@ public class Authority<USER extends User<? extends Role>,
         if (!user.passwordMatches(credentials.getPassword())) {
             throw new LoginFailedException("Login failed");
         }
-        _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer.accept(user);
+        _checkUserToFulfillsAllRequirementsToSignInOrRefreshConsumer.accept(user);
         return _sessionCreator.createCertificateAndSession(credentials, user);
     }
 

@@ -275,7 +275,7 @@ public class AuthorityUnitTest extends AuthorityTest {
             throw new ValidationException();
         };
         getSessionRenewal().setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(consumer);
-        _authority.setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(consumer);
+        _authority.setCheckUserToFulfillsAllRequirementsToSignInOrRefreshConsumer(consumer);
     }
 
     private void givenCustomDateProvider() {
