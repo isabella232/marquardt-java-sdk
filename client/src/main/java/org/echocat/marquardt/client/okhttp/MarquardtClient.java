@@ -13,8 +13,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.squareup.okhttp.*;
+import com.squareup.okhttp.Interceptor;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Request.Builder;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
 import okio.Buffer;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
@@ -39,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
+import static org.echocat.marquardt.common.web.RequestHeaders.X_SIGNATURE;
 
 /**
  * OkHttp implementation of the client.
@@ -101,7 +107,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
                                 .build();
 
                         final Request requestWithSignature = requestWithContentMd5.newBuilder()
-                                .addHeader("X-Signature", new String(_requestSigner.getSignature(requestWithContentMd5, _clientKeyProvider.getPrivateKey())))
+                                .addHeader(X_SIGNATURE, new String(_requestSigner.getSignature(requestWithContentMd5, _clientKeyProvider.getPrivateKey())))
                                 .build();
                         return chain.proceed(requestWithSignature);
                     }

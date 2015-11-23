@@ -9,10 +9,16 @@
 package org.echocat.marquardt.common.web;
 
 public enum SignatureHeaders {
-    X_CERTIFICATE("X-Certificate"), CONTENT_LENGTH("Content-Length"), DATE("Date"), CONTENT("Content-MD5"), RANGE("Range");
+
+    X_CERTIFICATE(RequestHeaders.X_CERTIFICATE),
+    CONTENT_LENGTH("Content-Length"),
+    DATE("Date"),
+    CONTENT("Content-MD5"),
+    RANGE("Range");
+
     private final String _headerName;
 
-    SignatureHeaders(String headerName) {
+    private SignatureHeaders(String headerName) {
         _headerName = headerName;
     }
 

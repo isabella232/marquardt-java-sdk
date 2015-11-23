@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
+import static org.echocat.marquardt.common.web.RequestHeaders.X_CERTIFICATE;
+
 /**
  * Blueprint of an authority controller for the Spring MVC framework.
  * See examples to see how it is used.
@@ -74,7 +76,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
 
     @RequestMapping(value = "/refresh", method = RequestMethod.POST)
     @ResponseBody
-    public JsonWrappedCertificate refresh(@RequestHeader("X-Certificate") final byte[] certificate, final HttpServletRequest request) {
+    public JsonWrappedCertificate refresh(@RequestHeader(X_CERTIFICATE) final byte[] certificate, final HttpServletRequest request) {
         final byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
         final Signature signature = _requestValidator.extractSignatureFromHeader(request);
         return createCertificateResponse(_authority.refresh(certificate, signedBytesFromRequest, signature));
@@ -82,7 +84,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
 
     @RequestMapping(value = "/signout", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void signOut(@RequestHeader("X-Certificate") final byte[] certificate, final HttpServletRequest request) {
+    public void signOut(@RequestHeader(X_CERTIFICATE) final byte[] certificate, final HttpServletRequest request) {
         final byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
         final Signature signature = _requestValidator.extractSignatureFromHeader(request);
         _authority.signOut(certificate, signedBytesFromRequest, signature);
