@@ -8,7 +8,6 @@
 
 package org.echocat.marquardt.common.domain.certificate;
 
-import org.echocat.marquardt.common.domain.ClientId;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.DeserializingFactory;
@@ -60,12 +59,11 @@ public abstract class CertificateFactory<SIGNABLE extends Signable, ROLE extends
         }
         final PublicKeyWithMechanism publicKeyWithMechanism = PublicKeyWithMechanism.readFrom(in);
         final PublicKeyWithMechanism clientKeyWithMechanism = PublicKeyWithMechanism.readFrom(in);
-        final String clientId = ClientId.readFrom(in).getClientId();
         //noinspection UseOfObsoleteDateTimeApi
         final Date expiryDate = new Date(readLong(in));
         final long roleCodes = readLong(in);
         final SIGNABLE wrapped = getFactoryOfWrapped().consume(in);
-        return new Certificate<>(publicKeyWithMechanism.toJavaKey(), clientKeyWithMechanism.toJavaKey(), clientId, expiryDate, getRolesDeserializer().from(roleCodes), wrapped);
+        return new Certificate<>(publicKeyWithMechanism.toJavaKey(), clientKeyWithMechanism.toJavaKey(), expiryDate, getRolesDeserializer().from(roleCodes), wrapped);
     }
 
 }

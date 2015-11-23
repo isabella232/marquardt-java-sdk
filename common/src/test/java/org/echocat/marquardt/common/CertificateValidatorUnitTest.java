@@ -113,7 +113,7 @@ public class CertificateValidatorUnitTest {
     }
 
     private void givenSignedCertificateWithDefectUserInfo() throws IOException {
-        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), TEST_CLIENT_ID, ROLES, new SignablePayload(SOME_PAYLOAD));
+        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
         whenSigningWithIssuerKey();
         _signedPayload[30] = Byte.MAX_VALUE;
     }
@@ -140,7 +140,7 @@ public class CertificateValidatorUnitTest {
     }
 
     private void givenUserInfoCertificate() {
-        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), TEST_CLIENT_ID, ROLES, new SignablePayload(SOME_PAYLOAD));
+        _signable = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, new SignablePayload(SOME_PAYLOAD));
     }
 
     private void whenTheCertificateIsDeserializedAndVerified() {

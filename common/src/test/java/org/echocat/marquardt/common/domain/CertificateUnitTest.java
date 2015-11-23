@@ -48,7 +48,7 @@ public class CertificateUnitTest {
 
     private void whenCertificateIsCreated() {
         _payload = new SignablePayload(SOME_PAYLOAD);
-        _certificate = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), TEST_CLIENT_ID, ROLES, _payload);
+        _certificate = Certificate.create(_issuerKeys.getPublicKey(), _clientKeys.getPublicKey(), ROLES, _payload);
     }
 
     private void thenCerificateCanBeWrittenAsString() {
