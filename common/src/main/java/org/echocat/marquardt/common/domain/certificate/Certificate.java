@@ -13,7 +13,6 @@ import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.echocat.marquardt.common.domain.ClientId;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.serialization.RolesSerializer;
