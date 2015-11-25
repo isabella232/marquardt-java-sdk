@@ -14,6 +14,7 @@ import org.echocat.marquardt.common.domain.Signable;
 import org.echocat.marquardt.common.domain.certificate.Certificate;
 
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Interface of the client to perform authentication with the authority and to call service APIs.
@@ -61,4 +62,9 @@ public interface Client<T extends Signable> {
                                                      final REQUEST payload,
                                                      final Class<RESPONSE> responseType,
                                                      final Certificate<T> certificate) throws IOException;
+
+    /**
+     * Lets you define the locale used by the client. Defaults to Locale.getDefault().
+     */
+    void setLocale(Locale locale);
 }

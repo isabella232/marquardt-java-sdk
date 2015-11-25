@@ -13,13 +13,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
+import com.squareup.okhttp.*;
 import com.squareup.okhttp.Request.Builder;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 import okio.Buffer;
 import org.echocat.marquardt.client.Client;
 import org.echocat.marquardt.client.util.Md5Creator;
@@ -40,6 +35,7 @@ import org.echocat.marquardt.common.web.SignatureHeaders;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
@@ -63,6 +59,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
     private static final String GET_METHOD = "GET";
     private static final String PUT_METHOD = "PUT";
     private static final String DELETE_METHOD = "DELETE";
+    private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
 
     private final OkHttpClient _httpClient = new OkHttpClient();
     private final OkHttpClient _headerSignedHttpClient = new OkHttpClient();
@@ -75,6 +72,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
     private DateProvider _dateProvider = new DateProvider();
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(PublicKey.class, new PublicKeyAdapter()).create();
+    private Locale _locale = Locale.getDefault();
 
     /**
      * Create a client instance.
@@ -217,6 +215,11 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         return GSON.fromJson(response.body().string(), responseType);
     }
 
+    @Override
+    public void setLocale(Locale locale) {
+        _locale = locale;
+    }
+
     private Certificate<SIGNABLE> extractCertificateFrom(final Response response) throws IOException {
         final JsonElement certificateJsonElement = GSON.fromJson(response.body().string(), JsonObject.class).get("certificate");
         final byte[] certificate = decodeBase64(certificateJsonElement.getAsString());
@@ -232,6 +235,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         return new Request.Builder()
                 .url(url)
                 .post(body)
+                .addHeader(ACCEPT_LANGUAGE_HEADER, _locale.toLanguageTag())
                 .build();
     }
 
@@ -246,6 +250,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         setRequestHttpMethod(httpMethod, body, builder);
         return builder
                 .addHeader(SignatureHeaders.X_CERTIFICATE.getHeaderName(), encodeBase64URLSafeString(certificate.getContent()))
+                .addHeader(ACCEPT_LANGUAGE_HEADER, _locale.toLanguageTag())
             .build();
     }
 
