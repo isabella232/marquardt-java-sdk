@@ -27,6 +27,8 @@ public interface User<ROLE extends Role> {
      */
     UUID getUserId();
 
+    UserStatus getStatus();
+
     /**
      * Implement this to check if the credentials given on sign in match the password of the user that registers.
      *

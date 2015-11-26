@@ -60,6 +60,12 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttpclient.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

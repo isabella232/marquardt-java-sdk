@@ -1,6 +1,8 @@
 package org.echocat.marquardt.example.persistence;
 
+import org.echocat.marquardt.authority.domain.UserStatus;
 import org.echocat.marquardt.authority.persistence.UserCreator;
+import org.echocat.marquardt.common.domain.ClientInformation;
 import org.echocat.marquardt.example.domain.CustomSignUpAccountData;
 import org.echocat.marquardt.example.domain.ExampleRoles;
 import org.echocat.marquardt.example.domain.PersistentUser;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.UUID;
+
+import static org.hibernate.validator.internal.util.CollectionHelper.asSet;
 
 @Component
 public class UserCreatorImpl implements UserCreator<PersistentUser, UserCredentials, CustomSignUpAccountData> {
@@ -26,15 +30,23 @@ public class UserCreatorImpl implements UserCreator<PersistentUser, UserCredenti
     }
 
     @Override
-    public PersistentUser createFrom(final CustomSignUpAccountData accountData) {
+    public PersistentUser createEmptyUser(final ClientInformation clientInformation) {
+        final PersistentUser userToCreate = new PersistentUser();
+        userToCreate.setUserId(UUID.randomUUID());
+        userToCreate.setRoles(Collections.<ExampleRoles>emptySet());
+        userToCreate.setStatus(UserStatus.WITHOUT_CREDENTIALS);
+        return _userRepository.save(userToCreate);
+    }
+
+    @Override
+    public PersistentUser enrichAndUpdateFrom(final PersistentUser user, final CustomSignUpAccountData accountData) {
         final UserCredentials credentials = accountData.getCredentials();
-        final PersistentUser persistentUserToCreate = new PersistentUser();
-        persistentUserToCreate.setEmail(credentials.getIdentifier());
-        persistentUserToCreate.setFirstName(accountData.getFirstName());
-        persistentUserToCreate.setLastName(accountData.getLastName());
-        persistentUserToCreate.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
-        persistentUserToCreate.setUserId(UUID.randomUUID());
-        persistentUserToCreate.setRoles(Collections.<ExampleRoles>emptySet());
-        return _userRepository.save(persistentUserToCreate);
+        user.setEmail(credentials.getIdentifier());
+        user.setFirstName(accountData.getFirstName());
+        user.setLastName(accountData.getLastName());
+        user.setEncodedPassword(_passwordEncoder.encode(credentials.getPassword()));
+        user.setRoles(asSet(ExampleRoles.ROLE_USER));
+        user.setStatus(UserStatus.CONFIRMED);
+        return _userRepository.save(user);
     }
 }

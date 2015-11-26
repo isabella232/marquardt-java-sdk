@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 public class SessionRenewal<USER extends User<? extends Role>, SESSION extends Session> extends SessionAction<USER, SESSION> {
 
-    private Consumer<USER> _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer = user -> {  /* No-op by default */ };
+    private Consumer<USER> _checkRequirementsForUser = user -> {  /* No-op by default */ };
 
     public SessionRenewal(final SessionStore<SESSION> sessionStore,
                           final UserCatalog<USER> userCatalog,
@@ -34,18 +34,18 @@ public class SessionRenewal<USER extends User<? extends Role>, SESSION extends S
         super(sessionStore, userCatalog, expiryDateCalculator, issuerKeyProvider);
     }
 
-    public void setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(final Consumer<USER> checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer) {
-        _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer = checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer;
+    public void setCheckRequirementsForUser(final Consumer<USER> checkRequirementsForUser) {
+        _checkRequirementsForUser = checkRequirementsForUser;
     }
 
     public byte[] renewSessionBasedOnCertificate(final byte[] certificate, final Consumer<SESSION> sessionValidator) {
-        final SESSION session = getSessionStore().findByCertificate(certificate).orElseThrow(() -> new NoSessionFoundException("No session found."));
+        final SESSION session = getSessionStore().findByCertificate(certificate).orElseThrow(NoSessionFoundException::new);
         if (getExpiryDateCalculator().isExpired(session.getExpiresAt())) {
             throw new ExpiredSessionException();
         }
         sessionValidator.accept(session);
         final USER user = getUserCatalog().findByUuid(session.getUserId()).orElseThrow(() -> new IllegalStateException("Could not find user with userId " + session.getUserId()));
-        _checkUserToFulfillAllRequirementsToSignInOrRefreshConsumer.accept(user);
+        _checkRequirementsForUser.accept(user);
         try {
             final byte[] newCertificate = createCertificate(user, clientPublicKeyFrom(session));
             session.setCertificate(newCertificate);

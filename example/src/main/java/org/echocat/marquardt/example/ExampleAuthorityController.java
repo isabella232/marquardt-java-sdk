@@ -13,6 +13,7 @@ import org.echocat.marquardt.authority.spring.SpringAuthorityController;
 import org.echocat.marquardt.example.domain.CustomSignUpAccountData;
 import org.echocat.marquardt.example.domain.PersistentSession;
 import org.echocat.marquardt.example.domain.PersistentUser;
+import org.echocat.marquardt.example.domain.UserClientInformation;
 import org.echocat.marquardt.example.domain.UserCredentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/auth")
-public class ExampleAuthorityController extends SpringAuthorityController<PersistentUser, PersistentSession, UserCredentials, CustomSignUpAccountData> {
+public class ExampleAuthorityController extends SpringAuthorityController<PersistentUser, PersistentSession, UserClientInformation, UserCredentials, CustomSignUpAccountData> {
 
     @Autowired
     public ExampleAuthorityController(final Authority<PersistentUser, PersistentSession, UserCredentials, CustomSignUpAccountData> authority) {

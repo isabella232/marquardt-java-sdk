@@ -54,9 +54,9 @@ public enum ResponseStatusTranslation {
         }
     };
 
-    private final Integer _statusCode;
+    private final int _statusCode;
 
-    ResponseStatusTranslation(final Integer statusCode) {
+    ResponseStatusTranslation(final int statusCode) {
         _statusCode = statusCode;
     }
 
@@ -65,7 +65,7 @@ public enum ResponseStatusTranslation {
      *
      * @return the status code.
      */
-    public Integer getStatusCode() {
+    public int getStatusCode() {
         return _statusCode;
     }
 
@@ -74,7 +74,7 @@ public enum ResponseStatusTranslation {
      */
     public static ResponseStatusTranslation from(final Integer statusCode) {
         for(final ResponseStatusTranslation statusToExceptionMapper: values()) {
-            if (statusToExceptionMapper.getStatusCode().equals(statusCode)) {
+            if (statusToExceptionMapper.getStatusCode() == statusCode) {
                 return statusToExceptionMapper;
             }
         }

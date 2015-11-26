@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Certificate produced by the authority when clients signup or signin.
+ * Certificate produced by the authority when clients sign-up or sign-in.
  *
  * Clients use this certificate to get user authorization (roles) to enable features for a user.
  * Clients use this certificate to communicate with services (with header X-Certificate) to access protected resources.
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * Services use this certificate for authentication of protected resources.
  * Services use this certificate for authorization of service methods (roles).
  *
- * @param <T> Class of wrapped payload, for example additional user information to use on clents and services.
+ * @param <T> Class of wrapped payload, for example additional user information to use on clients and services.
  */
 public class Certificate<T extends Signable> implements Signable {
 

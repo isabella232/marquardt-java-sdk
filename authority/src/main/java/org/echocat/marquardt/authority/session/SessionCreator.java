@@ -14,7 +14,7 @@ import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.persistence.SessionStore;
 import org.echocat.marquardt.authority.persistence.UserCatalog;
 import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
-import org.echocat.marquardt.common.domain.Credentials;
+import org.echocat.marquardt.common.domain.ClientInformation;
 import org.echocat.marquardt.common.domain.PublicKeyWithMechanism;
 import org.echocat.marquardt.common.domain.certificate.Role;
 import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
@@ -43,14 +43,14 @@ public class SessionCreator<USER extends User<? extends Role>, SESSION extends S
         _sessionCreationPolicy = sessionCreationPolicy;
     }
 
-    public byte[] createCertificateAndSession(final Credentials credentials, final USER user) {
-        final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(credentials.getPublicKey());
+    public byte[] createCertificateAndSession(final ClientInformation clientInformation, final USER user) {
+        final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(clientInformation.getPublicKey());
         if (!_sessionCreationPolicy.mayCreateSession(user.getUserId(), publicKeyWithMechanism.getValue())) {
             throw new AlreadyLoggedInException("User with id " + user.getUserId() + " is already logged in for current client.");
         }
         try {
-            final byte[] certificate = createCertificate(user, credentials.getPublicKey());
-            createAndStoreSession(credentials.getPublicKey(), credentials.getClientId(), user, certificate);
+            final byte[] certificate = createCertificate(user, clientInformation.getPublicKey());
+            createAndStoreSession(clientInformation.getPublicKey(), clientInformation.getClientId(), user, certificate);
             return certificate;
         } catch (final IOException e) {
             throw new CertificateCreationException("failed to create certificate for user with id " + user.getUserId(), e);

@@ -51,7 +51,7 @@ public interface Session {
     byte[] getPublicKey();
 
     /**
-     * Public key of the client this session is created for. Should only be set on signup or signin!
+     * Public key of the client this session is created for. Should only be set on sign-up or sign-in!
      *
      * @param publicKey Of the client that signed in a user. Please note this is a blob and it's size depends on the
      *                  key-length of the client.

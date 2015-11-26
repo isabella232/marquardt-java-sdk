@@ -19,6 +19,7 @@ import org.echocat.marquardt.authority.persistence.UserCreator;
 import org.echocat.marquardt.authority.policies.ClientAccessPolicy;
 import org.echocat.marquardt.authority.session.SessionCreator;
 import org.echocat.marquardt.authority.session.SessionRenewal;
+import org.echocat.marquardt.authority.testdomain.TestClientInformation;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
@@ -60,9 +61,10 @@ public class TestHttpAuthorityServer {
     }
 
     public void start() {
-        _server.createContext("/signup", new SignupHandler(201));
-        _server.createContext("/signin", new SigninHandler(200));
-        _server.createContext("/signout", new SignoutHandler(204));
+        _server.createContext("/initializeSignUp", new InitializeSignUpHandler(201));
+        _server.createContext("/finalizeSignUp", new FinalizeSignUpHandler(201));
+        _server.createContext("/signIn", new SigninHandler(200));
+        _server.createContext("/signOut", new SignoutHandler(204));
         _server.createContext("/refresh", new RefreshHandler(200));
         _server.setExecutor(null);
         _server.start();
@@ -70,28 +72,40 @@ public class TestHttpAuthorityServer {
 
     public void stop() throws InterruptedException {
         _server.stop(0);
-        Thread.sleep(100L);
     }
 
-    class SignupHandler extends Handler {
+    class InitializeSignUpHandler extends Handler {
 
-        public SignupHandler(final Integer successResponseCode) {
+        public InitializeSignUpHandler(final int successResponseCode) {
             super(successResponseCode);
         }
 
         @Override
         String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
-            final TestUserCredentials testUserCredentials = _objectMapper.readValue(requestBody, TestUserCredentials.class);
-            final TestSignUpAccountData signUpAccountData = new TestSignUpAccountData();
-            signUpAccountData.setCredentials(testUserCredentials);
-            final JsonWrappedCertificate jsonWrappedCertificate = createCertificateResponse(_authority.signUp(signUpAccountData));
+            final TestClientInformation clientInformation = _objectMapper.readValue(requestBody, TestClientInformation.class);
+            final JsonWrappedCertificate jsonWrappedCertificate = createCertificateResponse(_authority.initializeSignUp(clientInformation));
+            return _objectMapper.writeValueAsString(jsonWrappedCertificate);
+        }
+    }
+
+    class FinalizeSignUpHandler extends Handler {
+
+        public FinalizeSignUpHandler(final int successResponseCode) {
+            super(successResponseCode);
+        }
+
+        @Override
+        String getResponse(final InputStream requestBody, final Headers headers)  throws IOException {
+            final TestSignUpAccountData testUserCredentials = _objectMapper.readValue(requestBody, TestSignUpAccountData.class);
+            final byte[] certificate = decodeBase64(headers.get(X_CERTIFICATE.getHeaderName()).get(0));
+            final JsonWrappedCertificate jsonWrappedCertificate = createCertificateResponse(_authority.finalizeSignUp(certificate, certificate, _signature, testUserCredentials));
             return _objectMapper.writeValueAsString(jsonWrappedCertificate);
         }
     }
 
     class SigninHandler extends Handler {
 
-        public SigninHandler(final Integer successResponseCode) {
+        public SigninHandler(final int successResponseCode) {
             super(successResponseCode);
         }
 
@@ -104,7 +118,7 @@ public class TestHttpAuthorityServer {
     }
 
     class SignoutHandler extends Handler {
-        public SignoutHandler(final Integer successResponseCode) {
+        public SignoutHandler(final int successResponseCode) {
             super(successResponseCode);
         }
 
@@ -121,6 +135,7 @@ public class TestHttpAuthorityServer {
         public RefreshHandler(final Integer successResponseCode) {
             super(successResponseCode);
         }
+
         @Override
         String getResponse(final InputStream requestBody, final Headers headers) throws IOException {
             final byte[] certificate = decodeBase64(headers.get(X_CERTIFICATE.getHeaderName()).get(0));
@@ -131,9 +146,9 @@ public class TestHttpAuthorityServer {
 
     abstract class Handler implements HttpHandler {
 
-        private final Integer _successResponseCode;
+        private final int _successResponseCode;
 
-        public Handler(final Integer successResponseCode) {
+        public Handler(final int successResponseCode) {
             _successResponseCode = successResponseCode;
         }
 

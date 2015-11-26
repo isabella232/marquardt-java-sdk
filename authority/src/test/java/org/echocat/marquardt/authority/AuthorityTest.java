@@ -16,6 +16,7 @@ import org.echocat.marquardt.authority.policies.SessionCreationPolicy;
 import org.echocat.marquardt.authority.session.ExpiryDateCalculatorImpl;
 import org.echocat.marquardt.authority.session.SessionCreator;
 import org.echocat.marquardt.authority.session.SessionRenewal;
+import org.echocat.marquardt.authority.testdomain.TestClientInformation;
 import org.echocat.marquardt.authority.testdomain.TestSession;
 import org.echocat.marquardt.authority.testdomain.TestSignUpAccountData;
 import org.echocat.marquardt.authority.testdomain.TestUser;
@@ -34,22 +35,23 @@ import java.util.concurrent.TimeUnit;
 
 import static org.echocat.marquardt.authority.testdomain.TestUser.USER_ID;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class AuthorityTest {
     protected static final String TEST_CLIENT_ID = "asdf";
-    protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TestKeyPairProvider.create().getPublicKey(), TEST_CLIENT_ID);
+    protected static final TestClientInformation TEST_CLIENT_INFORMATION = new TestClientInformation(TestKeyPairProvider.create().getPublicKey(), TEST_CLIENT_ID);
+    protected static final TestUserCredentials TEST_USER_CREDENTIALS = new TestUserCredentials("test@example.com", "right", TEST_CLIENT_INFORMATION.getPublicKey(), TEST_CLIENT_INFORMATION.getClientId());
     protected static final TestSignUpAccountData TEST_USER_ACCOUNT_DATA = TestSignUpAccountData.of(TEST_USER_CREDENTIALS);
     protected static final TestUserCredentials CREDENTIALS_WITH_WRONG_PASSWORD = new TestUserCredentials(TEST_USER_CREDENTIALS.getIdentifier(), "wrong", TEST_USER_CREDENTIALS.getPublicKey(), TEST_CLIENT_ID);
     protected static final byte[] CERTIFICATE = new byte[0];
-    private static final TestUser TEST_USER = new TestUser();
     private static final TestUserInfo TEST_USER_INFO = new TestUserInfo();
-
     protected final ExpiryDateCalculatorImpl<TestUser> _expiryDateCalculator = new ExpiryDateCalculatorImpl<>();
 
     @Mock
     protected UserCatalog<TestUser> _userCatalog;
+
     @Mock
     protected UserCreator<TestUser, TestUserCredentials, TestSignUpAccountData> _userCreator;
     @Mock
@@ -60,6 +62,8 @@ public abstract class AuthorityTest {
     protected SessionCreationPolicy _sessionCreationPolicy;
     @Mock
     protected KeyPairProvider _issuerKeyProvider;
+
+    protected final TestUser _testUser = new TestUser();
 
     private SessionCreator<TestUser, TestSession> _sessionCreator;
     private SessionRenewal<TestUser, TestSession> _sessionRenewal;
@@ -88,10 +92,17 @@ public abstract class AuthorityTest {
         return testSession;
     }
 
-    protected void givenUserExists() {
-        when(getUserCatalog().findByUuid(USER_ID)).thenReturn(Optional.of(TEST_USER));
+    protected void givenEmptyUserExistsAndNoOneElseUsesSameCredentials() {
+        when(getUserCatalog().findByUuid(USER_ID)).thenReturn(Optional.of(_testUser));
         when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
-        when(getUserCatalog().findByCredentials(any(Credentials.class))).thenReturn(Optional.of(TEST_USER));
+        when(getUserCatalog().findByCredentials(any(Credentials.class))).thenReturn(Optional.empty());
+        when(getUserCreator().enrichAndUpdateFrom(_testUser, TEST_USER_ACCOUNT_DATA)).thenReturn(_testUser);
+    }
+
+    protected void givenUserExists() {
+        when(getUserCatalog().findByUuid(USER_ID)).thenReturn(Optional.of(_testUser));
+        when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+        when(getUserCatalog().findByCredentials(any(Credentials.class))).thenReturn(Optional.of(_testUser));
     }
 
     protected void givenExistingSession() {
@@ -102,10 +113,14 @@ public abstract class AuthorityTest {
         when(getSessionStore().findByCertificate(any(byte[].class))).thenReturn(Optional.empty());
     }
 
+    protected void givenEmptyUserWillBeCreated() {
+        when(getUserCreator().createEmptyUser(eq(TEST_CLIENT_INFORMATION))).thenReturn(_testUser);
+        when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
+    }
+
     protected void givenUserDoesNotExist() {
         when(getUserCatalog().findByCredentials(any(Credentials.class))).thenReturn(Optional.<TestUser>empty());
         when(getUserCatalog().findByUuid(any(UUID.class))).thenReturn(Optional.<TestUser>empty());
-        when(getUserCreator().createFrom(any(TestSignUpAccountData.class))).thenReturn(TEST_USER);
         when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 

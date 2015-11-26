@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.authority;
 
+import org.echocat.marquardt.authority.domain.UserStatus;
 import org.echocat.marquardt.authority.exceptions.CertificateCreationException;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
 import org.echocat.marquardt.authority.testdomain.IOExceptionThrowingTestUserInfo;
@@ -76,31 +77,111 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     @Test
-    public void shouldSignUpUser() throws Exception {
-        givenUserDoesNotExist();
-        whenSigningUp();
-        thenUserIsStored();
+    public void shouldInitializeSignUp() throws Exception {
+        givenEmptyUserWillBeCreated();
+        whenInitializingSignUp();
         thenCertificateIsMade();
-    }
-
-    @Test(expected = CertificateCreationException.class)
-    public void shouldThrowCertificateCreationExceptionWhenSignUpAndSignableSerializationFails() throws Exception {
-        givenUserDoesNotExist();
-        givenSignableThrowingException();
-        whenSigningUp();
-    }
-
-    @Test(expected = UserAlreadyExistsException.class)
-    public void shouldThrowExceptionWhenUserAlreadyExistsWhenSignUp() throws Exception {
-        givenUserExists();
-        whenSigningUp();
+        thenUserWasCreated();
     }
 
     @Test(expected = ClientNotAuthorizedException.class)
-    public void shouldThrowExceptionOnSignUpWhenClientPolicyProhibitsId() {
+    public void shouldThrowExceptionOnInitializeSignUpWhenClientPolicyProhibitsId() {
         givenClientIdIsProhibited();
         givenUserDoesNotExist();
-        whenSigningUp();
+        whenInitializingSignUp();
+    }
+
+    @Test(expected = CertificateCreationException.class)
+    public void shouldThrowCertificateCreationExceptionWhenInitializeSignUpAndSignableSerializationFails() throws Exception {
+        givenEmptyUserWillBeCreated();
+        givenSignableThrowingException();
+        whenInitializingSignUp();
+    }
+
+    @Test
+    public void shouldFinalizeSignUp() throws Exception {
+        givenEmptyUserExistsAndNoOneElseUsesSameCredentials();
+        givenExistingSession();
+        whenFinalizingSignUp();
+        thenUserIsEnrichedWithAccountDataAndUpdated();
+        thenCertificateIsMade();
+        thenUserIsEnrichedWithAccountDataAndUpdated();
+        thenExistingSessionRenewed();
+    }
+
+    @Test(expected = CertificateCreationException.class)
+    public void shouldThrowCertificateCreationExceptionWhenFinalizeSignUpAndSignableSerializationFails() throws Exception {
+        givenEmptyUserExistsAndNoOneElseUsesSameCredentials();
+        givenExistingSession();
+        givenSignableThrowingException();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = NoSessionFoundException.class)
+    public void shouldThrowNoSessionFoundExceptionWhenNoSessionExistsForCertificateOnFinalizeSignUp() {
+        givenNoExistingSession();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenUserDoesNotExistsForSessionOnFinalizeSignUp() {
+        givenExistingSession();
+        givenUserDoesNotExist();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenUserStatusIsConfirmedOnFinalizeSignUp() {
+        givenUserExists();
+        givenExistingSession();
+        givenUserHasStatusConfirmed();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenUserStatusIsWithCredentialsOnFinalizeSignUp() {
+        givenUserExists();
+        givenExistingSession();
+        givenUserHasStatusWithCredentials();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenUserStatusIsDeletedOnFinalizeSignUp() {
+        givenUserExists();
+        givenExistingSession();
+        givenUserHasStatusDeleted();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = UserAlreadyExistsException.class)
+    public void shouldThrowExceptionWhenSameCredentialsAreAlreadyInUseByAnotherUserWhenFinalizeSignUp() throws Exception {
+        givenUserExists();
+        givenExistingSession();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = SignatureValidationFailedException.class)
+    public void shouldThrowExceptionWhenSignatureIsInvalidOnFinalizeSignUp() throws Exception {
+        givenUserExists();
+        givenExistingSession();
+        givenInvalidSignature();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = ValidationException.class)
+    public void shouldNotCatchExceptionThrownByConsumerOnFinalizeSignUp() throws Exception {
+        givenAuthorityIsConfiguredWithExceptionThrowingConsumer();
+        givenUserExists();
+        givenExistingSession();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldThrowExceptionOnFinalizeSignUpWhenClientPolicyProhibitsId() {
+        givenClientIdIsProhibited();
+        givenUserDoesNotExist();
+        whenFinalizingSignUp();
     }
 
     @Test
@@ -262,6 +343,18 @@ public class AuthorityUnitTest extends AuthorityTest {
         whenSigningIn();
     }
 
+    private void givenUserHasStatusDeleted() {
+        _testUser.setStatus(UserStatus.DELETED);
+    }
+
+    private void givenUserHasStatusWithCredentials() {
+        _testUser.setStatus(UserStatus.WITH_CREDENTIALS);
+    }
+
+    private void givenUserHasStatusConfirmed() {
+        _testUser.setStatus(UserStatus.CONFIRMED);
+    }
+
     private void givenOneSessionPerClientAllowed() {
         when(_sessionCreationPolicy.mayCreateSession(eq(TestUser.USER_ID), any())).thenReturn(false);
     }
@@ -274,8 +367,8 @@ public class AuthorityUnitTest extends AuthorityTest {
         final Consumer<TestUser> consumer = testUser -> {
             throw new ValidationException();
         };
-        getSessionRenewal().setCheckUserToFulfillAllRequirementsToSignInOrRefreshConsumer(consumer);
-        _authority.setCheckUserToFulfillsAllRequirementsToSignInOrRefreshConsumer(consumer);
+        getSessionRenewal().setCheckRequirementsForUser(consumer);
+        _authority.setCheckRequirementsForUser(consumer);
     }
 
     private void givenCustomDateProvider() {
@@ -298,8 +391,12 @@ public class AuthorityUnitTest extends AuthorityTest {
         _certificate = _authority.signIn(TEST_USER_CREDENTIALS);
     }
 
-    private void whenSigningUp() {
-        _certificate = _authority.signUp(TEST_USER_ACCOUNT_DATA);
+    private void whenInitializingSignUp() {
+        _certificate = _authority.initializeSignUp(TEST_CLIENT_INFORMATION);
+    }
+
+    private void whenFinalizingSignUp() {
+        _certificate = _authority.finalizeSignUp(CERTIFICATE, CERTIFICATE, _signature, TEST_USER_ACCOUNT_DATA);
     }
 
     private void whenRefreshingCertificate() {
@@ -310,8 +407,12 @@ public class AuthorityUnitTest extends AuthorityTest {
         _authority.signOut(CERTIFICATE, new byte[0], _signature);
     }
 
-    private void thenUserIsStored() {
-        verify(getUserCreator()).createFrom(TEST_USER_ACCOUNT_DATA);
+    private void thenUserWasCreated() {
+        verify(getUserCreator()).createEmptyUser(TEST_CLIENT_INFORMATION);
+    }
+
+    private void thenUserIsEnrichedWithAccountDataAndUpdated() {
+        verify(getUserCreator()).enrichAndUpdateFrom(_testUser, TEST_USER_ACCOUNT_DATA);
     }
 
     private void thenSessionIsCreated() {
@@ -332,6 +433,10 @@ public class AuthorityUnitTest extends AuthorityTest {
 
     private void thenSessionExpiringNextYearIsCreated() {
         verify(getSessionStore()).save(argThat(sessionExpiringNextYear()));
+    }
+
+    private void thenExistingSessionRenewed() {
+        verify(getSessionStore()).save(any());
     }
 
     private Matcher<TestSession> sessionExpiringNextYear() {

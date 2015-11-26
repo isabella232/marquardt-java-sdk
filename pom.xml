@@ -45,6 +45,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jacoco.plugin.version>0.7.5.201505241946</jacoco.plugin.version>
         <coveralls.plugin.version>4.0.0</coveralls.plugin.version>
+        <okhttpclient.version>2.5.0</okhttpclient.version>
+        <gson.version>2.4</gson.version>
     </properties>
 
     <dependencies>

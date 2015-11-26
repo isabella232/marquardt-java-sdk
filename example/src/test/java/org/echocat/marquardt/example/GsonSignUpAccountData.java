@@ -16,13 +16,27 @@ public class GsonSignUpAccountData implements SignUpAccountData<GsonUserCredenti
 
     @SerializedName("credentials")
     private final GsonUserCredentials _credentials;
+    @SerializedName("firstName")
+    private final String _firstName;
+    @SerializedName("lastName")
+    private final String _lastName;
 
-    public GsonSignUpAccountData(final GsonUserCredentials credentials) {
+    public GsonSignUpAccountData(final GsonUserCredentials credentials, final String firstName, final String lastName) {
         _credentials = credentials;
+        _firstName = firstName;
+        _lastName = lastName;
     }
 
     @Override
     public GsonUserCredentials getCredentials() {
         return _credentials;
+    }
+
+    public String getFirstName() {
+        return _firstName;
+    }
+
+    public String getLastName() {
+        return _lastName;
     }
 }

@@ -27,19 +27,19 @@ import java.security.PublicKey;
 import java.util.Collection;
 import java.util.Date;
 
-public abstract class CertificateValidator<USERINFO extends Signable, ROLE extends Role> {
+public abstract class CertificateValidator<SIGNABLE extends Signable, ROLE extends Role> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificateValidator.class);
 
-    private final Function<Certificate<USERINFO>, PublicKey> _publicKeyForCertificateProvider = new Function<Certificate<USERINFO>, PublicKey>() {
+    private final Function<Certificate<SIGNABLE>, PublicKey> _publicKeyForCertificateProvider = new Function<Certificate<SIGNABLE>, PublicKey>() {
         @Override
-        public PublicKey apply(final Certificate<USERINFO> certificate) {
+        public PublicKey apply(final Certificate<SIGNABLE> certificate) {
             return certificate.getIssuerPublicKey();
         }
     };
     private final Collection<PublicKey> _trustedPublicKeys;
     private final Validator _validator = new Validator();
-    private final CertificateFactory<USERINFO, ROLE> _certificateFactory;
+    private final CertificateFactory<SIGNABLE, ROLE> _certificateFactory;
     private DateProvider _dateProvider;
 
     /**
@@ -52,9 +52,9 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
     public CertificateValidator(final Collection<PublicKey> trustedPublicKeys) {
         _trustedPublicKeys = Lists.newArrayList(trustedPublicKeys);
         _dateProvider = new DateProvider();
-        _certificateFactory = new CertificateFactory<USERINFO, ROLE>() {
+        _certificateFactory = new CertificateFactory<SIGNABLE, ROLE>() {
             @Override
-            protected DeserializingFactory<USERINFO> getFactoryOfWrapped() {
+            protected DeserializingFactory<SIGNABLE> getFactoryOfWrapped() {
                 return deserializingFactory();
             }
 
@@ -72,14 +72,14 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
     /**
      * Provide your DeserializingFactory for your wrapped signable user information here!
      */
-    protected abstract DeserializingFactory<USERINFO> deserializingFactory();
+    protected abstract DeserializingFactory<SIGNABLE> deserializingFactory();
 
     /**
      * Provide your RoleCodeGenerator for your roles implementation here!
      */
     protected abstract RolesDeserializer<ROLE> roleCodeDeserializer();
 
-    protected CertificateFactory<USERINFO, ROLE> getCertificateDeserializingFactory() {
+    protected CertificateFactory<SIGNABLE, ROLE> getCertificateDeserializingFactory() {
         return _certificateFactory;
     }
 
@@ -92,8 +92,8 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
      * @throws InvalidCertificateException If the certificate is from an untrusted authority or expired.
      * @throws SignatureValidationFailedException if the signature cannot be read or used.
      */
-    public Certificate<USERINFO> deserializeAndValidateCertificate(final byte[] encodedCertificate) {
-        final Certificate<USERINFO> certificate = _validator.deserializeAndValidate(encodedCertificate, getCertificateDeserializingFactory(), _publicKeyForCertificateProvider);
+    public Certificate<SIGNABLE> deserializeAndValidateCertificate(final byte[] encodedCertificate) {
+        final Certificate<SIGNABLE> certificate = _validator.deserializeAndValidate(encodedCertificate, getCertificateDeserializingFactory(), _publicKeyForCertificateProvider);
         final PublicKey issuerPublicKey = certificate.getIssuerPublicKey();
         if (!_trustedPublicKeys.contains(issuerPublicKey)) {
             LOGGER.warn("Attack!! ALERT!!! Duck and cover!!! Certificate '{}' could not be found as trusted certificate.", issuerPublicKey);
@@ -106,7 +106,7 @@ public abstract class CertificateValidator<USERINFO extends Signable, ROLE exten
         return certificate;
     }
 
-    private boolean isExpired(final Certificate<USERINFO> certificate) {
+    private boolean isExpired(final Certificate<SIGNABLE> certificate) {
         //noinspection UseOfObsoleteDateTimeApi
         final Date now = _dateProvider.now();
         return now.after(certificate.getExpiresAt());

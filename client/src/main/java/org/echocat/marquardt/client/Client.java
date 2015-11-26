@@ -8,6 +8,7 @@
 
 package org.echocat.marquardt.client;
 
+import org.echocat.marquardt.common.domain.ClientInformation;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.SignUpAccountData;
 import org.echocat.marquardt.common.domain.Signable;
@@ -23,12 +24,22 @@ import java.io.IOException;
 public interface Client<T extends Signable> {
 
     /**
-     * Sign up with the provided account data to the authority. This will create a new user account
-     * if an account for the credentials does not exist already and return a certificate.
+     * Start of the 2 step sign-up process. In the first step an empty user will be created and stored.
+     *
+     * @param clientInformation consisting of client public key and id.
      *
      * @throws IOException
      */
-    Certificate<T> signup(final SignUpAccountData<? extends Credentials> signUpAccountData) throws IOException;
+    Certificate<T> initializeSignUp(final ClientInformation clientInformation) throws IOException;
+
+
+    /**
+     * Finalize 2 step sign-up process. Requires an existing session and user. The submitted {@link SignUpAccountData}
+     * are used to enrich the existing user.
+     *
+     * @throws IOException
+     */
+    Certificate<T> finalizeSignUp(final Certificate<T> certificate, final SignUpAccountData<? extends Credentials> signUpAccountData) throws IOException;
 
     /**
      * Sign in to the authority with the provided user credentials. This will return a certificate if the
@@ -36,7 +47,7 @@ public interface Client<T extends Signable> {
      *
      * @throws IOException
      */
-    Certificate<T> signin(final Credentials credentials) throws IOException;
+    Certificate<T> signIn(final Credentials credentials) throws IOException;
 
     /**
      * Refresh the current session by obtaining a new certificate. This will return a new certificate if a valid
@@ -51,7 +62,7 @@ public interface Client<T extends Signable> {
      *
      * @throws IOException
      */
-    boolean signout(final Certificate<T> certificate) throws IOException;
+    boolean signOut(final Certificate<T> certificate) throws IOException;
 
     /**
      * Call a protected service API endpoint by using the certificate obtained earlier (either by signing in or signing up).

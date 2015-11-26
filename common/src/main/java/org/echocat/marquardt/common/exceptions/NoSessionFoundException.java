@@ -10,8 +10,12 @@ package org.echocat.marquardt.common.exceptions;
 
 public class NoSessionFoundException extends RuntimeException {
 
+    @SuppressWarnings("UnusedDeclaration")
+    public NoSessionFoundException() {
+        super("No session found.");
+    }
+
     public NoSessionFoundException(final String message) {
         super(message);
     }
-
 }

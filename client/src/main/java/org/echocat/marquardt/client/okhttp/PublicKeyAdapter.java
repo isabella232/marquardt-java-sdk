@@ -19,8 +19,8 @@ import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 public class PublicKeyAdapter implements JsonSerializer<PublicKey> {
     @Override
     public JsonElement serialize(PublicKey publicKey, Type type, JsonSerializationContext jsonSerializationContext) {
-        PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
-        JsonObject result = new JsonObject();
+        final PublicKeyWithMechanism publicKeyWithMechanism = new PublicKeyWithMechanism(publicKey);
+        final JsonObject result = new JsonObject();
         result.add("key", new JsonPrimitive(encodeBase64String(publicKeyWithMechanism.getContent())));
         return result;
     }

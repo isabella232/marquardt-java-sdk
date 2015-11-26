@@ -11,29 +11,26 @@ package org.echocat.marquardt.authority.testdomain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.serialization.PublicKeyDeserializer;
-import org.echocat.marquardt.common.serialization.PublicKeySerializer;
 
 import java.security.PublicKey;
 
-public class TestUserCredentials implements Credentials {
+public class TestUserCredentials extends TestClientInformation implements Credentials {
 
     private final String _email;
     private final String _password;
-    private final PublicKey _publicKey;
-    private final String _clientId;
 
     @JsonCreator
     public TestUserCredentials(@JsonProperty("email") final String email,
                                @JsonProperty("password") final String password,
                                @JsonProperty("publicKey") @JsonDeserialize(using = PublicKeyDeserializer.class) final PublicKey publicKey,
-                               @JsonProperty("clientId") String clientId) {
+                               @JsonProperty("clientId") final String clientId) {
+        super(publicKey, clientId);
         _email = email;
         _password = password;
-        _publicKey = publicKey;
-        _clientId = clientId;
     }
 
     @Override
@@ -48,16 +45,20 @@ public class TestUserCredentials implements Credentials {
         return _password;
     }
 
+
     @Override
-    @JsonProperty("publicKey")
-    @JsonSerialize(using = PublicKeySerializer.class)
-    public PublicKey getPublicKey() {
-        return _publicKey;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        } else if (o == null || getClass() != o.getClass() || !super.equals(o)) {
+            return false;
+        }
+        final TestUserCredentials other = (TestUserCredentials) o;
+        return new EqualsBuilder().append(getIdentifier(), other.getIdentifier()).append(getPassword(), other.getPassword()).isEquals();
     }
 
     @Override
-    @JsonProperty("clientId")
-    public String getClientId() {
-        return _clientId;
+    public int hashCode() {
+        return new HashCodeBuilder().append(super.hashCode()).append(getIdentifier()).append(getPassword()).toHashCode();
     }
 }

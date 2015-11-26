@@ -12,6 +12,7 @@ import org.echocat.marquardt.authority.Authority;
 import org.echocat.marquardt.authority.domain.Session;
 import org.echocat.marquardt.authority.domain.User;
 import org.echocat.marquardt.authority.exceptions.ExpiredSessionException;
+import org.echocat.marquardt.common.domain.ClientInformation;
 import org.echocat.marquardt.common.domain.Credentials;
 import org.echocat.marquardt.common.domain.SignUpAccountData;
 import org.echocat.marquardt.common.domain.Signature;
@@ -49,6 +50,7 @@ import static org.echocat.marquardt.common.web.RequestHeaders.X_CERTIFICATE;
  */
 public class SpringAuthorityController<USER extends User<? extends Role>,
         SESSION extends Session,
+        CLIENT_INFORMATION extends ClientInformation,
         CREDENTIALS extends Credentials,
         SIGNUP_ACCOUNT_DATA extends SignUpAccountData<CREDENTIALS>> {
 
@@ -61,14 +63,22 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
         _authority = authority;
     }
 
-    @RequestMapping(value = "/signup", method = RequestMethod.POST)
+    @RequestMapping(value = "/initializeSignUp", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.CREATED)
     @ResponseBody
-    public JsonWrappedCertificate signUp(@RequestBody final SIGNUP_ACCOUNT_DATA accountData) {
-        return createCertificateResponse(_authority.signUp(accountData));
+    public JsonWrappedCertificate initializeSignUp(@RequestBody final CLIENT_INFORMATION clientInformation) {
+        return createCertificateResponse(_authority.initializeSignUp(clientInformation));
     }
 
-    @RequestMapping(value = "/signin", method = RequestMethod.POST)
+    @RequestMapping(value = "/finalizeSignUp", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonWrappedCertificate finalizeSignUp(@RequestHeader(X_CERTIFICATE) final byte[] certificate, @RequestBody final SIGNUP_ACCOUNT_DATA accountData, final HttpServletRequest request) {
+        final byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);
+        final Signature signature = _requestValidator.extractSignatureFromHeader(request);
+        return createCertificateResponse(_authority.finalizeSignUp(certificate, signedBytesFromRequest, signature, accountData));
+    }
+
+    @RequestMapping(value = "/signIn", method = RequestMethod.POST)
     @ResponseBody
     public JsonWrappedCertificate signIn(@RequestBody final CREDENTIALS credentials) {
         return createCertificateResponse(_authority.signIn(credentials));
@@ -82,7 +92,7 @@ public class SpringAuthorityController<USER extends User<? extends Role>,
         return createCertificateResponse(_authority.refresh(certificate, signedBytesFromRequest, signature));
     }
 
-    @RequestMapping(value = "/signout", method = RequestMethod.POST)
+    @RequestMapping(value = "/signOut", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void signOut(@RequestHeader(X_CERTIFICATE) final byte[] certificate, final HttpServletRequest request) {
         final byte[] signedBytesFromRequest = _requestValidator.extractSignedBytesFromRequest(request);

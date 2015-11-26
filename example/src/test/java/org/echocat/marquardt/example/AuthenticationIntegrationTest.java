@@ -8,14 +8,23 @@
 
 package org.echocat.marquardt.example;
 
-import org.echocat.marquardt.common.exceptions.*;
+import org.echocat.marquardt.common.exceptions.AlreadyLoggedInException;
+import org.echocat.marquardt.common.exceptions.ClientNotAuthorizedException;
+import org.echocat.marquardt.common.exceptions.LoginFailedException;
+import org.echocat.marquardt.common.exceptions.NoSessionFoundException;
+import org.echocat.marquardt.common.exceptions.UserAlreadyExistsException;
+import org.echocat.marquardt.example.domain.PersistentUser;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.UUID;
 
+import static org.echocat.marquardt.authority.domain.UserStatus.CONFIRMED;
+import static org.echocat.marquardt.authority.domain.UserStatus.WITHOUT_CREDENTIALS;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -70,36 +79,51 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
     }
 
     @Test
-    public void shouldSignUpUser() throws IOException {
-        givenAccountDataWithCredentials();
+    public void shouldInitializeSignUp() throws IOException {
+        givenCorrectCredentials();
         givenClientIdIsAllowed();
-        whenSigningUp();
+        whenInitializingSignUp();
         thenCertificateIsProvided();
-    }
-
-    @Test(expected = UserAlreadyExistsException.class)
-    public void shouldNotSignUpExistingUser() throws IOException {
-        givenExistingUser(Collections.emptySet());
-        givenClientIdIsAllowed();
-        givenAccountDataWithCredentials();
-        whenSigningUp();
-    }
-
-    @Test(expected = ClientNotAuthorizedException.class)
-    public void shouldNotSignUpUserWhenClientIdIsUnknown() throws IOException {
-        givenAccountDataWithCredentials();
-        whenSigningUp();
-    }
-
-    @Test(expected = ClientNotAuthorizedException.class)
-    public void shouldNotSignUpUserWhenClientIdProhibited() throws IOException {
-        givenProhibitedClientId();
-        givenAccountDataWithCredentials();
-        whenSigningUp();
+        thenUserWithoutCredentialsWasCreated();
     }
 
     @Test
-    public void shouldLogoutALoggedInUser() throws IOException {
+    public void shouldFinalizeSignUp() throws IOException {
+        givenAccountDataWithCredentials();
+        givenClientIdIsAllowed();
+        givenEmptyUserAndSession();
+        whenFinalizingSignUp();
+        thenCertificateIsProvided();
+        thenUserWasEnrichedByAccountData();
+    }
+
+    @Test(expected = UserAlreadyExistsException.class)
+    public void shouldNotFinalizeSignUpWhenCredentialsAreInUseByExistingUser() throws IOException {
+        givenExistingUser(Collections.emptySet());
+        givenClientIdIsAllowed();
+        givenAccountDataWithCredentials();
+        givenEmptyUserAndSession();
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldNotFinalizeSignUpWhenClientIdIsUnknown() throws IOException {
+        givenAccountDataWithCredentials();
+        givenEmptyUserAndSession();
+        // No client id is set at all
+        whenFinalizingSignUp();
+    }
+
+    @Test(expected = ClientNotAuthorizedException.class)
+    public void shouldNotFinalizeSignUpWhenClientIdProhibited() throws IOException {
+        givenAccountDataWithCredentials();
+        givenEmptyUserAndSession();
+        givenProhibitedClientId();
+        whenFinalizingSignUp();
+    }
+
+    @Test
+    public void shouldLogoutAnLoggedInUser() throws IOException {
         givenExistingUser(Collections.emptySet());
         givenClientIdIsAllowed();
         givenCorrectCredentials();
@@ -148,5 +172,25 @@ public class AuthenticationIntegrationTest extends AbstractSsoIntegrationTest {
 
     private void thenCertificateIsProvided() {
         assertThat(getCertificate(), is(not(nullValue())));
+    }
+
+    private void thenUserWithoutCredentialsWasCreated() {
+        final UUID userId = getCertificate().getPayload().getUserId();
+        final PersistentUser user = getUserRepository().findByUserId(userId).orElseThrow(() -> new IllegalStateException("Could not find expected user with id '" + userId + "'."));
+        assertThat(user.getStatus(), is(WITHOUT_CREDENTIALS));
+        assertThat(user.getEmail(), nullValue());
+        assertThat(user.getEncodedPassword(), nullValue());
+        assertThat(user.getLastName(), nullValue());
+        assertThat(user.getFirstName(), nullValue());
+    }
+
+    private void thenUserWasEnrichedByAccountData() {
+        final UUID userId = getCertificate().getPayload().getUserId();
+        final PersistentUser user = getUserRepository().findByUserId(userId).orElseThrow(() -> new IllegalStateException("Could not find expected user with id '" + userId + "'."));
+        assertThat(user.getStatus(), is(CONFIRMED));
+        assertThat(user.getEmail(), is(_signUpAccountData.getCredentials().getIdentifier()));
+        assertThat(user.getEncodedPassword(), notNullValue());
+        assertThat(user.getFirstName(), is(_signUpAccountData.getFirstName()));
+        assertThat(user.getLastName(), is(_signUpAccountData.getLastName()));
     }
 }

@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 @Component
 public class PersistentUserCatalog implements UserCatalog<PersistentUser> {
 
@@ -31,7 +33,11 @@ public class PersistentUserCatalog implements UserCatalog<PersistentUser> {
 
     @Override
     public Optional<PersistentUser> findByCredentials(final Credentials credentials) {
-        return _userRepository.findByEmailIgnoreCase(credentials.getIdentifier());
+        final String identifier = credentials.getIdentifier();
+        if (isBlank(identifier)) {
+            return Optional.empty();
+        }
+        return _userRepository.findByEmailIgnoreCase(identifier);
     }
 
     @Override

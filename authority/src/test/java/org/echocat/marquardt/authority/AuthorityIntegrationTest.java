@@ -21,17 +21,21 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.OkHttpClientHttpRequestFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 
 import static org.echocat.marquardt.common.web.SignatureHeaders.X_CERTIFICATE;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,7 +44,6 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     private final ObjectMapper _objectMapper = new ObjectMapper();
 
     private TestHttpAuthorityServer _testHttpAuthorityServer;
-    private HttpURLConnection _connection;
     private String _response;
     private int _status;
 
@@ -58,28 +61,34 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     }
 
     @Test
-    public void shouldSignUpUserWithCorrectCredentials() throws Exception {
-        givenUserDoesNotExist();
-        givenSessionCreationPolicyAllowsAnotherSession();
-        givenSignUpCall();
-        whenCallingAuthority();
+    public void shouldInitializeSignUpWithCorrectClientInformation() throws Exception {
+        givenEmptyUserWillBeCreated();
+        whenCallingInitializeSignUp();
         thenSignedCertificateIsProduced();
+        thenEmptyUserWasCreated();
+    }
+
+    @Test
+    public void shouldFinalizeSignUpWithCorrectCredentials() throws Exception {
+        givenEmptyUserExistsAndNoOneElseUsesSameCredentials();
+        givenExistingSession();
+        whenCallingFinalizeSignUp();
+        thenSignedCertificateIsProduced();
+        thenUserWasEnrichedWithAccountData();
     }
 
     @Test
     public void shouldSignInUserWithCorrectCredentials() throws Exception {
         givenUserExists();
         givenSessionCreationPolicyAllowsAnotherSession();
-        givenSignInCall();
-        whenCallingAuthority();
+        whenCallingSignIn();
         thenSignedCertificateIsProduced();
     }
 
     @Test
     public void shouldSignOutUserWithActiveSessionAndValidCertificate() throws Exception {
         givenExistingSession();
-        givenSignOutCall();
-        whenCallingAuthority();
+        whenCallingSignOut();
         thenSignOutIsPerformed();
     }
 
@@ -87,34 +96,28 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     public void shouldRefreshCertificateWithActiveSessionAndValidCertificate() throws Exception {
         givenExistingSession();
         givenUserExists();
-        givenRefreshCall();
-        whenCallingAuthority();
+        whenCallingRefresh();
         thenSignedCertificateIsProduced();
     }
 
-    private void givenSignUpCall() throws Exception {
-        doPost("http://localhost:8000/signup", TEST_USER_CREDENTIALS);
+    private void whenCallingInitializeSignUp() throws Exception {
+        doPost("http://localhost:8000/initializeSignUp", TEST_CLIENT_INFORMATION);
     }
 
-    private void givenSignOutCall() throws Exception {
-        doPost("http://localhost:8000/signout", null);
+    private void whenCallingFinalizeSignUp() throws Exception {
+        doPost("http://localhost:8000/finalizeSignUp", TEST_USER_ACCOUNT_DATA);
     }
 
-    private void givenSignInCall() throws Exception {
-        doPost("http://localhost:8000/signin", TEST_USER_CREDENTIALS);
+    private void whenCallingSignOut() throws Exception {
+        doPost("http://localhost:8000/signOut", null);
     }
 
-    private void givenRefreshCall() throws Exception {
+    private void whenCallingSignIn() throws Exception {
+        doPost("http://localhost:8000/signIn", TEST_USER_CREDENTIALS);
+    }
+
+    private void whenCallingRefresh() throws Exception {
         doPost("http://localhost:8000/refresh", null);
-    }
-
-    private void whenCallingAuthority() throws IOException {
-        try (final InputStream inputStream = _connection.getInputStream()) {
-            _status = _connection.getResponseCode();
-            try (final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charsets.UTF_8)) {
-                _response = CharStreams.toString(inputStreamReader);
-            }
-        }
     }
 
     private void thenSignedCertificateIsProduced() throws IOException {
@@ -122,17 +125,36 @@ public class AuthorityIntegrationTest extends AuthorityTest {
         assertThat(jsonWrappedCertificate.getCertificate(), notNullValue());
     }
 
+    private void thenUserWasEnrichedWithAccountData() {
+        verify(_userCreator).enrichAndUpdateFrom(_testUser, TEST_USER_ACCOUNT_DATA);
+    }
+
+    private void thenEmptyUserWasCreated() {
+        verify(_userCreator).createEmptyUser(TEST_CLIENT_INFORMATION);
+    }
+
     private void thenSignOutIsPerformed() {
         assertThat(_status, is(NO_CONTENT.value()));
     }
 
     private void doPost(final String url, final Object content) throws Exception {
-        final URL urlToPost = new URL(url);
-        _connection = (HttpURLConnection) urlToPost.openConnection();
-        _connection.setRequestMethod(HttpMethod.POST.name());
-        _connection.setRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-        _connection.setRequestProperty(X_CERTIFICATE.getHeaderName(), Base64.encodeBase64URLSafeString(CERTIFICATE));
-        _connection.setDoOutput(true);
-        _objectMapper.writeValue(_connection.getOutputStream(), content);
+        final byte[] bytes;
+        try (final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            _objectMapper.writeValue(byteArrayOutputStream, content);
+            byteArrayOutputStream.flush();
+            bytes = byteArrayOutputStream.toByteArray();
+        }
+        final URI urlToPost = new URI(url);
+        final ClientHttpRequest request = new OkHttpClientHttpRequestFactory().createRequest(urlToPost, HttpMethod.POST);
+        request.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        request.getHeaders().add(X_CERTIFICATE.getHeaderName(), Base64.encodeBase64URLSafeString(CERTIFICATE));
+        request.getBody().write(bytes);
+        final ClientHttpResponse response = request.execute();
+        _status = response.getStatusCode().value();
+        try (final InputStream inputStream = response.getBody()) {
+            try (final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charsets.UTF_8)) {
+                _response = CharStreams.toString(inputStreamReader);
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ package org.echocat.marquardt.example.domain;
 
 import com.google.common.collect.Sets;
 import org.echocat.marquardt.authority.domain.User;
+import org.echocat.marquardt.authority.domain.UserStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -30,7 +31,7 @@ public class PersistentUser implements User<ExampleRoles> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private long id;
 
     @Transient
     private final PasswordEncoder _passwordEncoder = new BCryptPasswordEncoder();
@@ -39,12 +40,13 @@ public class PersistentUser implements User<ExampleRoles> {
     private UUID userId;
 
     @NotNull
+    private UserStatus status;
+
     private String email;
 
     private String firstName;
     private String lastName;
 
-    @NotNull
     private String encodedPassword;
 
     @ElementCollection(targetClass = ExampleRoles.class)
@@ -95,6 +97,15 @@ public class PersistentUser implements User<ExampleRoles> {
     @Override
     public UUID getUserId() {
         return userId;
+    }
+
+    public void setStatus(final UserStatus status) {
+        this.status = status;
+    }
+
+    @Override
+    public UserStatus getStatus() {
+        return this.status;
     }
 
     public void setEncodedPassword(final String encodedPassword) {
