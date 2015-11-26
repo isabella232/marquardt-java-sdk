@@ -51,19 +51,19 @@ public interface Client<T extends Signable> {
     Certificate<T> signIn(final Credentials credentials) throws IOException;
 
     /**
+     * Sign out the user by deleting the current session. This will return true if sign out was successful.
+     *
+     * @throws IOException
+     */
+    boolean signOut(final Certificate<T> certificate) throws IOException;
+
+    /**
      * Refresh the current session by obtaining a new certificate. This will return a new certificate if a valid
      * certificate is provided. Refreshing the certificate is also possible if the certificate is expired.
      *
      * @throws IOException
      */
     Certificate<T> refresh(final Certificate<T> certificateToRefresh) throws IOException;
-
-    /**
-     * Sign out the user by deleting the current session. This will return true if sign out was successful.
-     *
-     * @throws IOException
-     */
-    boolean signOut(final Certificate<T> certificate) throws IOException;
 
     /**
      * Call a protected service API endpoint by using the certificate obtained earlier (either by signing in or signing up).
@@ -77,5 +77,5 @@ public interface Client<T extends Signable> {
     /**
      * Lets you define the locale used by the client. Defaults to Locale.getDefault().
      */
-    void setLocale(Locale locale);
+    void setLocale(final Locale locale);
 }

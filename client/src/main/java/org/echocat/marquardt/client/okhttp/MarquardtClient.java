@@ -41,6 +41,7 @@ import org.echocat.marquardt.common.web.SignatureHeaders;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
@@ -64,6 +65,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
     private static final String GET_METHOD = "GET";
     private static final String PUT_METHOD = "PUT";
     private static final String DELETE_METHOD = "DELETE";
+    private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
 
     private final OkHttpClient _httpClient = new OkHttpClient();
     private final OkHttpClient _addSignedHeaderHttpClient = new OkHttpClient();
@@ -76,6 +78,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
     private DateProvider _dateProvider = new DateProvider();
 
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(PublicKey.class, new PublicKeyAdapter()).create();
+    private Locale _locale = Locale.getDefault();
 
     /**
      * Create a client instance.
@@ -192,19 +195,6 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
      * {@inheritDoc}
      */
     @Override
-    public Certificate<SIGNABLE> refresh(final Certificate<SIGNABLE> certificateToRefesh) throws IOException {
-        final Request request = sendRequestWithCertificateHeader(_baseUri + "/auth/refresh", POST_METHOD, certificateToRefesh);
-        final Response response = _addSignedHeaderHttpClient.newCall(request).execute();
-        if (response.code() != OK_STATUS) {
-            throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
-        }
-        return extractCertificateFrom(response);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public boolean signOut(final Certificate<SIGNABLE> certificate) throws IOException {
         final Request request = sendRequestWithCertificateHeader(_baseUri + "/auth/signOut", POST_METHOD, certificate);
         final Response response = _addSignedHeaderHttpClient.newCall(request).execute();
@@ -212,6 +202,19 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
             throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
         }
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Certificate<SIGNABLE> refresh(final Certificate<SIGNABLE> certificateToRefesh) throws IOException {
+        final Request request = sendRequestWithCertificateHeader(_baseUri + "/auth/refresh", POST_METHOD, certificateToRefesh);
+        final Response response = _addSignedHeaderHttpClient.newCall(request).execute();
+        if (response.code() != OK_STATUS) {
+            throw ResponseStatusTranslation.from(response.code()).translateToException(response.message());
+        }
+        return extractCertificateFrom(response);
     }
 
     /**
@@ -231,6 +234,11 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         return GSON.fromJson(response.body().string(), responseType);
     }
 
+    @Override
+    public void setLocale(Locale locale) {
+        _locale = locale;
+    }
+
     private Certificate<SIGNABLE> extractCertificateFrom(final Response response) throws IOException {
         final JsonElement certificateJsonElement = GSON.fromJson(response.body().string(), JsonObject.class).get("certificate");
         final byte[] certificate = decodeBase64(certificateJsonElement.getAsString());
@@ -246,6 +254,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         return new Request.Builder()
                 .url(url)
                 .post(body)
+                .addHeader(ACCEPT_LANGUAGE_HEADER, _locale.toLanguageTag())
                 .build();
     }
 
@@ -259,6 +268,7 @@ public class MarquardtClient<SIGNABLE extends Signable, ROLE extends Role> imple
         setRequestHttpMethod(httpMethod, body, builder);
         return builder
                 .addHeader(SignatureHeaders.X_CERTIFICATE.getHeaderName(), encodeBase64URLSafeString(certificate.getContent()))
+                .addHeader(ACCEPT_LANGUAGE_HEADER, _locale.toLanguageTag())
                 .build();
     }
 
