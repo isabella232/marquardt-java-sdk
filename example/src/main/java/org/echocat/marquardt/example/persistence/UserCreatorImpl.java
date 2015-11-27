@@ -30,7 +30,7 @@ public class UserCreatorImpl implements UserCreator<PersistentUser, UserCredenti
     }
 
     @Override
-    public PersistentUser createEmptyUser(final ClientInformation clientInformation) {
+    public PersistentUser createEmptyUser() {
         final PersistentUser userToCreate = new PersistentUser();
         userToCreate.setUserId(UUID.randomUUID());
         userToCreate.setRoles(Collections.<ExampleRoles>emptySet());

@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.echocat.marquardt.authority.testdomain.TestUser.USER_ID;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("AbstractClassWithoutAbstractMethods")
@@ -114,7 +113,7 @@ public abstract class AuthorityTest {
     }
 
     protected void givenEmptyUserWillBeCreated() {
-        when(getUserCreator().createEmptyUser(eq(TEST_CLIENT_INFORMATION))).thenReturn(_testUser);
+        when(getUserCreator().createEmptyUser()).thenReturn(_testUser);
         when(getUserCatalog().toSignable(any(TestUser.class))).thenReturn(TEST_USER_INFO);
     }
 

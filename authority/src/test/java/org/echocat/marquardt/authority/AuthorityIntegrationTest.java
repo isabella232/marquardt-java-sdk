@@ -130,7 +130,7 @@ public class AuthorityIntegrationTest extends AuthorityTest {
     }
 
     private void thenEmptyUserWasCreated() {
-        verify(_userCreator).createEmptyUser(TEST_CLIENT_INFORMATION);
+        verify(_userCreator).createEmptyUser();
     }
 
     private void thenSignOutIsPerformed() {

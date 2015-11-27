@@ -408,7 +408,7 @@ public class AuthorityUnitTest extends AuthorityTest {
     }
 
     private void thenUserWasCreated() {
-        verify(getUserCreator()).createEmptyUser(TEST_CLIENT_INFORMATION);
+        verify(getUserCreator()).createEmptyUser();
     }
 
     private void thenUserIsEnrichedWithAccountDataAndUpdated() {

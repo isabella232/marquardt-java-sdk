@@ -107,7 +107,7 @@ public class Authority<USER extends User<? extends Role>,
      */
     public byte[] initializeSignUp(final ClientInformation clientInformation) {
         throwExceptionWhenClientIdIsProhibited(clientInformation.getClientId());
-        final USER user = _userCreator.createEmptyUser(clientInformation);
+        final USER user = _userCreator.createEmptyUser();
         return _sessionCreator.createCertificateAndSession(clientInformation, user);
     }
 
