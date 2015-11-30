@@ -12,6 +12,19 @@ __Clients__ communicate with the authority to obtain a certificate. They can use
 
 __Services__ can authenticate and authorize client requests without roundtrips to the central authority. They read the certificate from the request header and check the requests are also signed by the client (whose public key is contained in the certificate). They use embedded payload from the certificate to access necessary user information.
 
+### Marquardt Signup Process
+
+In order to use Marquardt services, the user must signup at the authority. The signup process is split into two parts, which must be performed sequentially by the client:
+
+- Initialize signup: The client provides their public key and the client id. This will create an empty, temporary user account with status WITHOUT_CREDENTIALS.
+- Finalize signup: In this step, the user provides the complete user information and credentials. The data will be added to the temporary user created in the first step and
+its status will change to CONFIRMED. In case of an additional double-opt in step, the status will change to WITH_CREDENTIALS instead.
+
+This 2-steps allows the authority to perform additional checks or even to have the user call different endpoints (e.g. the confirmation of required legal texts) before finalizing
+the setup (see checkAdditionalRequirements field in class Authority).
+
+![marquardt login](docs/signup.png "Marquardt Signup")
+
 ### Marquardt Sign In Process
 
 In order to access protected services, a client must obtain a certificate issued by the authority. The following diagram explains the basic process: A client sends its credentials to the authority. The authority checks that the user exists and its credentials are valid, creates a new session if necessary and issues the certificate.
